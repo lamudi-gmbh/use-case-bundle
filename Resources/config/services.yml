@@ -1,0 +1,24 @@
+parameters:
+    lamudi_use_case.request_factory.class: Lamudi\UseCase\Factory\UseCaseRequestFactory
+    lamudi_use_case.request.resolver.class: Lamudi\UseCase\Factory\RequestResolver
+    lamudi_use_case.request.normalizer.class: Lamudi\UseCase\Factory\RequestNormalizer
+    lamudi_use_case.request.initializer.class: Lamudi\UseCase\Factory\RequestInitializer
+    lamudi_use_case.use_case_handler.class: Lamudi\UseCase\Handler\HttpJsonUseCaseHandler
+
+services:
+    lamudi_use_case.request_factory:
+        class: "%lamudi_use_case.request_factory.class%"
+        arguments: ["@lamudi_use_case.request.resolver", "@lamudi_use_case.request.normalizer", "@lamudi_use_case.request.initializer"]
+
+    lamudi_use_case.request.resolver:
+        class: "%lamudi_use_case.request.resolver.class%"
+
+    lamudi_use_case.request.normalizer:
+        class: "%lamudi_use_case.request.normalizer.class%"
+
+    lamudi_use_case.request.initializer:
+        class: "%lamudi_use_case.request.initializer.class%"
+
+    lamudi_use_case.use_case_handler:
+        class: "%lamudi_use_case.use_case_handler.class%"
+        arguments: ["@serializer.encoder.json"]
