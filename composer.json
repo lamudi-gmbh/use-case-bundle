@@ -1,5 +1,5 @@
 {
-    "name": "lamudi/angi-client",
+    "name": "lamudi/use-case-bundle",
     "require": {
         "symfony/dependency-injection": "~2.3",
         "symfony/framework-bundle": "~2.3",
