@@ -1,9 +1,9 @@
 parameters:
-    lamudi_use_case.request_factory.class: Lamudi\UseCase\Factory\UseCaseRequestFactory
-    lamudi_use_case.request.resolver.class: Lamudi\UseCase\Factory\RequestResolver
-    lamudi_use_case.request.normalizer.class: Lamudi\UseCase\Factory\RequestNormalizer
-    lamudi_use_case.request.initializer.class: Lamudi\UseCase\Factory\RequestInitializer
-    lamudi_use_case.use_case_handler.class: Lamudi\UseCase\Handler\HttpJsonUseCaseHandler
+    lamudi_use_case.request_factory.class: Lamudi\UseCaseBundle\Factory\UseCaseRequestFactory
+    lamudi_use_case.request.resolver.class: Lamudi\UseCaseBundle\Factory\RequestResolver
+    lamudi_use_case.request.normalizer.class: Lamudi\UseCaseBundle\Factory\RequestNormalizer
+    lamudi_use_case.request.initializer.class: Lamudi\UseCaseBundle\Factory\RequestInitializer
+    lamudi_use_case.use_case_handler.class: Lamudi\UseCaseBundle\Handler\HttpJsonUseCaseHandler
 
 services:
     lamudi_use_case.request_factory:
