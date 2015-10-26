@@ -15,6 +15,8 @@ services:
     lamudi_use_case.request_body_converter:
         class: "%lamudi_use_case.request_body_converter.class%"
         arguments: ["@serializer"]
+        tags:
+            - { name: "request.param_converter", priority: -100 }
 
     lamudi_use_case.request_factory:
         class: "%lamudi_use_case.request_factory.class%"
