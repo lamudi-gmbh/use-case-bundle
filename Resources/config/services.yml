@@ -5,11 +5,16 @@ parameters:
     lamudi_use_case.request.normalizer.class: Lamudi\UseCaseBundle\Factory\RequestNormalizer
     lamudi_use_case.request.initializer.class: Lamudi\UseCaseBundle\Factory\RequestInitializer
     lamudi_use_case.use_case_handler.class: Lamudi\UseCaseBundle\Handler\HttpJsonUseCaseHandler
+    lamudi_use_case.request_body_converter.class: Lamudi\UseCaseBundle\Request\RequestBodyParamConverter
 
 services:
     lamudi_use_case.container:
         class: "%lamudi_use_case.container.class%"
         arguments: ["@serializer.encoder.json"]
+
+    lamudi_use_case.request_body_converter:
+        class: "%lamudi_use_case.request_body_converter.class%"
+        arguments: ["@serializer"]
 
     lamudi_use_case.request_factory:
         class: "%lamudi_use_case.request_factory.class%"
