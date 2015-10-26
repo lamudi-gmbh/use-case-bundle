@@ -1,4 +1,5 @@
 parameters:
+    lamudi_use_case.container.class: Lamudi\UseCaseBundle\Container\UseCaseContainer
     lamudi_use_case.request_factory.class: Lamudi\UseCaseBundle\Factory\UseCaseRequestFactory
     lamudi_use_case.request.resolver.class: Lamudi\UseCaseBundle\Factory\RequestResolver
     lamudi_use_case.request.normalizer.class: Lamudi\UseCaseBundle\Factory\RequestNormalizer
@@ -7,7 +8,7 @@ parameters:
 
 services:
     lamudi_use_case.container:
-        class: "%lamudi_use_case.use_case_handler.class%"
+        class: "%lamudi_use_case.container.class%"
         arguments: ["@serializer.encoder.json"]
 
     lamudi_use_case.request_factory:
