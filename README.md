@@ -15,10 +15,10 @@ then run
 
     $ composer update lamudi/use-case-bundle
 
-Usage
-=====
+Configuration
+=============
 
-Register your bundle in AppKernel.php:
+1. Register your bundle in AppKernel.php:
 
 ```php
 <?php
@@ -40,4 +40,35 @@ class AppKernel extends Kernel
 
     // ...
 }
+```
+
+2. Enable serializer in app/config.yml:
+
+```
+// app/config.yml
+
+framework:
+    serializer: ~
+    
+```
+
+Usage
+=====
+
+1. Register your use cases as Symfony services and tag them as "use_case":
+
+```
+// app.services.yml
+
+app.my_use_case:
+    class: AppBundle\UseCase\MyUseCase
+    tags:
+        - { name: use_case }
+
+```
+
+2. Use the use case container to retrieve your use cases:
+
+```php
+$this->get('lamudi_use_case.container')->get('app.my_use_case');
 ```

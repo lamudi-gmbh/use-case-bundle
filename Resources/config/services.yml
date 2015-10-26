@@ -6,6 +6,10 @@ parameters:
     lamudi_use_case.use_case_handler.class: Lamudi\UseCaseBundle\Handler\HttpJsonUseCaseHandler
 
 services:
+    lamudi_use_case.container:
+        class: "%lamudi_use_case.use_case_handler.class%"
+        arguments: ["@serializer.encoder.json"]
+
     lamudi_use_case.request_factory:
         class: "%lamudi_use_case.request_factory.class%"
         arguments: ["@lamudi_use_case.request.resolver", "@lamudi_use_case.request.normalizer", "@lamudi_use_case.request.initializer"]
