@@ -27,6 +27,7 @@ class UseCaseCompilerPass implements CompilerPassInterface
         $this->addUseCasesToContainer($container, $definition);
         $this->addInputConvertersToContainer($container, $definition);
         $this->addResponseProcessorsToContainer($container, $definition);
+        $definition->addMethodCall('loadSettingsFromAnnotations');
     }
 
     /**

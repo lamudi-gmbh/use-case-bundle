@@ -19,6 +19,7 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $containerBuilder->has('lamudi_use_case.container')->willReturn(true);
         $containerBuilder->findDefinition('lamudi_use_case.container')->willReturn($useCaseContainerDefinition);
         $containerBuilder->findTaggedServiceIds(Argument::any())->willReturn(array());
+        $useCaseContainerDefinition->addMethodCall(Argument::any())->willReturn();
     }
 
     function it_is_initializable()
@@ -79,6 +80,14 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $useCaseContainerDefinition->addMethodCall('setResponseProcessor', array('baz', new Reference('response_processor_2')))
             ->shouldBeCalled();
 
+        $this->process($containerBuilder);
+    }
+
+    public function it_tells_to_load_settings_from_use_case_class_annotations(
+        ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition
+    )
+    {
+        $useCaseContainerDefinition->addMethodCall('loadSettingsFromAnnotations')->shouldBeCalled();
         $this->process($containerBuilder);
     }
 }

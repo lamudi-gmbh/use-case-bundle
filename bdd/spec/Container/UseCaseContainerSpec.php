@@ -2,6 +2,8 @@
 
 namespace spec\Lamudi\UseCaseBundle\Container;
 
+use Doctrine\Common\Annotations\Reader;
+use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
 use Lamudi\UseCaseBundle\Exception\UseCaseException;
 use Lamudi\UseCaseBundle\Exception\UseCaseNotFoundException;
 use Lamudi\UseCaseBundle\Request\InputConverterInterface;
@@ -20,9 +22,12 @@ class UseCaseContainerSpec extends ObjectBehavior
 {
     public function let(
         UseCaseInterface $useCase, InputConverterInterface $inputConverter,
-        ResponseProcessorInterface $responseProcessor
+        ResponseProcessorInterface $responseProcessor, Reader $annotationReader
     )
     {
+        $this->beConstructedWith($annotationReader);
+        $annotationReader->getClassAnnotations(Argument::any())->willReturn(array());
+
         $this->set('use_case', $useCase);
         $this->setInputConverter('form', $inputConverter);
         $this->assignInputConverter('use_case', 'form');
@@ -130,5 +135,36 @@ class UseCaseContainerSpec extends ObjectBehavior
     {
         $this->set('yet_another_use_case', $useCase);
         $this->execute('yet_another_use_case', array())->shouldNotThrow(\Exception::class);
+    }
+
+    public function it_loads_annotations_from_use_case_classes(
+        Reader $annotationReader, UseCaseInterface $useCase1, UseCaseInterface $useCase2,
+        InputConverterInterface $inputConverter, ResponseProcessorInterface $responseProcessor
+    )
+    {
+        $useCase1Annotation = new UseCaseAnnotation(array());
+        $useCase1Annotation->setInput(array('type' => 'form', 'name' => 'registration_form'));
+        $useCase2Annotation = new UseCaseAnnotation(array());
+        $useCase2Annotation->setOutput(array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig'));
+
+        $request = new Request();
+        $inputConverter->createRequest(null, array('name' => 'registration_form'))->willReturn($request);
+        $responseProcessor->processResponse(Argument::cetera())->willReturn('uc2 success');
+
+        $this->set('uc1', $useCase1);
+        $this->set('uc2', $useCase2);
+        $this->setInputConverter('form', $inputConverter);
+        $this->setResponseProcessor('twig', $responseProcessor);
+
+        $annotationReader->getClassAnnotations(Argument::which('getName', get_class($useCase1->getWrappedObject())))->willReturn(array($useCase1Annotation));
+        $annotationReader->getClassAnnotations(Argument::which('getName', get_class($useCase2->getWrappedObject())))->willReturn(array($useCase2Annotation));
+
+        $this->loadSettingsFromAnnotations();
+
+        $this->execute('uc1')->shouldReturnAnInstanceOf(Response::class);
+        $useCase1->execute($request)->shouldHaveBeenCalled();
+
+        $this->execute('uc2')->shouldReturn('uc2 success');
+
     }
 }

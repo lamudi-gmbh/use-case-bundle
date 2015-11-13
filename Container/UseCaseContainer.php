@@ -2,6 +2,8 @@
 
 namespace Lamudi\UseCaseBundle\Container;
 
+use Doctrine\Common\Annotations\Reader;
+use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
 use Lamudi\UseCaseBundle\Exception\UseCaseNotFoundException;
 use Lamudi\UseCaseBundle\Request\DefaultInputConverter;
 use Lamudi\UseCaseBundle\Request\InputConverterInterface;
@@ -37,14 +39,22 @@ class UseCaseContainer
     private $useCaseResponseProcessors = array();
 
     /**
+     * @var Reader
+     */
+    private $annotationReader;
+
+    /**
+     * @param Reader $annotationReader
      * @param InputConverterInterface $defaultInputConverter
      * @param ResponseProcessorInterface $defaultResponseProcessor
      */
     public function __construct(
+        Reader $annotationReader,
         InputConverterInterface $defaultInputConverter = null,
         ResponseProcessorInterface $defaultResponseProcessor = null
     )
     {
+        $this->annotationReader = $annotationReader;
         $this->setInputConverter('default', $defaultInputConverter ? : new DefaultInputConverter());
         $this->setResponseProcessor('default', $defaultResponseProcessor ? : new DefaultResponseProcessor());
     }
@@ -54,7 +64,7 @@ class UseCaseContainer
      * @param mixed $inputData
      * @return mixed
      */
-    public function execute($useCaseName, $inputData)
+    public function execute($useCaseName, $inputData = null)
     {
         $useCase = $this->get($useCaseName);
 
@@ -131,6 +141,24 @@ class UseCaseContainer
     public function assignResponseProcessor($useCaseName, $processorName, $options = array())
     {
         $this->useCaseResponseProcessors[$useCaseName] = array('name' => $processorName, 'options' => $options);
+    }
+
+    public function loadSettingsFromAnnotations()
+    {
+        foreach ($this->useCases as $name => $useCase) {
+            $reflection = new \ReflectionClass($useCase);
+            $annotations = $this->annotationReader->getClassAnnotations($reflection);
+
+            /** @var UseCaseAnnotation $annotation */
+            foreach ($annotations as $annotation) {
+                if ($annotation->getInputType()) {
+                    $this->assignInputConverter($name, $annotation->getInputType(), $annotation->getInputOptions());
+                }
+                if ($annotation->getOutputType()) {
+                    $this->assignResponseProcessor($name, $annotation->getOutputType(), $annotation->getOutputOptions());
+                }
+            }
+        }
     }
 
     /**
