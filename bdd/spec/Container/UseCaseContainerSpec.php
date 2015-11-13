@@ -125,4 +125,10 @@ class UseCaseContainerSpec extends ObjectBehavior
         $defaultResponseProcessor->processResponse($response, array())->shouldHaveBeenCalled();
 
     }
+
+    public function it_always_has_default_input_converter_and_request_processor(UseCaseInterface $useCase)
+    {
+        $this->set('yet_another_use_case', $useCase);
+        $this->execute('yet_another_use_case', array())->shouldNotThrow(\Exception::class);
+    }
 }

@@ -35,6 +35,19 @@ class UseCaseContainer
     private $useCaseResponseProcessors = array();
 
     /**
+     * @param InputConverterInterface $defaultInputConverter
+     * @param ResponseProcessorInterface $defaultResponseProcessor
+     */
+    public function __construct(
+        InputConverterInterface $defaultInputConverter = null,
+        ResponseProcessorInterface $defaultResponseProcessor = null
+    )
+    {
+        $this->setInputConverter('default', $defaultInputConverter ? : new DefaultInputConverter());
+        $this->setResponseProcessor('default', $defaultResponseProcessor ? : new DefaultResponseProcessor());
+    }
+
+    /**
      * @param string $useCaseName
      * @param mixed $inputData
      * @return mixed
