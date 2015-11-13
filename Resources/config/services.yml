@@ -10,7 +10,6 @@ parameters:
 services:
     lamudi_use_case.container:
         class: "%lamudi_use_case.container.class%"
-        arguments: ["@serializer.encoder.json"]
 
     lamudi_use_case.request_body_converter:
         class: "%lamudi_use_case.request_body_converter.class%"
