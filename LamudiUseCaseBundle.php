@@ -13,7 +13,7 @@ class LamudiUseCaseBundle extends Bundle
     {
         parent::boot();
 
-        AnnotationRegistry::registerFile(__DIR__ . '/../Annotation/UseCase.php');
+        AnnotationRegistry::registerFile(__DIR__ . '/Annotation/UseCase.php');
     }
 
     /**
