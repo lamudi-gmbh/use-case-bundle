@@ -2,7 +2,6 @@
 
 namespace spec\Lamudi\UseCaseBundle\DependencyInjection;
 
-use Lamudi\UseCaseBundle\UseCaseInterface;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -15,6 +14,13 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class UseCaseCompilerPassSpec extends ObjectBehavior
 {
+    public function let(ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition)
+    {
+        $containerBuilder->has('lamudi_use_case.container')->willReturn(true);
+        $containerBuilder->findDefinition('lamudi_use_case.container')->willReturn($useCaseContainerDefinition);
+        $containerBuilder->findTaggedServiceIds(Argument::any())->willReturn(array());
+    }
+
     function it_is_initializable()
     {
         $this->shouldHaveType('Lamudi\UseCaseBundle\DependencyInjection\UseCaseCompilerPass');
@@ -29,16 +35,49 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
     }
 
     public function it_adds_tagged_services_to_the_use_case_container(
-        ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition,
-        UseCaseInterface $useCase1, UseCaseInterface $useCase2
+        ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition
     )
     {
-        $containerBuilder->has('lamudi_use_case.container')->willReturn(true);
-        $containerBuilder->findDefinition('lamudi_use_case.container')->willReturn($useCaseContainerDefinition);
-        $containerBuilder->findTaggedServiceIds('use_case')->willReturn(array('uc1' => $useCase1, 'uc2' => $useCase2));
+        $containerBuilder->findTaggedServiceIds('use_case')->willReturn(array('uc1' => array(), 'uc2' => array()));
 
         $useCaseContainerDefinition->addMethodCall('set', array('uc1', new Reference('uc1')))->shouldBeCalled();
         $useCaseContainerDefinition->addMethodCall('set', array('uc2', new Reference('uc2')))->shouldBeCalled();
+
+        $this->process($containerBuilder);
+    }
+
+    public function it_adds_input_converters_to_container_under_an_alias(
+        ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition
+    )
+    {
+        $inputConvertersWithTags = array(
+            'input_converter_1' => array(array('alias' => 'foo')),
+            'input_converter_2' => array(array('alias' => 'bar'))
+        );
+        $containerBuilder->findTaggedServiceIds('use_case_input_converter')->willReturn($inputConvertersWithTags);
+
+        $useCaseContainerDefinition->addMethodCall('setInputConverter', array('foo', new Reference('input_converter_1')))
+            ->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('setInputConverter', array('bar', new Reference('input_converter_2')))
+            ->shouldBeCalled();
+
+        $this->process($containerBuilder);
+    }
+
+    public function it_adds_response_processors_to_container_under_an_alias(
+        ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition
+    )
+    {
+        $inputConvertersWithTags = array(
+            'response_processor_1' => array(array('alias' => 'faz')),
+            'response_processor_2' => array(array('alias' => 'baz'))
+        );
+        $containerBuilder->findTaggedServiceIds('use_case_response_processor')->willReturn($inputConvertersWithTags);
+
+        $useCaseContainerDefinition->addMethodCall('setResponseProcessor', array('faz', new Reference('response_processor_1')))
+            ->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('setResponseProcessor', array('baz', new Reference('response_processor_2')))
+            ->shouldBeCalled();
 
         $this->process($containerBuilder);
     }
