@@ -10,8 +10,8 @@ parameters:
 services:
     lamudi_use_case.container:
         class: "%lamudi_use_case.container.class%"
+        arguments: [@annotations.reader, @lamudi_use_case.request.resolver]
 
-        arguments: [@annotations.reader]
     lamudi_use_case.request_body_converter:
         class: "%lamudi_use_case.request_body_converter.class%"
         arguments: ["@serializer"]

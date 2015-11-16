@@ -20,6 +20,8 @@ class RequestResolver
 
         if (class_exists($requestClassFullName)) {
             return new $requestClassFullName;
+        } elseif ($className === 'Request') {
+            return new Request();
         } else {
             throw new RequestClassNotFoundException();
         }

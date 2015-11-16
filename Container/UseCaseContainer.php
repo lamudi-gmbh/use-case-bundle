@@ -5,6 +5,7 @@ namespace Lamudi\UseCaseBundle\Container;
 use Doctrine\Common\Annotations\Reader;
 use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
 use Lamudi\UseCaseBundle\Exception\UseCaseNotFoundException;
+use Lamudi\UseCaseBundle\Factory\RequestResolver;
 use Lamudi\UseCaseBundle\Request\DefaultInputConverter;
 use Lamudi\UseCaseBundle\Request\InputConverterInterface;
 use Lamudi\UseCaseBundle\Response\DefaultResponseProcessor;
@@ -42,19 +43,26 @@ class UseCaseContainer
      * @var Reader
      */
     private $annotationReader;
+    /**
+     * @var RequestResolver
+     */
+    private $requestResolver;
 
     /**
      * @param Reader $annotationReader
+     * @param RequestResolver $requestResolver
      * @param InputConverterInterface $defaultInputConverter
      * @param ResponseProcessorInterface $defaultResponseProcessor
      */
     public function __construct(
         Reader $annotationReader,
+        RequestResolver $requestResolver,
         InputConverterInterface $defaultInputConverter = null,
         ResponseProcessorInterface $defaultResponseProcessor = null
     )
     {
         $this->annotationReader = $annotationReader;
+        $this->requestResolver = $requestResolver;
         $this->setInputConverter('default', $defaultInputConverter ? : new DefaultInputConverter());
         $this->setResponseProcessor('default', $defaultResponseProcessor ? : new DefaultResponseProcessor());
     }
@@ -67,6 +75,7 @@ class UseCaseContainer
     public function execute($useCaseName, $inputData = null)
     {
         $useCase = $this->get($useCaseName);
+        $request = $this->requestResolver->resolve($useCase);
 
         $inputConverter = $this->getInputConverterForUseCase($useCaseName);
         $converterOptions = $this->getInputConverterOptionsForUseCase($useCaseName);
@@ -75,8 +84,8 @@ class UseCaseContainer
         $processorOptions = $this->getResponseProcessorOptionsForUseCase($useCaseName);
 
         try {
-            $useCaseRequest = $inputConverter->createRequest($inputData, $converterOptions);
-            $response = $useCase->execute($useCaseRequest);
+            $inputConverter->initializeRequest($request, $inputData, $converterOptions);
+            $response = $useCase->execute($request);
             return $processor->processResponse($response, $processorOptions);
         } catch (\Exception $e) {
             return $processor->handleException($e, $processorOptions);

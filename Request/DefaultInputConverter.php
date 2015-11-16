@@ -5,14 +5,13 @@ namespace Lamudi\UseCaseBundle\Request;
 class DefaultInputConverter implements InputConverterInterface
 {
     /**
-     * Always returns an empty request.
+     * Does nothing to the passed request.
      *
-     * @param mixed $inputData Any object that contains input data.
-     * @param array $options An array of options used to create the request object.
-     * @return Request
+     * @param Request $request
+     * @param mixed $inputData
+     * @param array $options
      */
-    public function createRequest($inputData, $options = array())
+    public function initializeRequest($request, $inputData, $options = array())
     {
-        return new Request();
     }
 }

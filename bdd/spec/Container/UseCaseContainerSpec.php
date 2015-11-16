@@ -6,6 +6,7 @@ use Doctrine\Common\Annotations\Reader;
 use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
 use Lamudi\UseCaseBundle\Exception\UseCaseException;
 use Lamudi\UseCaseBundle\Exception\UseCaseNotFoundException;
+use Lamudi\UseCaseBundle\Factory\RequestResolver;
 use Lamudi\UseCaseBundle\Request\InputConverterInterface;
 use Lamudi\UseCaseBundle\Request\Request;
 use Lamudi\UseCaseBundle\Response\Response;
@@ -22,10 +23,10 @@ class UseCaseContainerSpec extends ObjectBehavior
 {
     public function let(
         UseCaseInterface $useCase, InputConverterInterface $inputConverter,
-        ResponseProcessorInterface $responseProcessor, Reader $annotationReader
+        ResponseProcessorInterface $responseProcessor, Reader $annotationReader, RequestResolver $requestResolver
     )
     {
-        $this->beConstructedWith($annotationReader);
+        $this->beConstructedWith($annotationReader, $requestResolver);
         $annotationReader->getClassAnnotations(Argument::any())->willReturn(array());
 
         $this->set('use_case', $useCase);
@@ -34,6 +35,8 @@ class UseCaseContainerSpec extends ObjectBehavior
 
         $this->setResponseProcessor('twig', $responseProcessor);
         $this->assignResponseProcessor('use_case', 'twig');
+
+        $requestResolver->resolve(Argument::any())->willReturn(new Request());
     }
 
     function it_is_initializable()
@@ -61,12 +64,24 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->shouldThrow(UseCaseNotFoundException::class)->duringExecute('no_such_use_case_here', array());
     }
 
-    public function it_converts_input_data_into_use_case_request(
-        InputConverterInterface $inputConverter, UseCaseInterface $useCase, Request $useCaseRequest
+    public function it_creates_request_instance_based_on_use_case_object_and_passes_it_into_input_converter(
+        $useCase, Request $request, RequestResolver $requestResolver, InputConverterInterface $inputConverter
+    )
+    {
+        $requestResolver->resolve($useCase)->willReturn($request);
+        $this->execute('use_case');
+
+        $inputConverter->initializeRequest($request, null, array())->shouldHaveBeenCalled();
+    }
+
+    public function it_initializes_the_use_case_request_with_input_data(
+        InputConverterInterface $inputConverter, UseCaseInterface $useCase, Request $useCaseRequest,
+        RequestResolver $requestResolver
     )
     {
         $inputData = array();
-        $inputConverter->createRequest($inputData, array())->willReturn($useCaseRequest);
+        $requestResolver->resolve($useCase)->willReturn($useCaseRequest);
+        $inputConverter->initializeRequest($useCaseRequest, $inputData, array())->shouldBeCalled();
 
         $this->setInputConverter('form', $inputConverter);
         $this->assignInputConverter('use_case', 'form');
@@ -126,7 +141,7 @@ class UseCaseContainerSpec extends ObjectBehavior
 
         $this->execute('another_use_case', $inputData);
 
-        $defaultInputConverter->createRequest($inputData, array())->shouldHaveBeenCalled();
+        $defaultInputConverter->initializeRequest(Argument::type(Request::class), $inputData, array())->shouldHaveBeenCalled();
         $defaultResponseProcessor->processResponse($response, array())->shouldHaveBeenCalled();
 
     }
@@ -148,7 +163,7 @@ class UseCaseContainerSpec extends ObjectBehavior
         $useCase2Annotation->setOutput(array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig'));
 
         $request = new Request();
-        $inputConverter->createRequest(null, array('name' => 'registration_form'))->willReturn($request);
+        $inputConverter->initializeRequest(Argument::type(Request::class), null, array('name' => 'registration_form'))->willReturn($request);
         $responseProcessor->processResponse(Argument::cetera())->willReturn('uc2 success');
 
         $this->set('uc1', $useCase1);

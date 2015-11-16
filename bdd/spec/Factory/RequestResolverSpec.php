@@ -5,6 +5,8 @@ namespace spec\Lamudi\UseCaseBundle\Factory
 
     use Lamudi\UseCaseBundle\Exception\RequestClassNotFoundException;
     use Lamudi\UseCaseBundle\Factory\RequestResolver;
+    use Lamudi\UseCaseBundle\Request\Request;
+    use Lamudi\UseCaseBundle\Response\Response;
     use Lamudi\UseCaseBundle\UseCaseInterface;
     use PhpSpec\ObjectBehavior;
     use Prophecy\Argument;
@@ -24,6 +26,11 @@ namespace spec\Lamudi\UseCaseBundle\Factory
         {
             $useCaseNamespace = 'spec\Lamudi\UseCaseBundle\Factory';
             $this->resolve(new SomeUseCase())->shouldReturnAnInstanceOf($useCaseNamespace . '\Request\SomeRequest');
+        }
+
+        public function it_resolves_the_default_use_case_request()
+        {
+            $this->resolve(new DefaultUseCase())->shouldReturnAnInstanceOf(Request::class);
         }
 
         public function it_throws_an_exception_if_request_class_does_not_exist()
@@ -48,6 +55,16 @@ namespace spec\Lamudi\UseCaseBundle\Factory
     {
         /**
          * @param WrongRequest $request
+         */
+        public function execute($request)
+        {
+        }
+    }
+
+    class DefaultUseCase implements UseCaseInterface {
+        /**
+         * @param Request $request
+         * @return Response
          */
         public function execute($request)
         {
