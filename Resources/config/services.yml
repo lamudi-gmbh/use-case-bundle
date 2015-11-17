@@ -7,10 +7,18 @@ parameters:
     lamudi_use_case.use_case_handler.class: Lamudi\UseCaseBundle\Handler\HttpJsonUseCaseHandler
     lamudi_use_case.request_body_converter.class: Lamudi\UseCaseBundle\Request\RequestBodyParamConverter
 
+    lamudi_angi_client.default_input_type: default
+    lamudi_angi_client.default_input_options: []
+    lamudi_angi_client.default_output_type: default
+    lamudi_angi_client.default_output_options: []
+
 services:
     lamudi_use_case.container:
         class: "%lamudi_use_case.container.class%"
-        arguments: [@annotations.reader, @lamudi_use_case.request.resolver]
+        arguments: ["@annotations.reader", "@lamudi_use_case.request.resolver"]
+        calls:
+            - ["setDefaultInputConverter", ["%lamudi_angi_client.default_input_type%", "%lamudi_angi_client.default_input_options%"]]
+            - ["setDefaultResponseProcessor", ["%lamudi_angi_client.default_output_type%", "%lamudi_angi_client.default_output_options%"]]
 
     lamudi_use_case.request_body_converter:
         class: "%lamudi_use_case.request_body_converter.class%"

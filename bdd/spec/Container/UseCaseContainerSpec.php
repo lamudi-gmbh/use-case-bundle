@@ -191,6 +191,40 @@ class UseCaseContainerSpec extends ObjectBehavior
 
         $this->execute('uc2')->shouldReturn('uc2 success');
         $this->execute('uc2_alias')->shouldReturn('uc2 alias success');
+    }
 
+    public function it_sets_a_default_input_converter_using_its_alias(
+        InputConverterInterface $httpInputConverter, InputConverterInterface $formInputConverter,
+        UseCaseInterface $useCase
+    )
+    {
+        $this->set('use_case_with_defaults', $useCase);
+        $this->setInputConverter('default', $httpInputConverter);
+        $this->setInputConverter('form', $formInputConverter);
+        $defaultOptions = array('name' => 'default_form');
+        $this->setDefaultInputConverter('form', $defaultOptions);
+
+        $this->execute('use_case_with_defaults', array());
+
+        $formInputConverter->initializeRequest(Argument::type(Request::class), array(), $defaultOptions)
+            ->shouldHaveBeenCalled();
+    }
+
+    public function it_sets_a_default_response_processor_using_its_alias(
+        ResponseProcessorInterface $twigResponseProcessor, ResponseProcessorInterface $jsonResponseProcessor,
+        UseCaseInterface $useCase, Response $response
+    )
+    {
+        $this->set('use_case_with_more_defaults', $useCase);
+        $this->setResponseProcessor('twig', $twigResponseProcessor);
+        $this->setResponseProcessor('json', $jsonResponseProcessor);
+        $defaultOptions = array('template' => '::base.html.twig');
+
+        $this->setDefaultResponseProcessor('twig', $defaultOptions);
+        $useCase->execute(Argument::any())->willReturn($response);
+
+        $this->execute('use_case_with_more_defaults', array());
+
+        $twigResponseProcessor->processResponse($response, $defaultOptions)->shouldHaveBeenCalled();
     }
 }

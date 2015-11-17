@@ -18,11 +18,15 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $treeBuilder->root('lamudi_use_case');
+        $root = $treeBuilder->root('lamudi_use_case');
 
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
+        $root
+            ->children()
+                ->arrayNode('defaults')->children()
+                    ->variableNode('input')->end()
+                    ->variableNode('output')->end()
+                ->end()
+            ->end();
 
         return $treeBuilder;
     }

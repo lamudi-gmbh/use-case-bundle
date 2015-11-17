@@ -13,8 +13,8 @@ class UseCase
      */
     public function __construct(array $data)
     {
-        if (isset($data['alias'])) {
-            $this->setAlias($data['alias']);
+        if (isset($data['value'])) {
+            $this->setAlias($data['value']);
         }
         if (isset($data['input'])) {
             $this->setInput($data['input']);

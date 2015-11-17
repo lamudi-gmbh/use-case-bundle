@@ -2,6 +2,7 @@
 
 namespace Lamudi\UseCaseBundle\DependencyInjection;
 
+use Lamudi\UseCaseBundle\Annotation\UseCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
@@ -20,7 +21,20 @@ class LamudiUseCaseExtension extends Extension
     public function load(array $configs, ContainerBuilder $container)
     {
         $configuration = new Configuration();
-        $this->processConfiguration($configuration, $configs);
+        $config = $this->processConfiguration($configuration, $configs);
+
+        if (isset($config['defaults'])) {
+            $defaultUseCaseConfig = new UseCase($config['defaults']);
+
+            if ($defaultUseCaseConfig->getInputType()) {
+                $container->setParameter('lamudi_angi_client.default_input_type', $defaultUseCaseConfig->getInputType());
+                $container->setParameter('lamudi_angi_client.default_input_options', $defaultUseCaseConfig->getInputOptions());
+            }
+            if ($defaultUseCaseConfig->getOutputType()) {
+                $container->setParameter('lamudi_angi_client.default_output_type', $defaultUseCaseConfig->getOutputType());
+                $container->setParameter('lamudi_angi_client.default_output_options', $defaultUseCaseConfig->getOutputOptions());
+            }
+        }
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');

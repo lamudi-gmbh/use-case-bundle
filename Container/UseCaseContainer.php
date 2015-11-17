@@ -20,7 +20,7 @@ class UseCaseContainer
     private $useCases = array();
 
     /**
-     * @var InputConverterInterface[]
+     * @var array
      */
     private $inputConverters = array();
 
@@ -43,10 +43,25 @@ class UseCaseContainer
      * @var Reader
      */
     private $annotationReader;
+
     /**
      * @var RequestResolver
      */
     private $requestResolver;
+
+    /**
+     * @var array
+     */
+    private $defaults = array(
+        'input' => array(
+            'type' => 'default',
+            'options' => array(),
+        ),
+        'output' => array(
+            'type' => 'default',
+            'options' => array(),
+        ),
+    );
 
     /**
      * @param Reader $annotationReader
@@ -124,12 +139,31 @@ class UseCaseContainer
     }
 
     /**
+     * @param string $type
+     * @param array $options
+     */
+    public function setDefaultInputConverter($type, $options)
+    {
+        $this->defaults['input']['type'] = $type;
+        $this->defaults['input']['options'] = $options;
+    }
+    /**
      * @param string $name
      * @param ResponseProcessorInterface $responseProcessor
      */
     public function setResponseProcessor($name, ResponseProcessorInterface $responseProcessor)
     {
         $this->responseProcessors[$name] = $responseProcessor;
+    }
+
+    /**
+     * @param string $type
+     * @param array $options
+     */
+    public function setDefaultResponseProcessor($type, $options)
+    {
+        $this->defaults['output']['type'] = $type;
+        $this->defaults['output']['options'] = $options;
     }
 
     /**
@@ -192,7 +226,7 @@ class UseCaseContainer
         if (isset($this->useCaseInputConverters[$useCaseName]['name'])) {
             $converterName = $this->useCaseInputConverters[$useCaseName]['name'];
         } else {
-            $converterName = 'default';
+            $converterName = $this->defaults['input']['type'];
         }
 
         return $this->inputConverters[$converterName];
@@ -207,7 +241,7 @@ class UseCaseContainer
         if (isset($this->useCaseInputConverters[$useCaseName])) {
             return $this->useCaseInputConverters[$useCaseName]['options'];
         } else {
-            return array();
+            return $this->defaults['input']['options'];
         }
     }
 
@@ -220,7 +254,7 @@ class UseCaseContainer
         if (isset($this->useCaseResponseProcessors[$useCaseName])) {
             $processorName = $this->useCaseResponseProcessors[$useCaseName]['name'];
         } else {
-            $processorName = 'default';
+            $processorName = $this->defaults['output']['type'];
         }
 
         return $this->responseProcessors[$processorName];
@@ -235,7 +269,7 @@ class UseCaseContainer
         if (isset($this->useCaseResponseProcessors[$useCaseName])) {
             return $this->useCaseResponseProcessors[$useCaseName]['options'];
         } else {
-            return array();
+            return $this->defaults['output']['options'];
         }
     }
 }
