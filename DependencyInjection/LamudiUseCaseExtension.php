@@ -23,6 +23,9 @@ class LamudiUseCaseExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader->load('services.yml');
+
         if (isset($config['defaults'])) {
             $defaultUseCaseConfig = new UseCase($config['defaults']);
 
@@ -35,8 +38,5 @@ class LamudiUseCaseExtension extends Extension
                 $container->setParameter('lamudi_angi_client.default_output_options', $defaultUseCaseConfig->getOutputOptions());
             }
         }
-
-        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-        $loader->load('services.yml');
     }
 }
