@@ -154,25 +154,35 @@ class UseCaseContainerSpec extends ObjectBehavior
 
     public function it_loads_annotations_from_use_case_classes(
         Reader $annotationReader, UseCaseInterface $useCase1, UseCaseInterface $useCase2,
-        InputConverterInterface $inputConverter, ResponseProcessorInterface $responseProcessor
+        InputConverterInterface $inputConverter, ResponseProcessorInterface $responseProcessor, ResponseProcessorInterface $responseProcessor2
     )
     {
         $useCase1Annotation = new UseCaseAnnotation(array());
         $useCase1Annotation->setInput(array('type' => 'form', 'name' => 'registration_form'));
-        $useCase2Annotation = new UseCaseAnnotation(array());
-        $useCase2Annotation->setOutput(array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig'));
+        $useCase2Annotation1 = new UseCaseAnnotation(array());
+        $useCase2Annotation1->setOutput(array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig'));
+        $useCase2Annotation2 = new UseCaseAnnotation(array());
+        $useCase2Annotation2->setAlias('uc2_alias');
+        $useCase2Annotation2->setOutput(array('type' => 'twig2', 'template' => 'AppBundle:hello:index.html.twig'));
 
         $request = new Request();
         $inputConverter->initializeRequest(Argument::type(Request::class), null, array('name' => 'registration_form'))->willReturn($request);
         $responseProcessor->processResponse(Argument::cetera())->willReturn('uc2 success');
+        $responseProcessor2->processResponse(Argument::cetera())->willReturn('uc2 alias success');
 
         $this->set('uc1', $useCase1);
         $this->set('uc2', $useCase2);
         $this->setInputConverter('form', $inputConverter);
         $this->setResponseProcessor('twig', $responseProcessor);
+        $this->setResponseProcessor('twig2', $responseProcessor2);
 
-        $annotationReader->getClassAnnotations(Argument::which('getName', get_class($useCase1->getWrappedObject())))->willReturn(array($useCase1Annotation));
-        $annotationReader->getClassAnnotations(Argument::which('getName', get_class($useCase2->getWrappedObject())))->willReturn(array($useCase2Annotation));
+        $annotationReader
+            ->getClassAnnotations(Argument::which('getName', get_class($useCase1->getWrappedObject())))
+            ->willReturn(array($useCase1Annotation));
+        $annotationReader
+            ->getClassAnnotations(Argument::which('getName', get_class($useCase2->getWrappedObject())))
+            ->willReturn(array($useCase2Annotation1, $useCase2Annotation2));
+
 
         $this->loadSettingsFromAnnotations();
 
@@ -180,6 +190,7 @@ class UseCaseContainerSpec extends ObjectBehavior
         $useCase1->execute($request)->shouldHaveBeenCalled();
 
         $this->execute('uc2')->shouldReturn('uc2 success');
+        $this->execute('uc2_alias')->shouldReturn('uc2 alias success');
 
     }
 }

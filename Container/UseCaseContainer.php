@@ -152,6 +152,15 @@ class UseCaseContainer
         $this->useCaseResponseProcessors[$useCaseName] = array('name' => $processorName, 'options' => $options);
     }
 
+    /**
+     * @param string $name
+     * @param string $alias
+     */
+    public function addAlias($name, $alias)
+    {
+        $this->useCases[$alias] = $this->useCases[$name];
+    }
+
     public function loadSettingsFromAnnotations()
     {
         foreach ($this->useCases as $name => $useCase) {
@@ -160,6 +169,10 @@ class UseCaseContainer
 
             /** @var UseCaseAnnotation $annotation */
             foreach ($annotations as $annotation) {
+                if ($annotation->getAlias()) {
+                    $this->addAlias($name, $annotation->getAlias());
+                    $name = $annotation->getAlias();
+                }
                 if ($annotation->getInputType()) {
                     $this->assignInputConverter($name, $annotation->getInputType(), $annotation->getInputOptions());
                 }

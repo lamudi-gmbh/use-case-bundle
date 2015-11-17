@@ -30,25 +30,14 @@ class UseCase
     private $alias;
 
     /**
-     * @var string
+     * @var string|array
      */
-    private $inputType;
+    private $input = '';
 
     /**
-     * @var array
+     * @var string|array
      */
-    private $inputOptions = array();
-
-    /**
-     * @var string
-     */
-    private $outputType;
-
-    /**
-     * @var array
-     */
-    private $outputOptions = array();
-
+    private $output = '';
 
     /**
      * @return string
@@ -71,35 +60,15 @@ class UseCase
      */
     public function setInput($input)
     {
-        if (is_string($input)) {
-            $this->inputType = $input;
-        } else {
-            if (!isset($input['type'])) {
-                throw new \Exception('Missing input type');
-            }
-
-            $this->inputType = $input['type'];
-            unset($input['type']);
-            $this->inputOptions = $input;
-        }
+        $this->input = $input;
     }
 
     /**
-     * @param array|string $input
+     * @param array|string $output
      */
-    public function setOutput($input)
+    public function setOutput($output)
     {
-        if (is_string($input)) {
-            $this->outputType = $input;
-        } else {
-            if (!isset($input['type'])) {
-                throw new \Exception('Missing output type');
-            }
-
-            $this->outputType = $input['type'];
-            unset($input['type']);
-            $this->outputOptions = $input;
-        }
+        $this->output = $output;
     }
 
     /**
@@ -107,7 +76,7 @@ class UseCase
      */
     public function getInputType()
     {
-        return $this->inputType;
+        return $this->getType($this->input);
     }
 
     /**
@@ -115,7 +84,7 @@ class UseCase
      */
     public function getInputOptions()
     {
-        return $this->inputOptions;
+        return $this->getOptions($this->input);
     }
 
     /**
@@ -123,7 +92,7 @@ class UseCase
      */
     public function getOutputType()
     {
-        return $this->outputType;
+        return $this->getType($this->output);
     }
 
     /**
@@ -131,6 +100,37 @@ class UseCase
      */
     public function getOutputOptions()
     {
-        return $this->outputOptions;
+        return $this->getOptions($this->output);
+    }
+
+    /**
+     * @param string|array $field
+     * @return string
+     */
+    private function getType($field)
+    {
+        if (is_string($field)) {
+            return $field;
+        } else {
+            if (!isset($field['type'])) {
+                throw new \Exception('Missing output type');
+            }
+
+            return $field['type'];
+        }
+    }
+
+    /**
+     * @param string|array $field
+     * @return array
+     */
+    private function getOptions($field)
+    {
+        if (is_string($field)) {
+            return array();
+        } else {
+            unset($field['type']);
+            return $field;
+        }
     }
 }
