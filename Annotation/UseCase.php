@@ -76,7 +76,7 @@ class UseCase
      */
     public function getInputType()
     {
-        return $this->getType($this->input);
+        return $this->getType('input');
     }
 
     /**
@@ -92,7 +92,7 @@ class UseCase
      */
     public function getOutputType()
     {
-        return $this->getType($this->output);
+        return $this->getType('output');
     }
 
     /**
@@ -104,16 +104,18 @@ class UseCase
     }
 
     /**
-     * @param string|array $field
+     * @param string|array $fieldName
      * @return string
      */
-    private function getType($field)
+    private function getType($fieldName)
     {
+        $field = $this->$fieldName;
+
         if (is_string($field)) {
             return $field;
         } else {
             if (!isset($field['type'])) {
-                throw new \Exception('Missing output type');
+                throw new \Exception('Missing ' . $fieldName . ' type');
             }
 
             return $field['type'];
