@@ -18,6 +18,11 @@ services:
     lamudi_use_case.request.resolver:
         class: "%lamudi_use_case.request.resolver.class%"
 
+    lamudi_use_case.form_input_converter:
+        class: Lamudi\UseCaseBundle\Request\Converter\FormInputConverter
+        arguments: ["@form.factory"]
+        tags:
+            - { name: use_case_input_converter, alias: form }
 
     lamudi_use_case.converter.http_input_converter:
         class: Lamudi\UseCaseBundle\Request\Converter\HttpInputConverter
