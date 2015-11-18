@@ -57,4 +57,35 @@ class TwigRendererSpec extends ObjectBehavior
             'form' => $contactFormView->getWrappedObject(), 'anotherForm' => $searchFormView->getWrappedObject()
         ))->shouldHaveBeenCalled();
     }
+
+    public function it_sets_data_of_displayed_form(
+        EngineInterface $templatingEngine, FormFactoryInterface $formFactory, Form $form, FormView $formView
+    )
+    {
+        $response = new Response();
+        $response->formData = array('name' => 'John', 'age' => 40, 'city' => 'Wąbrzeźno');
+
+        $formFactory->create('some_form')->willReturn($form);
+
+        $form->setData($response->formData)->shouldBeCalled();
+        $form->createView()->willReturn($formView);
+
+        $options = array(
+            'template' => ':default:index.html.twig',
+            'forms'    => array(
+                'formView' => array(
+                    'name' => 'some_form',
+                    'data_field' => 'formData'
+                )
+            )
+        );
+
+        $this->setFormFactory($formFactory);
+        $this->processResponse($response, $options);
+
+        $templatingEngine
+            ->renderResponse(':default:index.html.twig', array('formView' => $formView->getWrappedObject()))
+            ->shouldHaveBeenCalled();
+
+    }
 }

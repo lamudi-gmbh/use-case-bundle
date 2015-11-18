@@ -46,8 +46,19 @@ class TwigRenderer implements ResponseProcessorInterface
         $templateParams = (array)$response;
 
         if (isset($options['forms']) && $this->formFactory) {
-            foreach ($options['forms'] as $formVariable => $formName) {
-                $form = $this->formFactory->create($formName);
+            foreach ($options['forms'] as $formVariable => $formConfig) {
+                if (is_string($formConfig)) {
+                    $formConfig = array('name' => $formConfig);
+                }
+
+                $form = $this->formFactory->create($formConfig['name']);
+
+                if (isset($formConfig['data_field'])) {
+                    $fieldName = $formConfig['data_field'];
+                    $form->setData($response->$fieldName);
+                    unset($templateParams[$fieldName]);
+                }
+
                 $templateParams[$formVariable] = $form->createView();
             }
         }
