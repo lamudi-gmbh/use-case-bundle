@@ -6,6 +6,8 @@ use Doctrine\Common\Annotations\Reader;
 use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
 use Lamudi\UseCaseBundle\Exception\UseCaseException;
 use Lamudi\UseCaseBundle\Exception\UseCaseNotFoundException;
+use Lamudi\UseCaseBundle\Exception\InputConverterNotFoundException;
+use Lamudi\UseCaseBundle\Exception\ResponseProcessorNotFoundException;
 use Lamudi\UseCaseBundle\Factory\RequestResolver;
 use Lamudi\UseCaseBundle\Request\InputConverterInterface;
 use Lamudi\UseCaseBundle\Request\Request;
@@ -89,6 +91,23 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->execute('use_case', $inputData);
 
         $useCase->execute($useCaseRequest)->shouldHaveBeenCalled();
+        $this->getInputConverter('form')->shouldReturn($inputConverter);
+    }
+
+    public function it_throws_an_exception_if_input_converter_does_not_exist(
+        InputConverterInterface $inputConverter, UseCaseInterface $useCase, Request $useCaseRequest,
+        RequestResolver $requestResolver
+    )
+    {
+        $inputData = array();
+        $requestResolver->resolve($useCase)->willReturn($useCaseRequest);
+
+        $this->setInputConverter('form', $inputConverter);
+        $this->assignInputConverter('use_case', 'no_such_converter_here');
+        $this->set('use_case', $useCase);
+
+        $this->shouldThrow(InputConverterNotFoundException::class)->duringExecute('use_case', $inputData);
+        $this->shouldThrow(InputConverterNotFoundException::class)->duringGetInputConverter('no_such_converter_too');
     }
 
     public function it_registers_response_processor_for_use_case_with_options(
@@ -105,6 +124,7 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->assignResponseProcessor('use_case', 'twig', $useCaseResponseOptions);
 
         $this->execute('use_case', array())->shouldReturn($httpResponse);
+        $this->getResponseProcessor('twig')->shouldReturn($responseProcessor);
     }
 
     public function it_uses_the_registered_response_processor_to_handle_errors(
@@ -125,6 +145,22 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->assignResponseProcessor('use_case', 'twig', $useCaseResponseOptions);
 
         $this->execute('use_case', array())->shouldReturn($httpResponse);
+    }
+
+
+    public function it_throws_an_exception_if_response_processor_does_not_exist(
+        ResponseProcessorInterface $responseProcessor, HttpResponse $httpResponse,
+        UseCaseInterface $useCase, Response $useCaseResponse
+    )
+    {
+        $useCase->execute(Argument::any())->willReturn($useCaseResponse);
+        $useCaseResponseOptions = array('template' => 'HelloBundle:hello:index.html.twig');
+
+        $this->setResponseProcessor('twig', $responseProcessor);
+        $this->assignResponseProcessor('use_case', 'no_such_processor', $useCaseResponseOptions);
+
+        $this->shouldThrow(ResponseProcessorNotFoundException::class)->duringExecute('use_case', array());
+        $this->shouldThrow(ResponseProcessorNotFoundException::class)->duringGetResponseProcessor('no_such_processor_too');
     }
 
     public function it_uses_default_input_converter_and_request_processor_when_no_custom_ones_are_registered(

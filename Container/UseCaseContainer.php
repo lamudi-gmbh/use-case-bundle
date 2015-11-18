@@ -4,6 +4,8 @@ namespace Lamudi\UseCaseBundle\Container;
 
 use Doctrine\Common\Annotations\Reader;
 use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
+use Lamudi\UseCaseBundle\Exception\InputConverterNotFoundException;
+use Lamudi\UseCaseBundle\Exception\ResponseProcessorNotFoundException;
 use Lamudi\UseCaseBundle\Exception\UseCaseNotFoundException;
 use Lamudi\UseCaseBundle\Factory\RequestResolver;
 use Lamudi\UseCaseBundle\Request\DefaultInputConverter;
@@ -131,6 +133,19 @@ class UseCaseContainer
 
     /**
      * @param string $name
+     * @return InputConverterInterface
+     */
+    public function getInputConverter($name)
+    {
+        if (!array_key_exists($name, $this->inputConverters)) {
+            throw new InputConverterNotFoundException(sprintf('Input converter "%s" not found.', $name));
+        }
+
+        return $this->inputConverters[$name];
+    }
+
+    /**
+     * @param string $name
      * @param InputConverterInterface $inputConverter
      */
     public function setInputConverter($name, InputConverterInterface $inputConverter)
@@ -147,6 +162,20 @@ class UseCaseContainer
         $this->defaults['input']['type'] = $type;
         $this->defaults['input']['options'] = $options;
     }
+
+    /**
+     * @param string $name
+     * @return InputConverterInterface
+     */
+    public function getResponseProcessor($name)
+    {
+        if (!array_key_exists($name, $this->responseProcessors)) {
+            throw new ResponseProcessorNotFoundException(sprintf('Response processor "%s" not found.', $name));
+        }
+
+        return $this->responseProcessors[$name];
+    }
+
     /**
      * @param string $name
      * @param ResponseProcessorInterface $responseProcessor
@@ -229,7 +258,7 @@ class UseCaseContainer
             $converterName = $this->defaults['input']['type'];
         }
 
-        return $this->inputConverters[$converterName];
+        return $this->getInputConverter($converterName);
     }
 
     /**
@@ -257,7 +286,7 @@ class UseCaseContainer
             $processorName = $this->defaults['output']['type'];
         }
 
-        return $this->responseProcessors[$processorName];
+        return $this->getResponseProcessor($processorName);
     }
 
     /**

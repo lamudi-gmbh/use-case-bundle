@@ -2,6 +2,6 @@
 
 namespace Lamudi\UseCaseBundle\Exception;
 
-class UseCaseNotFoundException extends \Exception
+class UseCaseNotFoundException extends \OutOfBoundsException
 {
 }
