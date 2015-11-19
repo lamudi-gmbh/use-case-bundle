@@ -42,8 +42,8 @@ class FormInputConverter implements InputConverterInterface
             $fieldName = $options['data_field'];
             $request->$fieldName = $form->getData();
         } else {
-            $form = $this->formFactory->create($options['name'], null, array('data_class' => get_class($request)));
-            $form->submit($inputData);
+            $form = $this->formFactory->create($options['name'], $request, array('data_class' => get_class($request)));
+            $form->handleRequest($inputData);
         }
 
         return $request;

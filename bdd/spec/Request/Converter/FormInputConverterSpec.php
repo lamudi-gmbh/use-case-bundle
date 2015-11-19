@@ -38,9 +38,10 @@ class FormInputConverterSpec extends ObjectBehavior
 
     public function it_uses_form_factory_to_create_form_by_name(FormFactoryInterface $formFactory)
     {
-        $this->initializeRequest(new Request(), array(), array('name' => 'order_form'));
+        $request = new Request();
+        $this->initializeRequest($request, array(), array('name' => 'order_form'));
 
-        $formFactory->create('order_form', null, array('data_class' => Request::class))->shouldHaveBeenCalled();
+        $formFactory->create('order_form', $request, array('data_class' => Request::class))->shouldHaveBeenCalled();
     }
 
     public function it_uses_the_created_form_to_populate_request_fields(FormFactoryInterface $formFactory, FormInterface $form)
@@ -51,7 +52,7 @@ class FormInputConverterSpec extends ObjectBehavior
         $inputData = array('foo' => 'bar', 'baz' => 213);
         $this->initializeRequest($request, $inputData, array('name' => 'order_form'));
 
-        $form->submit($inputData)->shouldHaveBeenCalled();
+        $form->handleRequest($inputData)->shouldHaveBeenCalled();
     }
 
     public function it_dumps_form_data_to_specified_field(FormFactoryInterface $formFactory, FormInterface $form)
