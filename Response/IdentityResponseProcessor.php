@@ -2,7 +2,7 @@
 
 namespace Lamudi\UseCaseBundle\Response;
 
-class DefaultResponseProcessor implements ResponseProcessorInterface
+class IdentityResponseProcessor implements ResponseProcessorInterface
 {
     /**
      * Always returns an empty response.
@@ -13,7 +13,7 @@ class DefaultResponseProcessor implements ResponseProcessorInterface
      */
     public function processResponse($response, $options = array())
     {
-        return new Response();
+        return $response;
     }
 
     /**

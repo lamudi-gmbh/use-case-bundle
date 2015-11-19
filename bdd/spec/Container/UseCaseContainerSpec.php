@@ -189,10 +189,14 @@ class UseCaseContainerSpec extends ObjectBehavior
     }
 
     public function it_loads_annotations_from_use_case_classes(
-        Reader $annotationReader, UseCaseInterface $useCase1, UseCaseInterface $useCase2,
+        Reader $annotationReader, UseCaseInterface $useCase1, UseCaseInterface $useCase2, UseCaseInterface $useCase3,
         InputConverterInterface $inputConverter, ResponseProcessorInterface $responseProcessor, ResponseProcessorInterface $responseProcessor2
     )
     {
+        $useCase1->execute(Argument::any())->willReturn(new Response());
+        $useCase2->execute(Argument::any())->willReturn(new Response());
+        $useCase3->execute(Argument::any())->willThrow(new UseCaseException());
+
         $useCase1Annotation = new UseCaseAnnotation(array());
         $useCase1Annotation->setInput(array('type' => 'form', 'name' => 'registration_form'));
         $useCase2Annotation1 = new UseCaseAnnotation(array());
@@ -200,14 +204,19 @@ class UseCaseContainerSpec extends ObjectBehavior
         $useCase2Annotation2 = new UseCaseAnnotation(array());
         $useCase2Annotation2->setAlias('uc2_alias');
         $useCase2Annotation2->setOutput(array('type' => 'twig2', 'template' => 'AppBundle:hello:index.html.twig'));
+        $useCase3Annotation = new UseCaseAnnotation(array());
+        $useCase3Annotation->setAlias('uc3');
+        $useCase3Annotation->setOutput(array('type' => 'twig2', 'template' => 'AppBundle:hello:index.html.twig'));
 
         $request = new Request();
         $inputConverter->initializeRequest(Argument::type(Request::class), null, array('name' => 'registration_form'))->willReturn($request);
         $responseProcessor->processResponse(Argument::cetera())->willReturn('uc2 success');
         $responseProcessor2->processResponse(Argument::cetera())->willReturn('uc2 alias success');
+        $responseProcessor2->handleException(Argument::cetera())->willReturn('uc3 error');
 
         $this->set('uc1', $useCase1);
         $this->set('uc2', $useCase2);
+        $this->set('uc3', $useCase3);
         $this->setInputConverter('form', $inputConverter);
         $this->setResponseProcessor('twig', $responseProcessor);
         $this->setResponseProcessor('twig2', $responseProcessor2);
@@ -218,15 +227,17 @@ class UseCaseContainerSpec extends ObjectBehavior
         $annotationReader
             ->getClassAnnotations(Argument::which('getName', get_class($useCase2->getWrappedObject())))
             ->willReturn(array($useCase2Annotation1, $useCase2Annotation2));
+        $annotationReader
+            ->getClassAnnotations(Argument::which('getName', get_class($useCase3->getWrappedObject())))
+            ->willReturn(array($useCase3Annotation));
 
 
         $this->loadSettingsFromAnnotations();
 
         $this->execute('uc1')->shouldReturnAnInstanceOf(Response::class);
-        $useCase1->execute($request)->shouldHaveBeenCalled();
-
         $this->execute('uc2')->shouldReturn('uc2 success');
         $this->execute('uc2_alias')->shouldReturn('uc2 alias success');
+        $this->execute('uc3')->shouldReturn('uc3 error');
     }
 
     public function it_sets_a_default_input_converter_using_its_alias(
