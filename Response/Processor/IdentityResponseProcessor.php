@@ -3,7 +3,6 @@
 namespace Lamudi\UseCaseBundle\Response\Processor;
 
 use Lamudi\UseCaseBundle\Response\Response;
-use Lamudi\UseCaseBundle\Response\Processor\ResponseProcessorInterface;
 
 class IdentityResponseProcessor implements ResponseProcessorInterface
 {

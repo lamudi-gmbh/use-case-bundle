@@ -4,7 +4,6 @@ namespace Lamudi\UseCaseBundle\Response\Processor;
 
 use Lamudi\UseCaseBundle\Exception\UseCaseException;
 use Lamudi\UseCaseBundle\Response\Response;
-use Lamudi\UseCaseBundle\Response\Processor\ResponseProcessorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\Encoder\EncoderInterface;
 
@@ -61,7 +60,7 @@ class JsonRenderer implements ResponseProcessorInterface
                 $array = array_merge($options['append_on_error'], $array);
             }
 
-            return new JsonResponse($array);
+            return new JsonResponse($array, $e->getCode());
         } catch (\Exception $e) {
             throw $e;
         }

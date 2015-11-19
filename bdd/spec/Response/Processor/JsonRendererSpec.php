@@ -53,6 +53,7 @@ class JsonRendererSpec extends ObjectBehavior
         $extraFields = array('code' => 500, 'success' => false);
         $result = $this->handleException($exception, array('append_on_error' => $extraFields));
 
+        $result->getStatusCode()->shouldBe(500);
         $result->getContent()->shouldMatch('/"code":' . $exception->getCode() . '/');
         $result->getContent()->shouldMatch('/"message":"' . $exception->getMessage() . '"/');
         $result->getContent()->shouldMatch('/"success":false/');
