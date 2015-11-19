@@ -1,6 +1,8 @@
 <?php
 
-namespace Lamudi\UseCaseBundle\Request;
+namespace Lamudi\UseCaseBundle\Request\Converter;
+
+use Lamudi\UseCaseBundle\Request\Request;
 
 interface InputConverterInterface
 {

@@ -8,10 +8,10 @@ use Lamudi\UseCaseBundle\Exception\InputConverterNotFoundException;
 use Lamudi\UseCaseBundle\Exception\ResponseProcessorNotFoundException;
 use Lamudi\UseCaseBundle\Exception\UseCaseNotFoundException;
 use Lamudi\UseCaseBundle\Factory\RequestResolver;
-use Lamudi\UseCaseBundle\Request\DefaultInputConverter;
-use Lamudi\UseCaseBundle\Request\InputConverterInterface;
-use Lamudi\UseCaseBundle\Response\IdentityResponseProcessor;
-use Lamudi\UseCaseBundle\Response\ResponseProcessorInterface;
+use Lamudi\UseCaseBundle\Request\Converter\DefaultInputConverter;
+use Lamudi\UseCaseBundle\Request\Converter\InputConverterInterface;
+use Lamudi\UseCaseBundle\Response\Processor\IdentityResponseProcessor;
+use Lamudi\UseCaseBundle\Response\Processor\ResponseProcessorInterface;
 use Lamudi\UseCaseBundle\UseCaseInterface;
 
 class UseCaseContainer

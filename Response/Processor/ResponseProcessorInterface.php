@@ -1,6 +1,8 @@
 <?php
 
-namespace Lamudi\UseCaseBundle\Response;
+namespace Lamudi\UseCaseBundle\Response\Processor;
+
+use Lamudi\UseCaseBundle\Response\Response;
 
 interface ResponseProcessorInterface
 {

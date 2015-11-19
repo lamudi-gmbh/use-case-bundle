@@ -3,7 +3,7 @@
 namespace spec\Lamudi\UseCaseBundle\Request\Converter {
 
     use Foo\Bar\Request\DataFromHttpRequest;
-    use Lamudi\UseCaseBundle\Request\InputConverterInterface;
+    use Lamudi\UseCaseBundle\Request\Converter\InputConverterInterface;
     use PhpSpec\ObjectBehavior;
     use Prophecy\Argument;
     use Prophecy\Prophet;

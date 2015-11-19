@@ -4,7 +4,7 @@ namespace Lamudi\UseCaseBundle\Response\Processor;
 
 use Lamudi\UseCaseBundle\Exception\UseCaseException;
 use Lamudi\UseCaseBundle\Response\Response;
-use Lamudi\UseCaseBundle\Response\ResponseProcessorInterface;
+use Lamudi\UseCaseBundle\Response\Processor\ResponseProcessorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\Encoder\EncoderInterface;
 

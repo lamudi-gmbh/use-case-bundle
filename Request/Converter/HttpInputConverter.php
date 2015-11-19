@@ -2,7 +2,7 @@
 
 namespace Lamudi\UseCaseBundle\Request\Converter;
 
-use Lamudi\UseCaseBundle\Request\InputConverterInterface;
+use Lamudi\UseCaseBundle\Request\Converter\InputConverterInterface;
 use Lamudi\UseCaseBundle\Request\Request;
 use Symfony\Component\HttpFoundation;
 
