@@ -17,9 +17,9 @@ use Lamudi\UseCaseBundle\UseCaseInterface;
 class UseCaseContainer
 {
     /**
-     * @var UseCaseInterface[]
+     * @var UseCaseDefinition[]
      */
-    private $useCases = array();
+    private $useCaseDefinitions = array();
 
     /**
      * @var array
@@ -32,16 +32,6 @@ class UseCaseContainer
     private $responseProcessors = array();
 
     /**
-     * @var array
-     */
-    private $useCaseInputConverters = array();
-
-    /**
-     * @var array
-     */
-    private $useCaseResponseProcessors = array();
-
-    /**
      * @var Reader
      */
     private $annotationReader;
@@ -52,23 +42,14 @@ class UseCaseContainer
     private $requestResolver;
 
     /**
-     * @var array
+     * @var UseCaseConfiguration
      */
-    private $defaults = array(
-        'input' => array(
-            'type' => 'default',
-            'options' => array(),
-        ),
-        'output' => array(
-            'type' => 'default',
-            'options' => array(),
-        ),
-    );
+    private $defaultConfiguration;
 
     /**
-     * @param Reader $annotationReader
-     * @param RequestResolver $requestResolver
-     * @param InputConverterInterface $defaultInputConverter
+     * @param Reader                     $annotationReader
+     * @param RequestResolver            $requestResolver
+     * @param InputConverterInterface    $defaultInputConverter
      * @param ResponseProcessorInterface $defaultResponseProcessor
      */
     public function __construct(
@@ -80,8 +61,13 @@ class UseCaseContainer
     {
         $this->annotationReader = $annotationReader;
         $this->requestResolver = $requestResolver;
-        $this->setInputConverter('default', $defaultInputConverter ? : new DefaultInputConverter());
-        $this->setResponseProcessor('default', $defaultResponseProcessor ? : new IdentityResponseProcessor());
+
+        $this->defaultConfiguration = new UseCaseConfiguration();
+        $this->setDefaultInputConverter('default', array());
+        $this->setDefaultResponseProcessor('default', array());
+
+        $this->setInputConverter('default', $defaultInputConverter ?: new DefaultInputConverter());
+        $this->setResponseProcessor('default', $defaultResponseProcessor ?: new IdentityResponseProcessor());
     }
 
     /**
@@ -115,11 +101,7 @@ class UseCaseContainer
      */
     public function get($name)
     {
-        if (!array_key_exists($name, $this->useCases)) {
-            throw new UseCaseNotFoundException(sprintf('Use case "%s" not found.', $name));
-        }
-
-        return $this->useCases[$name];
+        return $this->getDefinition($name)->getInstance();
     }
 
     /**
@@ -128,7 +110,7 @@ class UseCaseContainer
      */
     public function set($name, UseCaseInterface $useCase)
     {
-        $this->useCases[$name] = $useCase;
+        $this->useCaseDefinitions[$name] = new UseCaseDefinition($name, $useCase);
     }
 
     /**
@@ -159,8 +141,8 @@ class UseCaseContainer
      */
     public function setDefaultInputConverter($type, $options)
     {
-        $this->defaults['input']['type'] = $type;
-        $this->defaults['input']['options'] = $options;
+        $this->defaultConfiguration->setInputConverterName($type);
+        $this->defaultConfiguration->setInputConverterOptions($options);
     }
 
     /**
@@ -191,8 +173,8 @@ class UseCaseContainer
      */
     public function setDefaultResponseProcessor($type, $options)
     {
-        $this->defaults['output']['type'] = $type;
-        $this->defaults['output']['options'] = $options;
+        $this->defaultConfiguration->setResponseProcessorName($type);
+        $this->defaultConfiguration->setResponseProcessorOptions($options);
     }
 
     /**
@@ -202,7 +184,8 @@ class UseCaseContainer
      */
     public function assignInputConverter($useCaseName, $converterName, $options = array())
     {
-        $this->useCaseInputConverters[$useCaseName] = array('name' => $converterName, 'options' => $options);
+        $this->getDefinition($useCaseName)->setInputConverterName($converterName);
+        $this->getDefinition($useCaseName)->setInputConverterOptions($options);
     }
 
     /**
@@ -212,29 +195,26 @@ class UseCaseContainer
      */
     public function assignResponseProcessor($useCaseName, $processorName, $options = array())
     {
-        $this->useCaseResponseProcessors[$useCaseName] = array('name' => $processorName, 'options' => $options);
-    }
-
-    /**
-     * @param string $name
-     * @param string $alias
-     */
-    public function addAlias($name, $alias)
-    {
-        $this->useCases[$alias] = $this->useCases[$name];
+        $this->getDefinition($useCaseName)->setResponseProcessorName($processorName);
+        $this->getDefinition($useCaseName)->setResponseProcessorOptions($options);
     }
 
     public function loadSettingsFromAnnotations()
     {
-        foreach ($this->useCases as $name => $useCase) {
+        foreach ($this->useCaseDefinitions as $name => $definition) {
+            $useCase = $definition->getInstance();
             $reflection = new \ReflectionClass($useCase);
             $annotations = $this->annotationReader->getClassAnnotations($reflection);
 
             /** @var UseCaseAnnotation $annotation */
             foreach ($annotations as $annotation) {
+                if (!$annotation instanceof UseCaseAnnotation) {
+                    continue;
+                }
+
                 if ($annotation->getAlias()) {
-                    $this->addAlias($name, $annotation->getAlias());
                     $name = $annotation->getAlias();
+                    $this->set($name, $useCase);
                 }
                 if ($annotation->getInputType()) {
                     $this->assignInputConverter($name, $annotation->getInputType(), $annotation->getInputOptions());
@@ -252,25 +232,25 @@ class UseCaseContainer
      */
     private function getInputConverterForUseCase($useCaseName)
     {
-        if (isset($this->useCaseInputConverters[$useCaseName]['name'])) {
-            $converterName = $this->useCaseInputConverters[$useCaseName]['name'];
+        if ($this->getDefinition($useCaseName)->getInputConverterName()) {
+            $converterName = $this->getDefinition($useCaseName)->getInputConverterName();
         } else {
-            $converterName = $this->defaults['input']['type'];
+            $converterName = $this->defaultConfiguration->getInputConverterName();
         }
 
         return $this->getInputConverter($converterName);
     }
 
     /**
-     * @param $useCaseName
+     * @param string $useCaseName
      * @return mixed
      */
     private function getInputConverterOptionsForUseCase($useCaseName)
     {
-        if (isset($this->useCaseInputConverters[$useCaseName])) {
-            return $this->useCaseInputConverters[$useCaseName]['options'];
+        if ($this->getDefinition($useCaseName)->getInputConverterOptions()) {
+            return $this->getDefinition($useCaseName)->getInputConverterOptions();
         } else {
-            return $this->defaults['input']['options'];
+            return $this->defaultConfiguration->getInputConverterOptions();
         }
     }
 
@@ -280,10 +260,10 @@ class UseCaseContainer
      */
     private function getRequestProcessorForUseCase($useCaseName)
     {
-        if (isset($this->useCaseResponseProcessors[$useCaseName])) {
-            $processorName = $this->useCaseResponseProcessors[$useCaseName]['name'];
+        if ($this->getDefinition($useCaseName)->getResponseProcessorName()) {
+            $processorName = $this->getDefinition($useCaseName)->getResponseProcessorName();
         } else {
-            $processorName = $this->defaults['output']['type'];
+            $processorName = $this->defaultConfiguration->getResponseProcessorName();
         }
 
         return $this->getResponseProcessor($processorName);
@@ -295,10 +275,23 @@ class UseCaseContainer
      */
     private function getResponseProcessorOptionsForUseCase($useCaseName)
     {
-        if (isset($this->useCaseResponseProcessors[$useCaseName])) {
-            return $this->useCaseResponseProcessors[$useCaseName]['options'];
+        if ($this->getDefinition($useCaseName)->getResponseProcessorOptions()) {
+            return $this->getDefinition($useCaseName)->getResponseProcessorOptions();
         } else {
-            return $this->defaults['output']['options'];
+            return $this->defaultConfiguration->getResponseProcessorOptions();
         }
+    }
+
+    /**
+     * @param string $name
+     * @return UseCaseDefinition
+     */
+    private function getDefinition($name)
+    {
+        if (!array_key_exists($name, $this->useCaseDefinitions)) {
+            throw new UseCaseNotFoundException(sprintf('Use case "%s" not found.', $name));
+        }
+
+        return $this->useCaseDefinitions[$name];
     }
 }

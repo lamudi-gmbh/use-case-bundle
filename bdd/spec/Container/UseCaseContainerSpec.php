@@ -23,20 +23,11 @@ use Prophecy\Argument;
  */
 class UseCaseContainerSpec extends ObjectBehavior
 {
-    public function let(
-        UseCaseInterface $useCase, InputConverterInterface $inputConverter,
-        ResponseProcessorInterface $responseProcessor, Reader $annotationReader, RequestResolver $requestResolver
+    public function let(Reader $annotationReader, RequestResolver $requestResolver
     )
     {
         $this->beConstructedWith($annotationReader, $requestResolver);
         $annotationReader->getClassAnnotations(Argument::any())->willReturn(array());
-
-        $this->set('use_case', $useCase);
-        $this->setInputConverter('form', $inputConverter);
-        $this->assignInputConverter('use_case', 'form');
-
-        $this->setResponseProcessor('twig', $responseProcessor);
-        $this->assignResponseProcessor('use_case', 'twig');
 
         $requestResolver->resolve(Argument::any())->willReturn(new Request());
     }
@@ -67,9 +58,14 @@ class UseCaseContainerSpec extends ObjectBehavior
     }
 
     public function it_creates_request_instance_based_on_use_case_object_and_passes_it_into_input_converter(
-        $useCase, Request $request, RequestResolver $requestResolver, InputConverterInterface $inputConverter
+        UseCaseInterface $useCase, Request $request, RequestResolver $requestResolver,
+        InputConverterInterface $inputConverter
     )
     {
+        $this->set('use_case', $useCase);
+        $this->setInputConverter('form', $inputConverter);
+        $this->assignInputConverter('use_case', 'form');
+
         $requestResolver->resolve($useCase)->willReturn($request);
         $this->execute('use_case');
 
@@ -85,9 +81,9 @@ class UseCaseContainerSpec extends ObjectBehavior
         $requestResolver->resolve($useCase)->willReturn($useCaseRequest);
         $inputConverter->initializeRequest($useCaseRequest, $inputData, array())->shouldBeCalled();
 
+        $this->set('use_case', $useCase);
         $this->setInputConverter('form', $inputConverter);
         $this->assignInputConverter('use_case', 'form');
-        $this->set('use_case', $useCase);
         $this->execute('use_case', $inputData);
 
         $useCase->execute($useCaseRequest)->shouldHaveBeenCalled();
@@ -102,9 +98,9 @@ class UseCaseContainerSpec extends ObjectBehavior
         $inputData = array();
         $requestResolver->resolve($useCase)->willReturn($useCaseRequest);
 
+        $this->set('use_case', $useCase);
         $this->setInputConverter('form', $inputConverter);
         $this->assignInputConverter('use_case', 'no_such_converter_here');
-        $this->set('use_case', $useCase);
 
         $this->shouldThrow(InputConverterNotFoundException::class)->duringExecute('use_case', $inputData);
         $this->shouldThrow(InputConverterNotFoundException::class)->duringGetInputConverter('no_such_converter_too');
@@ -115,6 +111,9 @@ class UseCaseContainerSpec extends ObjectBehavior
         UseCaseInterface $useCase, Response $useCaseResponse
     )
     {
+        $this->set('use_case', $useCase);
+        $this->setResponseProcessor('twig', $responseProcessor);
+        $this->assignResponseProcessor('use_case', 'twig');
         $useCase->execute(Argument::any())->willReturn($useCaseResponse);
 
         $useCaseResponseOptions = array('template' => 'HelloBundle:hello:index.html.twig');
@@ -128,10 +127,13 @@ class UseCaseContainerSpec extends ObjectBehavior
     }
 
     public function it_uses_the_registered_response_processor_to_handle_errors(
-        ResponseProcessorInterface $responseProcessor, HttpResponse $httpResponse,
-        UseCaseInterface $useCase
+        ResponseProcessorInterface $responseProcessor, HttpResponse $httpResponse, UseCaseInterface $useCase
     )
     {
+        $this->set('use_case', $useCase);
+        $this->setResponseProcessor('twig', $responseProcessor);
+        $this->assignResponseProcessor('use_case', 'twig');
+
         $exception = new UseCaseException();
         $useCase->execute(Argument::any())->willThrow($exception);
 
@@ -149,10 +151,13 @@ class UseCaseContainerSpec extends ObjectBehavior
 
 
     public function it_throws_an_exception_if_response_processor_does_not_exist(
-        ResponseProcessorInterface $responseProcessor, HttpResponse $httpResponse,
-        UseCaseInterface $useCase, Response $useCaseResponse
+        ResponseProcessorInterface $responseProcessor, UseCaseInterface $useCase, Response $useCaseResponse
     )
     {
+        $this->set('use_case', $useCase);
+        $this->setResponseProcessor('twig', $responseProcessor);
+        $this->assignResponseProcessor('use_case', 'twig');
+
         $useCase->execute(Argument::any())->willReturn($useCaseResponse);
         $useCaseResponseOptions = array('template' => 'HelloBundle:hello:index.html.twig');
 

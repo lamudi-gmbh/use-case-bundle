@@ -12,7 +12,7 @@ use Symfony\Component\Form\FormView;
 
 /**
  * Class TwigRendererSpec
- * @mixin \Lamudi\UseCaseBundle\Response\Processor\TwigRenderer
+ * @mixin \Lamudi\UseCaseBundle\Response\Processor\TwigRenLamudi\UseCaseBundle\Responsederer
  */
 class TwigRendererSpec extends ObjectBehavior
 {
