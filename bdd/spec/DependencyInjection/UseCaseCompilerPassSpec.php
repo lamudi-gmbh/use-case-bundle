@@ -2,6 +2,8 @@
 
 namespace spec\Lamudi\UseCaseBundle\DependencyInjection;
 
+use Doctrine\Common\Annotations\AnnotationReader;
+use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -14,11 +16,16 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class UseCaseCompilerPassSpec extends ObjectBehavior
 {
-    public function let(ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition)
+    public function let(
+        ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition, AnnotationReader $annotationReader
+    )
     {
-        $containerBuilder->has('lamudi_use_case.container')->willReturn(true);
+        $this->beConstructedWith($annotationReader);
+
         $containerBuilder->findDefinition('lamudi_use_case.container')->willReturn($useCaseContainerDefinition);
         $containerBuilder->findTaggedServiceIds(Argument::any())->willReturn(array());
+        $containerBuilder->getServiceIds()->willReturn(array());
+        $containerBuilder->has('lamudi_use_case.container')->willReturn(true);
         $useCaseContainerDefinition->addMethodCall(Argument::any())->willReturn();
     }
 
@@ -35,14 +42,51 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $this->process($containerBuilder);
     }
 
-    public function it_adds_tagged_services_to_the_use_case_container(
-        ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition
+    public function it_adds_annotated_services_to_the_use_case_container(
+        ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition, AnnotationReader $annotationReader
     )
     {
-        $containerBuilder->findTaggedServiceIds('use_case')->willReturn(array('uc1' => array(), 'uc2' => array()));
+        $containerBuilder->getServiceIds()->willReturn(array('uc1', 'uc2', 'uc3'));
+        $containerBuilder->getDefinition('uc1')->willReturn(new Definition('\\stdClass'));
+        $containerBuilder->getDefinition('uc2')->willReturn(new Definition('\\DateTime'));
+        $containerBuilder->getDefinition('uc3')->willReturn(new Definition('\\Exception'));
 
-        $useCaseContainerDefinition->addMethodCall('set', array('uc1', new Reference('uc1')))->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('set', array('uc2', new Reference('uc2')))->shouldBeCalled();
+        $useCase1Annotation = new UseCaseAnnotation(array());
+        $useCase1Annotation->setAlias('use_case_1');
+        $useCase1Annotation->setInput(array('type' => 'form', 'name' => 'registration_form'));
+        $useCase2Annotation1 = new UseCaseAnnotation(array());
+        $useCase2Annotation1->setAlias('use_case_2');
+        $useCase2Annotation1->setOutput(array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig'));
+        $useCase2Annotation2 = new UseCaseAnnotation(array());
+        $useCase2Annotation2->setAlias('use_case_2_alias');
+        $useCase2Annotation2->setOutput(array('type' => 'twig', 'template' => 'AppBundle:goodbye:index.html.twig'));
+        $useCase3Annotation = new UseCaseAnnotation(array());
+        $useCase3Annotation->setAlias('use_case_3');
+        $useCase3Annotation->setInput('http');
+        $useCase3Annotation->setOutput(array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig'));
+
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn(
+            array($useCase1Annotation)
+        );
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\DateTime'))->willReturn(
+            array($useCase2Annotation1, $useCase2Annotation2)
+        );
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\Exception'))->willReturn(
+            array($useCase3Annotation)
+        );
+
+        $useCaseContainerDefinition->addMethodCall('set', array('use_case_1', new Reference('uc1')))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('assignInputConverter', array('use_case_1', 'form', array('name' => 'registration_form')))->shouldBeCalled();
+
+        $useCaseContainerDefinition->addMethodCall('set', array('use_case_2', new Reference('uc2')))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('assignResponseProcessor', array('use_case_2', 'twig', array('template' => 'AppBundle:hello:index.html.twig')))->shouldBeCalled();
+
+        $useCaseContainerDefinition->addMethodCall('set', array('use_case_2_alias', new Reference('uc2')))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('assignResponseProcessor', array('use_case_2_alias', 'twig', array('template' => 'AppBundle:goodbye:index.html.twig')))->shouldBeCalled();
+
+        $useCaseContainerDefinition->addMethodCall('set', array('use_case_3', new Reference('uc3')))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('assignInputConverter', array('use_case_3', 'http', array()))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('assignResponseProcessor', array('use_case_3', 'twig', array('template' => 'AppBundle:hello:index.html.twig')))->shouldBeCalled();
 
         $this->process($containerBuilder);
     }
@@ -80,14 +124,6 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $useCaseContainerDefinition->addMethodCall('setResponseProcessor', array('baz', new Reference('response_processor_2')))
             ->shouldBeCalled();
 
-        $this->process($containerBuilder);
-    }
-
-    public function it_tells_to_load_settings_from_use_case_class_annotations(
-        ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition
-    )
-    {
-        $useCaseContainerDefinition->addMethodCall('loadSettingsFromAnnotations')->shouldBeCalled();
         $this->process($containerBuilder);
     }
 }

@@ -2,8 +2,6 @@
 
 namespace spec\Lamudi\UseCaseBundle\Container;
 
-use Doctrine\Common\Annotations\Reader;
-use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
 use Lamudi\UseCaseBundle\Exception\UseCaseException;
 use Lamudi\UseCaseBundle\Exception\UseCaseNotFoundException;
 use Lamudi\UseCaseBundle\Exception\InputConverterNotFoundException;
@@ -23,11 +21,9 @@ use Prophecy\Argument;
  */
 class UseCaseContainerSpec extends ObjectBehavior
 {
-    public function let(Reader $annotationReader, RequestResolver $requestResolver
-    )
+    public function let(RequestResolver $requestResolver)
     {
-        $this->beConstructedWith($annotationReader, $requestResolver);
-        $annotationReader->getClassAnnotations(Argument::any())->willReturn(array());
+        $this->beConstructedWith($requestResolver);
 
         $requestResolver->resolve(Argument::any())->willReturn(new Request());
     }
@@ -37,9 +33,7 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->shouldHaveType('Lamudi\UseCaseBundle\Container\UseCaseContainer');
     }
 
-    public function it_stores_use_cases_identified_by_name(
-        UseCaseInterface $useCase1, UseCaseInterface $useCase2
-    )
+    public function it_stores_use_cases_identified_by_name(UseCaseInterface $useCase1, UseCaseInterface $useCase2)
     {
         $this->set('login', $useCase1);
         $this->set('logout', $useCase2);
@@ -48,9 +42,7 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->get('logout')->shouldBe($useCase2);
     }
 
-    public function it_throws_exception_when_no_use_case_by_given_name_exists(
-        UseCaseInterface $useCase
-    )
+    public function it_throws_exception_when_no_use_case_by_given_name_exists(UseCaseInterface $useCase)
     {
         $this->set('a_use_case', $useCase);
         $this->shouldThrow(UseCaseNotFoundException::class)->duringGet('no_such_use_case_here');
@@ -193,25 +185,15 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->execute('yet_another_use_case', array())->shouldNotThrow(\Exception::class);
     }
 
-    public function it_loads_annotations_from_use_case_classes(
-        Reader $annotationReader, UseCaseInterface $useCase1, UseCaseInterface $useCase2, UseCaseInterface $useCase3,
-        InputConverterInterface $inputConverter, ResponseProcessorInterface $responseProcessor, ResponseProcessorInterface $responseProcessor2
+    public function it_works_like_a_charm_with_several_use_cases_configured(
+        UseCaseInterface $useCase1, UseCaseInterface $useCase2, UseCaseInterface $useCase3,
+        InputConverterInterface $inputConverter,
+        ResponseProcessorInterface $responseProcessor, ResponseProcessorInterface $responseProcessor2
     )
     {
         $useCase1->execute(Argument::any())->willReturn(new Response());
         $useCase2->execute(Argument::any())->willReturn(new Response());
         $useCase3->execute(Argument::any())->willThrow(new UseCaseException());
-
-        $useCase1Annotation = new UseCaseAnnotation(array());
-        $useCase1Annotation->setInput(array('type' => 'form', 'name' => 'registration_form'));
-        $useCase2Annotation1 = new UseCaseAnnotation(array());
-        $useCase2Annotation1->setOutput(array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig'));
-        $useCase2Annotation2 = new UseCaseAnnotation(array());
-        $useCase2Annotation2->setAlias('uc2_alias');
-        $useCase2Annotation2->setOutput(array('type' => 'twig2', 'template' => 'AppBundle:hello:index.html.twig'));
-        $useCase3Annotation = new UseCaseAnnotation(array());
-        $useCase3Annotation->setAlias('uc3');
-        $useCase3Annotation->setOutput(array('type' => 'twig2', 'template' => 'AppBundle:hello:index.html.twig'));
 
         $request = new Request();
         $inputConverter->initializeRequest(Argument::type(Request::class), null, array('name' => 'registration_form'))->willReturn($request);
@@ -221,23 +203,16 @@ class UseCaseContainerSpec extends ObjectBehavior
 
         $this->set('uc1', $useCase1);
         $this->set('uc2', $useCase2);
+        $this->set('uc2_alias', $useCase2);
         $this->set('uc3', $useCase3);
         $this->setInputConverter('form', $inputConverter);
         $this->setResponseProcessor('twig', $responseProcessor);
         $this->setResponseProcessor('twig2', $responseProcessor2);
 
-        $annotationReader
-            ->getClassAnnotations(Argument::which('getName', get_class($useCase1->getWrappedObject())))
-            ->willReturn(array($useCase1Annotation));
-        $annotationReader
-            ->getClassAnnotations(Argument::which('getName', get_class($useCase2->getWrappedObject())))
-            ->willReturn(array($useCase2Annotation1, $useCase2Annotation2));
-        $annotationReader
-            ->getClassAnnotations(Argument::which('getName', get_class($useCase3->getWrappedObject())))
-            ->willReturn(array($useCase3Annotation));
-
-
-        $this->loadSettingsFromAnnotations();
+        $this->assignInputConverter('uc1', 'form', array('name' => 'registration_form'));
+        $this->assignResponseProcessor('uc2', 'twig', array('template' => 'AppBundle:hello:index.html.twig'));
+        $this->assignResponseProcessor('uc2_alias', 'twig2', array('template' => 'AppBundle:hello:index.html.twig'));
+        $this->assignResponseProcessor('uc3', 'twig2', array('template' => 'AppBundle:hello:index.html.twig'));
 
         $this->execute('uc1')->shouldReturnAnInstanceOf(Response::class);
         $this->execute('uc2')->shouldReturn('uc2 success');

@@ -2,8 +2,6 @@
 
 namespace Lamudi\UseCaseBundle\Container;
 
-use Doctrine\Common\Annotations\Reader;
-use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
 use Lamudi\UseCaseBundle\Exception\InputConverterNotFoundException;
 use Lamudi\UseCaseBundle\Exception\ResponseProcessorNotFoundException;
 use Lamudi\UseCaseBundle\Exception\UseCaseNotFoundException;
@@ -32,11 +30,6 @@ class UseCaseContainer
     private $responseProcessors = array();
 
     /**
-     * @var Reader
-     */
-    private $annotationReader;
-
-    /**
      * @var RequestResolver
      */
     private $requestResolver;
@@ -47,19 +40,16 @@ class UseCaseContainer
     private $defaultConfiguration;
 
     /**
-     * @param Reader                     $annotationReader
      * @param RequestResolver            $requestResolver
      * @param InputConverterInterface    $defaultInputConverter
      * @param ResponseProcessorInterface $defaultResponseProcessor
      */
     public function __construct(
-        Reader $annotationReader,
         RequestResolver $requestResolver,
         InputConverterInterface $defaultInputConverter = null,
         ResponseProcessorInterface $defaultResponseProcessor = null
     )
     {
-        $this->annotationReader = $annotationReader;
         $this->requestResolver = $requestResolver;
 
         $this->defaultConfiguration = new UseCaseConfiguration();
@@ -197,33 +187,6 @@ class UseCaseContainer
     {
         $this->getDefinition($useCaseName)->setResponseProcessorName($processorName);
         $this->getDefinition($useCaseName)->setResponseProcessorOptions($options);
-    }
-
-    public function loadSettingsFromAnnotations()
-    {
-        foreach ($this->useCaseDefinitions as $name => $definition) {
-            $useCase = $definition->getInstance();
-            $reflection = new \ReflectionClass($useCase);
-            $annotations = $this->annotationReader->getClassAnnotations($reflection);
-
-            /** @var UseCaseAnnotation $annotation */
-            foreach ($annotations as $annotation) {
-                if (!$annotation instanceof UseCaseAnnotation) {
-                    continue;
-                }
-
-                if ($annotation->getAlias()) {
-                    $name = $annotation->getAlias();
-                    $this->set($name, $useCase);
-                }
-                if ($annotation->getInputType()) {
-                    $this->assignInputConverter($name, $annotation->getInputType(), $annotation->getInputOptions());
-                }
-                if ($annotation->getOutputType()) {
-                    $this->assignResponseProcessor($name, $annotation->getOutputType(), $annotation->getOutputOptions());
-                }
-            }
-        }
     }
 
     /**

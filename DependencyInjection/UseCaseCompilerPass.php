@@ -2,6 +2,8 @@
 
 namespace Lamudi\UseCaseBundle\DependencyInjection;
 
+use Doctrine\Common\Annotations\AnnotationReader;
+use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -9,6 +11,19 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class UseCaseCompilerPass implements CompilerPassInterface
 {
+    /**
+     * @var AnnotationReader
+     */
+    private $annotationReader;
+
+    /**
+     * @param AnnotationReader $annotationReader
+     */
+    public function __construct(AnnotationReader $annotationReader = null)
+    {
+        $this->annotationReader = $annotationReader ?: new AnnotationReader();
+    }
+
     /**
      * You can modify the container here before it is dumped to PHP code.
      *
@@ -24,22 +39,42 @@ class UseCaseCompilerPass implements CompilerPassInterface
 
         $definition = $container->findDefinition('lamudi_use_case.container');
 
-        $this->addUseCasesToContainer($container, $definition);
         $this->addInputConvertersToContainer($container, $definition);
         $this->addResponseProcessorsToContainer($container, $definition);
-        $definition->addMethodCall('loadSettingsFromAnnotations');
+        $this->addUseCasesToContainer($container, $definition);
     }
 
     /**
      * @param ContainerBuilder $container
-     * @param Definition $definition
+     * @param Definition       $containerDefinition
      * @return array
      */
-    private function addUseCasesToContainer(ContainerBuilder $container, $definition)
+    private function addUseCasesToContainer(ContainerBuilder $container, $containerDefinition)
     {
-        $services = $container->findTaggedServiceIds('use_case');
-        foreach ($services as $id => $tags) {
-            $definition->addMethodCall('set', array($id, new Reference($id)));
+        $services = $container->getServiceIds();
+        foreach ($services as $id) {
+            $useCaseDefinition = $container->getDefinition($id);
+            $useCaseClass = $useCaseDefinition->getClass();
+            $reflection = new \ReflectionClass($useCaseClass);
+            $annotations = $this->annotationReader->getClassAnnotations($reflection);
+
+            foreach ($annotations as $annotation) {
+                if ($annotation instanceof UseCaseAnnotation) {
+                    $containerDefinition->addMethodCall('set', array($annotation->getAlias(), new Reference($id)));
+
+                    if ($annotation->getInputType()) {
+                        $containerDefinition->addMethodCall('assignInputConverter', array(
+                            $annotation->getAlias(), $annotation->getInputType(), $annotation->getInputOptions()
+                        ));
+                    }
+
+                    if ($annotation->getOutputType()) {
+                        $containerDefinition->addMethodCall('assignResponseProcessor', array(
+                            $annotation->getAlias(), $annotation->getOutputType(), $annotation->getOutputOptions()
+                        ));
+                    }
+                }
+            }
         }
     }
 
