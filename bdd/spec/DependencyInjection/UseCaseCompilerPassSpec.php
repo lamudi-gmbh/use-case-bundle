@@ -24,7 +24,7 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
 
         $containerBuilder->findDefinition('lamudi_use_case.container')->willReturn($useCaseContainerDefinition);
         $containerBuilder->findTaggedServiceIds(Argument::any())->willReturn(array());
-        $containerBuilder->getServiceIds()->willReturn(array());
+        $containerBuilder->getDefinitions()->willReturn(array());
         $containerBuilder->has('lamudi_use_case.container')->willReturn(true);
         $useCaseContainerDefinition->addMethodCall(Argument::any())->willReturn();
     }
@@ -46,10 +46,11 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition, AnnotationReader $annotationReader
     )
     {
-        $containerBuilder->getServiceIds()->willReturn(array('uc1', 'uc2', 'uc3'));
-        $containerBuilder->getDefinition('uc1')->willReturn(new Definition('\\stdClass'));
-        $containerBuilder->getDefinition('uc2')->willReturn(new Definition('\\DateTime'));
-        $containerBuilder->getDefinition('uc3')->willReturn(new Definition('\\Exception'));
+        $containerBuilder->getDefinitions()->willReturn(array(
+            'uc1' => new Definition('\\stdClass'),
+            'uc2' => new Definition('\\DateTime'),
+            'uc3' => new Definition('\\Exception')
+        ));
 
         $useCase1Annotation = new UseCaseAnnotation(array());
         $useCase1Annotation->setAlias('use_case_1');

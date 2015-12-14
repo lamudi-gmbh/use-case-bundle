@@ -4,6 +4,7 @@ namespace Lamudi\UseCaseBundle;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Lamudi\UseCaseBundle\DependencyInjection\UseCaseCompilerPass;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -30,6 +31,6 @@ class LamudiUseCaseBundle extends Bundle
     {
         parent::build($container);
 
-        $container->addCompilerPass(new UseCaseCompilerPass());
+        $container->addCompilerPass(new UseCaseCompilerPass(), PassConfig::TYPE_AFTER_REMOVING);
     }
 }

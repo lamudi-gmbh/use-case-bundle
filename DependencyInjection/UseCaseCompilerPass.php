@@ -51,28 +51,19 @@ class UseCaseCompilerPass implements CompilerPassInterface
      */
     private function addUseCasesToContainer(ContainerBuilder $container, $containerDefinition)
     {
-        $services = $container->getServiceIds();
-        foreach ($services as $id) {
-            $useCaseDefinition = $container->getDefinition($id);
-            $useCaseClass = $useCaseDefinition->getClass();
-            $reflection = new \ReflectionClass($useCaseClass);
+        $services = $container->getDefinitions();
+        foreach ($services as $id => $serviceDefinition) {
+            $serviceClass = $serviceDefinition->getClass();
+            if (!class_exists($serviceClass)) {
+                continue;
+            }
+
+            $reflection = new \ReflectionClass($serviceClass);
             $annotations = $this->annotationReader->getClassAnnotations($reflection);
 
             foreach ($annotations as $annotation) {
                 if ($annotation instanceof UseCaseAnnotation) {
-                    $containerDefinition->addMethodCall('set', array($annotation->getAlias(), new Reference($id)));
-
-                    if ($annotation->getInputType()) {
-                        $containerDefinition->addMethodCall('assignInputConverter', array(
-                            $annotation->getAlias(), $annotation->getInputType(), $annotation->getInputOptions()
-                        ));
-                    }
-
-                    if ($annotation->getOutputType()) {
-                        $containerDefinition->addMethodCall('assignResponseProcessor', array(
-                            $annotation->getAlias(), $annotation->getOutputType(), $annotation->getOutputOptions()
-                        ));
-                    }
+                    $this->registerUseCase($id, $annotation, $containerDefinition);
                 }
             }
         }
@@ -103,6 +94,38 @@ class UseCaseCompilerPass implements CompilerPassInterface
             foreach ($tags as $attributes) {
                 $definition->addMethodCall('setResponseProcessor', array($attributes['alias'], new Reference($id)));
             }
+        }
+    }
+
+    /**
+     * @param $serviceId
+     * @param $annotation
+     * @param $containerDefinition
+     */
+    private function registerUseCase($serviceId, $annotation, $containerDefinition)
+    {
+        $containerDefinition->addMethodCall('set', array($annotation->getAlias(), new Reference($serviceId)));
+
+        if ($annotation->getInputType()) {
+            $containerDefinition->addMethodCall(
+                'assignInputConverter',
+                array(
+                    $annotation->getAlias(),
+                    $annotation->getInputType(),
+                    $annotation->getInputOptions()
+                )
+            );
+        }
+
+        if ($annotation->getOutputType()) {
+            $containerDefinition->addMethodCall(
+                'assignResponseProcessor',
+                array(
+                    $annotation->getAlias(),
+                    $annotation->getOutputType(),
+                    $annotation->getOutputOptions()
+                )
+            );
         }
     }
 }
