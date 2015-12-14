@@ -15,7 +15,10 @@ class UseCase
     {
         if (isset($data['value'])) {
             $this->setAlias($data['value']);
+        } else {
+            throw new \InvalidArgumentException('Missing use case name.');
         }
+
         if (isset($data['input'])) {
             $this->setInput($data['input']);
         }
@@ -42,7 +45,7 @@ class UseCase
     /**
      * @return string
      */
-    public function getAlias()
+    public function getName()
     {
         return $this->alias;
     }

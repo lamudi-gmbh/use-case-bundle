@@ -52,29 +52,19 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
             'uc3' => new Definition('\\Exception')
         ));
 
-        $useCase1Annotation = new UseCaseAnnotation(array());
-        $useCase1Annotation->setAlias('use_case_1');
+        $useCase1Annotation = new UseCaseAnnotation(array('value' => 'use_case_1'));
         $useCase1Annotation->setInput(array('type' => 'form', 'name' => 'registration_form'));
-        $useCase2Annotation1 = new UseCaseAnnotation(array());
-        $useCase2Annotation1->setAlias('use_case_2');
+        $useCase2Annotation1 = new UseCaseAnnotation(array('value' => 'use_case_2'));
         $useCase2Annotation1->setOutput(array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig'));
-        $useCase2Annotation2 = new UseCaseAnnotation(array());
-        $useCase2Annotation2->setAlias('use_case_2_alias');
+        $useCase2Annotation2 = new UseCaseAnnotation(array('value' => 'use_case_2_alias'));
         $useCase2Annotation2->setOutput(array('type' => 'twig', 'template' => 'AppBundle:goodbye:index.html.twig'));
-        $useCase3Annotation = new UseCaseAnnotation(array());
-        $useCase3Annotation->setAlias('use_case_3');
+        $useCase3Annotation = new UseCaseAnnotation(array('value' => 'use_case_3'));
         $useCase3Annotation->setInput('http');
         $useCase3Annotation->setOutput(array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig'));
 
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn(
-            array($useCase1Annotation)
-        );
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\DateTime'))->willReturn(
-            array($useCase2Annotation1, $useCase2Annotation2)
-        );
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\Exception'))->willReturn(
-            array($useCase3Annotation)
-        );
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn(array($useCase1Annotation));
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\DateTime'))->willReturn(array($useCase2Annotation1, $useCase2Annotation2));
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\Exception'))->willReturn(array($useCase3Annotation));
 
         $useCaseContainerDefinition->addMethodCall('set', array('use_case_1', new Reference('uc1')))->shouldBeCalled();
         $useCaseContainerDefinition->addMethodCall('assignInputConverter', array('use_case_1', 'form', array('name' => 'registration_form')))->shouldBeCalled();

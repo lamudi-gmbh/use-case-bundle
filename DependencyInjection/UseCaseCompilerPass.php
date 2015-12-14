@@ -59,7 +59,11 @@ class UseCaseCompilerPass implements CompilerPassInterface
             }
 
             $reflection = new \ReflectionClass($serviceClass);
-            $annotations = $this->annotationReader->getClassAnnotations($reflection);
+            try {
+                $annotations = $this->annotationReader->getClassAnnotations($reflection);
+            } catch (\InvalidArgumentException $e) {
+                throw new \Exception(sprintf('Could not load annotations for class %s: %s', $serviceClass, $e->getMessage()));
+            }
 
             foreach ($annotations as $annotation) {
                 if ($annotation instanceof UseCaseAnnotation) {
@@ -71,7 +75,7 @@ class UseCaseCompilerPass implements CompilerPassInterface
 
     /**
      * @param ContainerBuilder $container
-     * @param Definition $definition
+     * @param Definition       $definition
      */
     private function addInputConvertersToContainer(ContainerBuilder $container, $definition)
     {
@@ -85,7 +89,7 @@ class UseCaseCompilerPass implements CompilerPassInterface
 
     /**
      * @param ContainerBuilder $container
-     * @param Definition $definition
+     * @param Definition       $definition
      */
     private function addResponseProcessorsToContainer(ContainerBuilder $container, $definition)
     {
@@ -98,19 +102,19 @@ class UseCaseCompilerPass implements CompilerPassInterface
     }
 
     /**
-     * @param $serviceId
-     * @param $annotation
-     * @param $containerDefinition
+     * @param string            $serviceId
+     * @param UseCaseAnnotation $annotation
+     * @param Definition        $containerDefinition
      */
     private function registerUseCase($serviceId, $annotation, $containerDefinition)
     {
-        $containerDefinition->addMethodCall('set', array($annotation->getAlias(), new Reference($serviceId)));
+        $containerDefinition->addMethodCall('set', array($annotation->getName(), new Reference($serviceId)));
 
         if ($annotation->getInputType()) {
             $containerDefinition->addMethodCall(
                 'assignInputConverter',
                 array(
-                    $annotation->getAlias(),
+                    $annotation->getName(),
                     $annotation->getInputType(),
                     $annotation->getInputOptions()
                 )
@@ -121,7 +125,7 @@ class UseCaseCompilerPass implements CompilerPassInterface
             $containerDefinition->addMethodCall(
                 'assignResponseProcessor',
                 array(
-                    $annotation->getAlias(),
+                    $annotation->getName(),
                     $annotation->getOutputType(),
                     $annotation->getOutputOptions()
                 )
