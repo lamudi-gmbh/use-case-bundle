@@ -8,10 +8,10 @@ use Lamudi\UseCaseBundle\UseCaseInterface;
 class RequestResolver
 {
     /**
-     * Returns a Request object suitable for specified use case.
+     * Returns the name of a Request class suitable for specified use case.
      *
      * @param UseCaseInterface|string $useCase A use case object, or its class name.
-     * @return Request
+     * @return string
      */
     public function resolve($useCase)
     {
@@ -19,7 +19,7 @@ class RequestResolver
         $className = $this->getRequestClassName($useCaseReflection);
 
         if (class_exists($className)) {
-            return new $className;
+            return $className;
         } else {
             throw new RequestClassNotFoundException();
         }

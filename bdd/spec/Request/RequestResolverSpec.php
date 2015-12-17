@@ -24,18 +24,18 @@ namespace spec\Lamudi\UseCaseBundle\Request
 
         public function it_tries_to_use_type_hint_in_execute_method()
         {
-            $this->resolve(new TypeHintedUseCase())->shouldReturnAnInstanceOf(SpecificRequest::class);
+            $this->resolve(new TypeHintedUseCase())->shouldReturn(SpecificRequest::class);
         }
 
         public function it_uses_the_use_case_namespace_plus_request()
         {
             $useCaseNamespace = 'spec\Lamudi\UseCaseBundle\Request';
-            $this->resolve(new SomeUseCase())->shouldReturnAnInstanceOf($useCaseNamespace . '\Request\SomeRequest');
+            $this->resolve(new SomeUseCase())->shouldReturn($useCaseNamespace . '\Request\SomeRequest');
         }
 
         public function it_resolves_the_default_use_case_request()
         {
-            $this->resolve(new DefaultUseCase())->shouldReturnAnInstanceOf(Request::class);
+            $this->resolve(new DefaultUseCase())->shouldReturn(Request::class);
         }
 
         public function it_throws_an_exception_if_request_class_does_not_exist()
