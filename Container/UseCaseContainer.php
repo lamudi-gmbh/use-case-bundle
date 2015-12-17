@@ -3,11 +3,12 @@
 namespace Lamudi\UseCaseBundle\Container;
 
 use Lamudi\UseCaseBundle\Exception\InputConverterNotFoundException;
+use Lamudi\UseCaseBundle\Exception\RequestClassNotFoundException;
 use Lamudi\UseCaseBundle\Exception\ResponseProcessorNotFoundException;
 use Lamudi\UseCaseBundle\Exception\UseCaseNotFoundException;
-use Lamudi\UseCaseBundle\Factory\RequestResolver;
 use Lamudi\UseCaseBundle\Request\Converter\DefaultInputConverter;
 use Lamudi\UseCaseBundle\Request\Converter\InputConverterInterface;
+use Lamudi\UseCaseBundle\Request\Request;
 use Lamudi\UseCaseBundle\Response\Processor\IdentityResponseProcessor;
 use Lamudi\UseCaseBundle\Response\Processor\ResponseProcessorInterface;
 use Lamudi\UseCaseBundle\UseCaseInterface;
@@ -30,31 +31,23 @@ class UseCaseContainer
     private $responseProcessors = array();
 
     /**
-     * @var RequestResolver
-     */
-    private $requestResolver;
-
-    /**
      * @var UseCaseConfiguration
      */
     private $defaultConfiguration;
 
     /**
-     * @param RequestResolver            $requestResolver
      * @param InputConverterInterface    $defaultInputConverter
      * @param ResponseProcessorInterface $defaultResponseProcessor
      */
     public function __construct(
-        RequestResolver $requestResolver,
         InputConverterInterface $defaultInputConverter = null,
         ResponseProcessorInterface $defaultResponseProcessor = null
     )
     {
-        $this->requestResolver = $requestResolver;
-
         $this->defaultConfiguration = new UseCaseConfiguration();
         $this->setDefaultInputConverter('default', array());
         $this->setDefaultResponseProcessor('default', array());
+        $this->defaultConfiguration->setRequestClass(Request::class);
 
         $this->setInputConverter('default', $defaultInputConverter ?: new DefaultInputConverter());
         $this->setResponseProcessor('default', $defaultResponseProcessor ?: new IdentityResponseProcessor());
@@ -67,22 +60,39 @@ class UseCaseContainer
      */
     public function execute($useCaseName, $inputData = null)
     {
-        $useCase = $this->get($useCaseName);
-        $request = $this->requestResolver->resolve($useCase);
-
-        $inputConverter = $this->getInputConverterForUseCase($useCaseName);
-        $converterOptions = $this->getInputConverterOptionsForUseCase($useCaseName);
+        $definition = $this->getDefinition($useCaseName);
+        $useCase = $definition->getInstance();
+        $request = $this->createUseCaseRequest($definition);
 
         $processor = $this->getRequestProcessorForUseCase($useCaseName);
         $processorOptions = $this->getResponseProcessorOptionsForUseCase($useCaseName);
 
         try {
-            $inputConverter->initializeRequest($request, $inputData, $converterOptions);
+            $this->initializeRequest($request, $inputData, $definition);
             $response = $useCase->execute($request);
             return $processor->processResponse($response, $processorOptions);
         } catch (\Exception $e) {
             return $processor->handleException($e, $processorOptions);
         }
+    }
+
+    /**
+     * @param Request           $request
+     * @param mixed             $inputData
+     * @param UseCaseDefinition $definition
+     */
+    private function initializeRequest(Request $request, $inputData, UseCaseDefinition $definition)
+    {
+        if ($definition->getInputConverterName()) {
+            $converterName = $definition->getInputConverterName();
+            $converterOptions = $definition->getInputConverterOptions();
+        } else {
+            $converterName = $this->defaultConfiguration->getInputConverterName();
+            $converterOptions = $this->defaultConfiguration->getInputConverterOptions();
+        }
+
+        $converter = $this->getInputConverter($converterName);
+        $converter->initializeRequest($request, $inputData, $converterOptions);
     }
 
     /**
@@ -169,6 +179,15 @@ class UseCaseContainer
 
     /**
      * @param string $useCaseName
+     * @param string $requestClassName
+     */
+    public function assignRequestClass($useCaseName, $requestClassName)
+    {
+        $this->getDefinition($useCaseName)->setRequestClass($requestClassName);
+    }
+
+    /**
+     * @param string $useCaseName
      * @param string $converterName
      * @param array $options
      */
@@ -187,34 +206,6 @@ class UseCaseContainer
     {
         $this->getDefinition($useCaseName)->setResponseProcessorName($processorName);
         $this->getDefinition($useCaseName)->setResponseProcessorOptions($options);
-    }
-
-    /**
-     * @param string $useCaseName
-     * @return InputConverterInterface
-     */
-    private function getInputConverterForUseCase($useCaseName)
-    {
-        if ($this->getDefinition($useCaseName)->getInputConverterName()) {
-            $converterName = $this->getDefinition($useCaseName)->getInputConverterName();
-        } else {
-            $converterName = $this->defaultConfiguration->getInputConverterName();
-        }
-
-        return $this->getInputConverter($converterName);
-    }
-
-    /**
-     * @param string $useCaseName
-     * @return mixed
-     */
-    private function getInputConverterOptionsForUseCase($useCaseName)
-    {
-        if ($this->getDefinition($useCaseName)->getInputConverterOptions()) {
-            return $this->getDefinition($useCaseName)->getInputConverterOptions();
-        } else {
-            return $this->defaultConfiguration->getInputConverterOptions();
-        }
     }
 
     /**
@@ -256,5 +247,19 @@ class UseCaseContainer
         }
 
         return $this->useCaseDefinitions[$name];
+    }
+
+    /**
+     * @param UseCaseDefinition $useCaseDefinition
+     * @return Request
+     */
+    private function createUseCaseRequest($useCaseDefinition)
+    {
+        $requestClass = $useCaseDefinition->getRequestClass() ?: $this->defaultConfiguration->getRequestClass();
+        if (!class_exists($requestClass)) {
+            throw new RequestClassNotFoundException(sprintf('Class "%s" not found.', $requestClass));
+        }
+
+        return new $requestClass;
     }
 }

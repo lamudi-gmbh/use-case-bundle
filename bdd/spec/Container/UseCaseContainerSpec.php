@@ -6,7 +6,6 @@ use Lamudi\UseCaseBundle\Exception\UseCaseException;
 use Lamudi\UseCaseBundle\Exception\UseCaseNotFoundException;
 use Lamudi\UseCaseBundle\Exception\InputConverterNotFoundException;
 use Lamudi\UseCaseBundle\Exception\ResponseProcessorNotFoundException;
-use Lamudi\UseCaseBundle\Factory\RequestResolver;
 use Lamudi\UseCaseBundle\Request\Converter\InputConverterInterface;
 use Lamudi\UseCaseBundle\Request\Request;
 use Lamudi\UseCaseBundle\Response\Response;
@@ -21,13 +20,6 @@ use Prophecy\Argument;
  */
 class UseCaseContainerSpec extends ObjectBehavior
 {
-    public function let(RequestResolver $requestResolver)
-    {
-        $this->beConstructedWith($requestResolver);
-
-        $requestResolver->resolve(Argument::any())->willReturn(new Request());
-    }
-
     function it_is_initializable()
     {
         $this->shouldHaveType('Lamudi\UseCaseBundle\Container\UseCaseContainer');
@@ -49,46 +41,29 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->shouldThrow(UseCaseNotFoundException::class)->duringExecute('no_such_use_case_here', array());
     }
 
-    public function it_creates_request_instance_based_on_use_case_object_and_passes_it_into_input_converter(
-        UseCaseInterface $useCase, Request $request, RequestResolver $requestResolver,
-        InputConverterInterface $inputConverter
+    public function it_creates_request_instance_based_on_use_case_configuration_and_passes_it_into_input_converter(
+        InputConverterInterface $inputConverter, UseCaseInterface $useCase
     )
     {
         $this->set('use_case', $useCase);
         $this->setInputConverter('form', $inputConverter);
         $this->assignInputConverter('use_case', 'form');
+        $this->assignRequestClass('use_case', SomeUseCaseRequest::class);
 
-        $requestResolver->resolve($useCase)->willReturn($request);
-        $this->execute('use_case');
-
-        $inputConverter->initializeRequest($request, null, array())->shouldHaveBeenCalled();
-    }
-
-    public function it_initializes_the_use_case_request_with_input_data(
-        InputConverterInterface $inputConverter, UseCaseInterface $useCase, Request $useCaseRequest,
-        RequestResolver $requestResolver
-    )
-    {
-        $inputData = array();
-        $requestResolver->resolve($useCase)->willReturn($useCaseRequest);
-        $inputConverter->initializeRequest($useCaseRequest, $inputData, array())->shouldBeCalled();
-
-        $this->set('use_case', $useCase);
-        $this->setInputConverter('form', $inputConverter);
-        $this->assignInputConverter('use_case', 'form');
+        $inputData = array('foo' => 'bar', 'key' => 'value');
         $this->execute('use_case', $inputData);
 
-        $useCase->execute($useCaseRequest)->shouldHaveBeenCalled();
         $this->getInputConverter('form')->shouldReturn($inputConverter);
+        $useCase->execute(Argument::type(SomeUseCaseRequest::class))->shouldHaveBeenCalled();
+        $inputConverter->initializeRequest(Argument::type(SomeUseCaseRequest::class), $inputData, array())
+            ->shouldHaveBeenCalled();
     }
 
     public function it_throws_an_exception_if_input_converter_does_not_exist(
-        InputConverterInterface $inputConverter, UseCaseInterface $useCase, Request $useCaseRequest,
-        RequestResolver $requestResolver
+        InputConverterInterface $inputConverter, UseCaseInterface $useCase
     )
     {
         $inputData = array();
-        $requestResolver->resolve($useCase)->willReturn($useCaseRequest);
 
         $this->set('use_case', $useCase);
         $this->setInputConverter('form', $inputConverter);
@@ -255,3 +230,5 @@ class UseCaseContainerSpec extends ObjectBehavior
         $twigResponseProcessor->processResponse($response, $defaultOptions)->shouldHaveBeenCalled();
     }
 }
+
+class SomeUseCaseRequest extends Request {}

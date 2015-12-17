@@ -42,10 +42,12 @@ class UseCaseDefinition
 
     /**
      * @param UseCaseInterface $instance
+     * @return UseCaseDefinition
      */
     public function setInstance($instance)
     {
         $this->instance = $instance;
+        return $this;
     }
 
     /**
@@ -58,10 +60,30 @@ class UseCaseDefinition
 
     /**
      * @param string $alias
+     * @return UseCaseDefinition
      */
     public function setAlias($alias)
     {
         $this->alias = $alias;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRequestClass()
+    {
+        return $this->configuration->getRequestClass();
+    }
+
+    /**
+     * @param string $requestClass
+     * @return UseCaseDefinition
+     */
+    public function setRequestClass($requestClass)
+    {
+        $this->configuration->setRequestClass($requestClass);
+        return $this;
     }
 
     /**
@@ -74,10 +96,12 @@ class UseCaseDefinition
 
     /**
      * @param UseCaseConfiguration $configuration
+     * @return UseCaseDefinition
      */
     public function setConfiguration($configuration)
     {
         $this->configuration = $configuration;
+        return $this;
     }
 
     /**
@@ -90,10 +114,12 @@ class UseCaseDefinition
 
     /**
      * @param string $inputConverterName
+     * @return UseCaseDefinition
      */
     public function setInputConverterName($inputConverterName)
     {
         $this->configuration->setInputConverterName($inputConverterName);
+        return $this;
     }
 
     /**
@@ -106,10 +132,12 @@ class UseCaseDefinition
 
     /**
      * @param array $inputConverterOptions
+     * @return UseCaseDefinition
      */
     public function setInputConverterOptions($inputConverterOptions)
     {
         $this->configuration->setInputConverterOptions($inputConverterOptions);
+        return $this;
     }
 
     /**
@@ -122,10 +150,12 @@ class UseCaseDefinition
 
     /**
      * @param string $responseProcessorName
+     * @return UseCaseDefinition
      */
     public function setResponseProcessorName($responseProcessorName)
     {
         $this->configuration->setResponseProcessorName($responseProcessorName);
+        return $this;
     }
 
     /**
@@ -138,9 +168,11 @@ class UseCaseDefinition
 
     /**
      * @param array $responseProcessorOptions
+     * @return UseCaseDefinition
      */
     public function setResponseProcessorOptions($responseProcessorOptions)
     {
         $this->configuration->setResponseProcessorOptions($responseProcessorOptions);
+        return $this;
     }
 }

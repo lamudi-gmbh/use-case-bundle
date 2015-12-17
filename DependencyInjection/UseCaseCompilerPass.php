@@ -4,6 +4,7 @@ namespace Lamudi\UseCaseBundle\DependencyInjection;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
+use Lamudi\UseCaseBundle\Request\RequestResolver;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -17,11 +18,18 @@ class UseCaseCompilerPass implements CompilerPassInterface
     private $annotationReader;
 
     /**
-     * @param AnnotationReader $annotationReader
+     * @var RequestResolver
      */
-    public function __construct(AnnotationReader $annotationReader = null)
+    private $requestResolver;
+
+    /**
+     * @param AnnotationReader $annotationReader
+     * @param RequestResolver  $requestResolver
+     */
+    public function __construct(AnnotationReader $annotationReader = null, RequestResolver $requestResolver = null)
     {
         $this->annotationReader = $annotationReader ?: new AnnotationReader();
+        $this->requestResolver = $requestResolver ?: new RequestResolver();
     }
 
     /**
@@ -67,7 +75,7 @@ class UseCaseCompilerPass implements CompilerPassInterface
 
             foreach ($annotations as $annotation) {
                 if ($annotation instanceof UseCaseAnnotation) {
-                    $this->registerUseCase($id, $annotation, $containerDefinition);
+                    $this->registerUseCase($id, $serviceClass, $annotation, $containerDefinition);
                 }
             }
         }
@@ -103,33 +111,29 @@ class UseCaseCompilerPass implements CompilerPassInterface
 
     /**
      * @param string            $serviceId
+     * @param string            $serviceClass
      * @param UseCaseAnnotation $annotation
      * @param Definition        $containerDefinition
      */
-    private function registerUseCase($serviceId, $annotation, $containerDefinition)
+    private function registerUseCase($serviceId, $serviceClass, $annotation, $containerDefinition)
     {
         $containerDefinition->addMethodCall('set', array($annotation->getName(), new Reference($serviceId)));
 
         if ($annotation->getInputType()) {
             $containerDefinition->addMethodCall(
                 'assignInputConverter',
-                array(
-                    $annotation->getName(),
-                    $annotation->getInputType(),
-                    $annotation->getInputOptions()
-                )
+                array($annotation->getName(), $annotation->getInputType(), $annotation->getInputOptions())
             );
         }
 
         if ($annotation->getOutputType()) {
             $containerDefinition->addMethodCall(
                 'assignResponseProcessor',
-                array(
-                    $annotation->getName(),
-                    $annotation->getOutputType(),
-                    $annotation->getOutputOptions()
-                )
+                array($annotation->getName(), $annotation->getOutputType(), $annotation->getOutputOptions())
             );
         }
+
+        $requestClass = $this->requestResolver->resolve($serviceClass);
+        $containerDefinition->addMethodCall('assignRequestClass', array($annotation->getName(), $requestClass));
     }
 }

@@ -4,6 +4,7 @@ namespace spec\Lamudi\UseCaseBundle\DependencyInjection;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
+use Lamudi\UseCaseBundle\Request\RequestResolver;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -17,16 +18,17 @@ use Symfony\Component\DependencyInjection\Reference;
 class UseCaseCompilerPassSpec extends ObjectBehavior
 {
     public function let(
-        ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition, AnnotationReader $annotationReader
+        ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition,
+        AnnotationReader $annotationReader, RequestResolver $requestResolver
     )
     {
-        $this->beConstructedWith($annotationReader);
+        $this->beConstructedWith($annotationReader, $requestResolver);
 
         $containerBuilder->findDefinition('lamudi_use_case.container')->willReturn($useCaseContainerDefinition);
         $containerBuilder->findTaggedServiceIds(Argument::any())->willReturn(array());
         $containerBuilder->getDefinitions()->willReturn(array());
         $containerBuilder->has('lamudi_use_case.container')->willReturn(true);
-        $useCaseContainerDefinition->addMethodCall(Argument::any())->willReturn();
+        $useCaseContainerDefinition->addMethodCall(Argument::cetera())->willReturn();
     }
 
     function it_is_initializable()
@@ -114,6 +116,40 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
             ->shouldBeCalled();
         $useCaseContainerDefinition->addMethodCall('setResponseProcessor', array('baz', new Reference('response_processor_2')))
             ->shouldBeCalled();
+
+        $this->process($containerBuilder);
+    }
+
+    public function it_uses_request_resolver_to_add_use_case_request_class_config_to_the_container(
+        ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition,
+        AnnotationReader $annotationReader, RequestResolver $requestResolver
+    )
+    {
+        $useCase1Annotation = new UseCaseAnnotation(array('value' => 'use_case_1'));
+        $useCase2Annotation = new UseCaseAnnotation(array('value' => 'use_case_2'));
+        $useCase3Annotation = new UseCaseAnnotation(array('value' => 'use_case_3'));
+
+        $containerBuilder->getDefinitions()->willReturn(array(
+            'uc1' => new Definition('\\stdClass'),
+            'uc2' => new Definition('\\DateTime'),
+            'uc3' => new Definition('\\Exception')
+        ));
+
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn(array($useCase1Annotation));
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\DateTime'))->willReturn(array($useCase2Annotation));
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\Exception'))->willReturn(array($useCase3Annotation));
+
+        $requestResolver->resolve('\\stdClass')->willReturn('\StdClassRequest');
+        $requestResolver->resolve('\\DateTime')->willReturn('Foo\Bar\DateTimeRequest');
+        $requestResolver->resolve('\\Exception')->willReturn('Ohnoes\FunnyRequest');
+
+        $useCaseContainerDefinition->addMethodCall('set', array('use_case_1', new Reference('uc1')))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('set', array('use_case_2', new Reference('uc2')))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('set', array('use_case_3', new Reference('uc3')))->shouldBeCalled();
+
+        $useCaseContainerDefinition->addMethodCall('assignRequestClass', array('use_case_1', '\StdClassRequest'))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('assignRequestClass', array('use_case_2', 'Foo\Bar\DateTimeRequest'))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('assignRequestClass', array('use_case_3', 'Ohnoes\FunnyRequest'))->shouldBeCalled();
 
         $this->process($containerBuilder);
     }

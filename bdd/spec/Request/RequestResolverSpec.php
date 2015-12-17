@@ -1,16 +1,16 @@
 <?php
 
-namespace spec\Lamudi\UseCaseBundle\Factory
+namespace spec\Lamudi\UseCaseBundle\Request
 {
 
     use Lamudi\UseCaseBundle\Exception\RequestClassNotFoundException;
-    use Lamudi\UseCaseBundle\Factory\RequestResolver;
+    use Lamudi\UseCaseBundle\Request\RequestResolver;
     use Lamudi\UseCaseBundle\Request\Request;
     use Lamudi\UseCaseBundle\Response\Response;
     use Lamudi\UseCaseBundle\UseCaseInterface;
     use PhpSpec\ObjectBehavior;
     use Prophecy\Argument;
-    use spec\Lamudi\UseCaseBundle\Factory\Request\SomeRequest;
+    use spec\Lamudi\UseCaseBundle\Request\Request\SomeRequest;
 
     /**
      * @mixin RequestResolver
@@ -19,12 +19,17 @@ namespace spec\Lamudi\UseCaseBundle\Factory
     {
         function it_is_initializable()
         {
-            $this->shouldHaveType('Lamudi\UseCaseBundle\Factory\RequestResolver');
+            $this->shouldHaveType('Lamudi\UseCaseBundle\Request\RequestResolver');
+        }
+
+        public function it_tries_to_use_type_hint_in_execute_method()
+        {
+            $this->resolve(new TypeHintedUseCase())->shouldReturnAnInstanceOf(SpecificRequest::class);
         }
 
         public function it_uses_the_use_case_namespace_plus_request()
         {
-            $useCaseNamespace = 'spec\Lamudi\UseCaseBundle\Factory';
+            $useCaseNamespace = 'spec\Lamudi\UseCaseBundle\Request';
             $this->resolve(new SomeUseCase())->shouldReturnAnInstanceOf($useCaseNamespace . '\Request\SomeRequest');
         }
 
@@ -39,7 +44,12 @@ namespace spec\Lamudi\UseCaseBundle\Factory
         }
     }
 
-// helper class for testing purposes, will not be used outside this file
+    class TypeHintedUseCase
+    {
+        public function execute(SpecificRequest $request)
+        {
+        }
+    }
 
     class SomeUseCase implements UseCaseInterface
     {
@@ -54,14 +64,15 @@ namespace spec\Lamudi\UseCaseBundle\Factory
     class WrongUseCase implements UseCaseInterface
     {
         /**
-         * @param WrongRequest $request
+         * @param IntentionallyWrongRequest $request
          */
         public function execute($request)
         {
         }
     }
 
-    class DefaultUseCase implements UseCaseInterface {
+    class DefaultUseCase implements UseCaseInterface
+    {
         /**
          * @param Request $request
          * @return Response
@@ -70,9 +81,13 @@ namespace spec\Lamudi\UseCaseBundle\Factory
         {
         }
     }
+
+    class SpecificRequest extends Request
+    {
+    }
 }
 
-namespace spec\Lamudi\UseCaseBundle\Factory\Request
+namespace spec\Lamudi\UseCaseBundle\Request\Request
 {
 
     use Lamudi\UseCaseBundle\Request\Request;
