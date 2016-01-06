@@ -54,15 +54,23 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
             'uc3' => new Definition('\\Exception')
         ));
 
-        $useCase1Annotation = new UseCaseAnnotation(array('value' => 'use_case_1'));
-        $useCase1Annotation->setInput(array('type' => 'form', 'name' => 'registration_form'));
-        $useCase2Annotation1 = new UseCaseAnnotation(array('value' => 'use_case_2'));
-        $useCase2Annotation1->setOutput(array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig'));
-        $useCase2Annotation2 = new UseCaseAnnotation(array('value' => 'use_case_2_alias'));
-        $useCase2Annotation2->setOutput(array('type' => 'twig', 'template' => 'AppBundle:goodbye:index.html.twig'));
-        $useCase3Annotation = new UseCaseAnnotation(array('value' => 'use_case_3'));
-        $useCase3Annotation->setInput('http');
-        $useCase3Annotation->setOutput(array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig'));
+        $useCase1Annotation = new UseCaseAnnotation(array(
+            'value' => 'use_case_1',
+            'input' => array('type' => 'form', 'name' => 'registration_form')
+        ));
+        $useCase2Annotation1 = new UseCaseAnnotation(array(
+            'value'  => 'use_case_2',
+            'output' => array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig')
+        ));
+        $useCase2Annotation2 = new UseCaseAnnotation(array(
+            'value'  => 'use_case_2_alias',
+            'output' => array('type' => 'twig', 'template' => 'AppBundle:goodbye:index.html.twig')
+        ));
+        $useCase3Annotation = new UseCaseAnnotation(array(
+            'value' => 'use_case_3',
+            'input' => 'http',
+            'output' => array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig')
+        ));
 
         $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn(array($useCase1Annotation));
         $annotationReader->getClassAnnotations(new \ReflectionClass('\\DateTime'))->willReturn(array($useCase2Annotation1, $useCase2Annotation2));

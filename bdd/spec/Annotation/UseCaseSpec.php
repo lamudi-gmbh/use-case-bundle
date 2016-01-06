@@ -28,12 +28,17 @@ class UseCaseSpec extends ObjectBehavior
 
     public function it_sets_input()
     {
-        $this->setInput(array(
-            'type'   => 'form',
-            'name'   => 'search_form',
-            'class'  => 'DumbForm',
-            'method' => 'DELETE'
-        ));
+        $this->beConstructedWith(
+            array(
+                'value' => 'uc',
+                'input' => array(
+                    'type' => 'form',
+                    'name' => 'search_form',
+                    'class' => 'DumbForm',
+                    'method' => 'DELETE'
+                )
+            )
+        );
 
         $this->getInputType()->shouldBe('form');
         $this->getInputOptions()->shouldBe(array(
@@ -45,12 +50,17 @@ class UseCaseSpec extends ObjectBehavior
 
     public function it_sets_output()
     {
-        $this->setOutput(array(
-            'type'     => 'twig',
-            'template' => 'base.html.twig',
-            'form'     => 'DumberForm',
-            'css'      => 'none'
-        ));
+        $this->beConstructedWith(
+            array(
+                'value' => 'uc',
+                'output' => array(
+                    'type' => 'twig',
+                    'template' => 'base.html.twig',
+                    'form' => 'DumberForm',
+                    'css' => 'none'
+                )
+            )
+        );
 
         $this->getOutputType()->shouldBe('twig');
         $this->getOutputOptions()->shouldBe(array(

@@ -33,6 +33,19 @@ class UseCaseConfiguration
     private $responseProcessorOptions = array();
 
     /**
+     * @param array $data
+     */
+    public function __construct($data = array())
+    {
+        if (isset($data['input'])) {
+            $this->setConfiguration('inputConverter', $data['input']);
+        }
+        if (isset($data['output'])) {
+            $this->setConfiguration('responseProcessor', $data['output']);
+        }
+    }
+
+    /**
      * @return string
      */
     public function getRequestClass()
@@ -120,5 +133,28 @@ class UseCaseConfiguration
     {
         $this->responseProcessorOptions = $responseProcessorOptions;
         return $this;
+    }
+
+    /**
+     * @param string       $field
+     * @param string|array $data
+     * @return string
+     */
+    private function setConfiguration($field, $data)
+    {
+        $nameField = $field . 'Name';
+        $optionsField = $field . 'Options';
+
+        if (is_string($data)) {
+            $this->$nameField = $data;
+        } else {
+            if (!isset($data['type'])) {
+                throw new \Exception('Missing ' . $field . ' type');
+            }
+
+            $this->$nameField = $data['type'];
+            unset($data['type']);
+            $this->$optionsField = $data;
+        }
     }
 }
