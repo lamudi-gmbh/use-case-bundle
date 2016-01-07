@@ -7,16 +7,16 @@ use Lamudi\UseCaseBundle\Response\Response;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Serializer\Encoder\EncoderInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @mixin \Lamudi\UseCaseBundle\Response\Processor\JsonRenderer
  */
 class JsonRendererSpec extends ObjectBehavior
 {
-    public function let(EncoderInterface $jsonEncoder)
+    public function let(SerializerInterface $serializer)
     {
-        $this->beConstructedWith($jsonEncoder);
+        $this->beConstructedWith($serializer);
     }
 
     function it_is_initializable()
@@ -24,17 +24,17 @@ class JsonRendererSpec extends ObjectBehavior
         $this->shouldHaveType('Lamudi\UseCaseBundle\Response\Processor\JsonRenderer');
     }
 
-    public function it_returns_json_response_with_encoded_response_content(EncoderInterface $jsonEncoder)
+    public function it_returns_json_response_with_encoded_response_content(SerializerInterface $serializer)
     {
-        $jsonEncoder->encode(Argument::any(), 'json')->willReturn('{this is encoded json}');
+        $serializer->serialize(Argument::any(), 'json')->willReturn('{this is encoded json}');
 
         $this->processResponse(new Response())->shouldBeAnInstanceOf(JsonResponse::class);
         $this->processResponse(new Response())->getContent()->shouldBe('{this is encoded json}');
     }
 
-    public function it_appends_specified_fields_to_the_output_on_success(EncoderInterface $jsonEncoder)
+    public function it_appends_specified_fields_to_the_output_on_success(SerializerInterface $serializer)
     {
-        $jsonEncoder->encode(Argument::any(), 'json')->will(function($arguments) { return json_encode($arguments[0]); });
+        $serializer->serialize(Argument::any(), 'json')->will(function($arguments) { return json_encode($arguments[0]); });
 
         $extraFields = array('code' => 200, 'success' => true, 'praise' => 'u r awesome');
         $result = $this->processResponse(array('foo' => 'bar'), array('append_on_success' => $extraFields));
@@ -45,9 +45,9 @@ class JsonRendererSpec extends ObjectBehavior
         $result->getContent()->shouldMatch('/"praise":"u r awesome"/');
     }
 
-    public function it_appends_specified_fields_to_the_output_on_error(EncoderInterface $jsonEncoder)
+    public function it_appends_specified_fields_to_the_output_on_error(SerializerInterface $serializer)
     {
-        $jsonEncoder->encode(Argument::any(), 'json')->will(function($arguments) { return json_encode($arguments[0]); });
+        $serializer->serialize(Argument::any(), 'json')->will(function($arguments) { return json_encode($arguments[0]); });
         $exception = new UseCaseException('epic fail', 500);
 
         $extraFields = array('code' => 500, 'success' => false);

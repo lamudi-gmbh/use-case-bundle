@@ -30,14 +30,14 @@ services:
 
     lamudi_use_case.converter.json_body_input_converter:
         class: Lamudi\UseCaseBundle\Request\Converter\JsonBodyInputConverter
-        arguments: ["@serializer.encoder.json"]
+        arguments: ["@serializer"]
         tags:
             - { name: use_case_input_converter, alias: json }
 
 
     lamudi_use_case.processor.twig_response_processor:
         class: Lamudi\UseCaseBundle\Response\Processor\TwigRenderer
-        arguments: ["@templating"]
+        arguments: ["@?templating"]
         calls:
             - ["setFormFactory", ["@form.factory"]]
         tags:

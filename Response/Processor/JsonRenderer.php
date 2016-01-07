@@ -5,21 +5,21 @@ namespace Lamudi\UseCaseBundle\Response\Processor;
 use Lamudi\UseCaseBundle\Exception\UseCaseException;
 use Lamudi\UseCaseBundle\Response\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Serializer\Encoder\EncoderInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class JsonRenderer implements ResponseProcessorInterface
 {
     /**
-     * @var EncoderInterface
+     * @var SerializerInterface
      */
-    private $jsonEncoder;
+    private $serializer;
 
     /**
-     * @param EncoderInterface $jsonEncoder
+     * @param SerializerInterface $serializer
      */
-    public function __construct(EncoderInterface $jsonEncoder)
+    public function __construct(SerializerInterface $serializer)
     {
-        $this->jsonEncoder = $jsonEncoder;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -38,7 +38,7 @@ class JsonRenderer implements ResponseProcessorInterface
         }
 
         $jsonResponse = new JsonResponse();
-        $jsonResponse->setContent($this->jsonEncoder->encode($array, 'json'));
+        $jsonResponse->setContent($this->serializer->serialize($array, 'json'));
 
         return $jsonResponse;
     }

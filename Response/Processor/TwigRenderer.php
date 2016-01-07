@@ -23,7 +23,7 @@ class TwigRenderer implements ResponseProcessorInterface
     /**
      * @param EngineInterface $templating
      */
-    public function __construct(EngineInterface $templating)
+    public function __construct(EngineInterface $templating = null)
     {
         $this->templating = $templating;
     }
@@ -38,6 +38,10 @@ class TwigRenderer implements ResponseProcessorInterface
      */
     public function processResponse($response, $options = array())
     {
+        if (!$this->templating) {
+            throw new \Exception('The templating engine has not been initialised.');
+        }
+
         if (!isset($options['template'])) {
             throw new \InvalidArgumentException(sprintf('Missing required option "%s"', 'template'));
         }
