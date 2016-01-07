@@ -30,7 +30,7 @@ services:
 
     lamudi_use_case.converter.json_body_input_converter:
         class: Lamudi\UseCaseBundle\Request\Converter\JsonBodyInputConverter
-        arguments: ["@serializer"]
+        arguments: ["@serializer.encoder.json"]
         tags:
             - { name: use_case_input_converter, alias: json }
 
@@ -45,6 +45,6 @@ services:
 
     app.use_case.json_response_processor:
         class: Lamudi\UseCaseBundle\Response\Processor\JsonRenderer
-        arguments: ["@serializer.encoder.json"]
+        arguments: ["@serializer"]
         tags:
             - { name: use_case_response_processor, alias: json }
