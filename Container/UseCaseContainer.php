@@ -108,7 +108,7 @@ class UseCaseContainer
      * @param string $name
      * @param UseCaseInterface $useCase
      */
-    public function set($name, UseCaseInterface $useCase)
+    public function set($name, $useCase)
     {
         $this->useCaseDefinitions[$name] = new UseCaseDefinition($name, $useCase);
     }
