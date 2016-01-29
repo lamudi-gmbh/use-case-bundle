@@ -37,7 +37,7 @@ namespace spec\Lamudi\UseCaseBundle\Request\Converter {
                 'COOKIE'     => array('cookie'    => 'cookie_value'),
                 'SERVER'     => array('server'    => 'server_value'),
                 'headers'    => array('header'    => 'header_value'),
-                'attributes' => array('attribute' => 'attribute_value'),
+                'attrs'      => array('attribute' => 'attribute_value'),
             );
             $this->initializeHttpRequest($httpRequest, $httpRequestData);
 
@@ -63,6 +63,45 @@ namespace spec\Lamudi\UseCaseBundle\Request\Converter {
             $this->postOverridesGet($httpRequest);
         }
 
+        public function it_reads_data_from_http_request_with_given_priority(HttpRequest $httpRequest)
+        {
+            $this->initializeHttpRequest($httpRequest, array(
+                'GET'     => array('var1' => 'G_value_1', 'var2' => 'G_value_2', 'var3' => 'G_value_3'),
+                'POST'    => array('var1' => 'P_value_1', 'var2' => 'P_value_2'),
+                'FILES'   => array(                       'var2' => 'F_value_2', 'var3' => 'F_value_3'),
+                'COOKIE'  => array('var1' => 'C_value_1'),
+                'SERVER'  => array('var1' => 'S_value_1',                        'var3' => 'S_value_3'),
+                'headers' => array(                       'var2' => 'H_value_2'),
+                'attrs'   => array(                                              'var3' => 'A_value_3'),
+            ));
+
+            /** @var DataFromHttpRequest $request */
+            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, array('order' => 'GPC'));
+            $request->var1->shouldBe('C_value_1');
+            $request->var2->shouldBe('P_value_2');
+            $request->var3->shouldBe('G_value_3');
+
+            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, array('order' => 'PCG'));
+            $request->var1->shouldBe('G_value_1');
+            $request->var2->shouldBe('G_value_2');
+            $request->var3->shouldBe('G_value_3');
+
+            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, array('order' => 'GCP'));
+            $request->var1->shouldBe('P_value_1');
+            $request->var2->shouldBe('P_value_2');
+            $request->var3->shouldBe('G_value_3');
+
+            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, array('order' => 'PSA'));
+            $request->var1->shouldBe('S_value_1');
+            $request->var2->shouldBe('P_value_2');
+            $request->var3->shouldBe('A_value_3');
+
+            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, array('order' => 'FSCAGH'));
+            $request->var1->shouldBe('G_value_1');
+            $request->var2->shouldBe('H_value_2');
+            $request->var3->shouldBe('G_value_3');
+        }
+
         private function initializeHttpRequest(HttpRequest $httpRequest, $data)
         {
             $prophet = new Prophet();
@@ -74,7 +113,7 @@ namespace spec\Lamudi\UseCaseBundle\Request\Converter {
             $cookiesBag = $prophet->prophesize(ParameterBag::class);
             $headersBag = $prophet->prophesize(HeaderBag::class);
 
-            $attributesBag->all()->willReturn(isset($data['attributes']) ? $data['attributes'] : array());
+            $attributesBag->all()->willReturn(isset($data['attrs']) ? $data['attrs'] : array());
             $requestBag->all()->willReturn(isset($data['POST']) ? $data['POST'] : array());
             $queryBag->all()->willReturn(isset($data['GET']) ? $data['GET'] : array());
             $serverBag->all()->willReturn(isset($data['SERVER']) ? $data['SERVER'] : array());
@@ -104,14 +143,13 @@ namespace spec\Lamudi\UseCaseBundle\Request\Converter {
                 'COOKIE' => array('var' => 'cookie_value'),
                 'SERVER' => array('var' => 'server_value'),
                 'headers' => array('var' => 'header_value'),
-                'attributes' => array('var' => 'attribute_value'),
+                'attrs' => array('var' => 'attribute_value'),
             );
             $this->initializeHttpRequest($httpRequest, $httpRequestData);
 
             /** @var DataFromHttpRequest $request */
             $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest);
             $request->var->shouldBe('attribute_value');
-            return array($httpRequestData, $request);
         }
 
         /**
@@ -223,5 +261,8 @@ namespace Foo\Bar\Request {
         public $cookie;
         public $header;
         public $var;
+        public $var1;
+        public $var2;
+        public $var3;
     }
 }
