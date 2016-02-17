@@ -7,6 +7,8 @@ use Symfony\Component\HttpFoundation;
 
 class HttpInputConverter implements InputConverterInterface
 {
+    const DEFAULT_ORDER = 'GPFCSHA';
+
     /**
      * Creates a use case request based on the input data received. Additional options may help
      * determine the way to create the use case request object.
@@ -15,8 +17,12 @@ class HttpInputConverter implements InputConverterInterface
      * @param HttpFoundation\Request $inputData Symfony HTTP request object.
      * @param array $options An array of options used to create the request object.
      */
-    public function initializeRequest($request, $inputData, $options = array('order' => 'GPFCSHA'))
+    public function initializeRequest($request, $inputData, $options = array())
     {
+        if (!isset($options['order'])) {
+            $options['order'] = self::DEFAULT_ORDER;
+        }
+
         if ($inputData instanceof HttpFoundation\Request) {
             $httpRequestData = array(
                 'G' => $inputData->query->all(),

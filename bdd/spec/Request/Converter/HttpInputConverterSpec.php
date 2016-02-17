@@ -148,7 +148,7 @@ namespace spec\Lamudi\UseCaseBundle\Request\Converter {
             $this->initializeHttpRequest($httpRequest, $httpRequestData);
 
             /** @var DataFromHttpRequest $request */
-            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest);
+            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, array('options' => 'foo'));
             $request->var->shouldBe('attribute_value');
         }
 
