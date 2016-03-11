@@ -47,7 +47,7 @@ class UseCaseCompilerPass implements CompilerPassInterface
 
         $definition = $container->findDefinition('lamudi_use_case.container');
 
-        $this->addInputConvertersToContainer($container, $definition);
+        $this->addInputProcessorsToContainer($container, $definition);
         $this->addResponseProcessorsToContainer($container, $definition);
         $this->addUseCasesToContainer($container, $definition);
     }
@@ -85,12 +85,12 @@ class UseCaseCompilerPass implements CompilerPassInterface
      * @param ContainerBuilder $container
      * @param Definition       $definition
      */
-    private function addInputConvertersToContainer(ContainerBuilder $container, $definition)
+    private function addInputProcessorsToContainer(ContainerBuilder $container, $definition)
     {
-        $inputConverters = $container->findTaggedServiceIds('use_case_input_converter');
-        foreach ($inputConverters as $id => $tags) {
+        $inputProcessors = $container->findTaggedServiceIds('use_case_input_processor');
+        foreach ($inputProcessors as $id => $tags) {
             foreach ($tags as $attributes) {
-                $definition->addMethodCall('setInputConverter', array($attributes['alias'], new Reference($id)));
+                $definition->addMethodCall('setInputProcessor', array($attributes['alias'], new Reference($id)));
             }
         }
     }
@@ -101,8 +101,8 @@ class UseCaseCompilerPass implements CompilerPassInterface
      */
     private function addResponseProcessorsToContainer(ContainerBuilder $container, $definition)
     {
-        $inputConverters = $container->findTaggedServiceIds('use_case_response_processor');
-        foreach ($inputConverters as $id => $tags) {
+        $responseProcessors = $container->findTaggedServiceIds('use_case_response_processor');
+        foreach ($responseProcessors as $id => $tags) {
             foreach ($tags as $attributes) {
                 $definition->addMethodCall('setResponseProcessor', array($attributes['alias'], new Reference($id)));
             }
@@ -121,7 +121,7 @@ class UseCaseCompilerPass implements CompilerPassInterface
 
         if ($annotation->getInputType()) {
             $containerDefinition->addMethodCall(
-                'assignInputConverter',
+                'assignInputProcessor',
                 array($annotation->getName(), $annotation->getInputType(), $annotation->getInputOptions())
             );
         }

@@ -1,9 +1,9 @@
 <?php
 
-namespace spec\Lamudi\UseCaseBundle\Request\Converter {
+namespace spec\Lamudi\UseCaseBundle\Request\Processor {
 
     use Foo\Bar\Request\DataFromHttpRequest;
-    use Lamudi\UseCaseBundle\Request\Converter\InputConverterInterface;
+    use Lamudi\UseCaseBundle\Request\Processor\InputProcessorInterface;
     use PhpSpec\ObjectBehavior;
     use Prophecy\Argument;
     use Prophecy\Prophet;
@@ -14,18 +14,18 @@ namespace spec\Lamudi\UseCaseBundle\Request\Converter {
     use Symfony\Component\HttpFoundation\ServerBag;
 
     /**
-     * @mixin \Lamudi\UseCaseBundle\Request\Converter\HttpInputConverter
+     * @mixin \Lamudi\UseCaseBundle\Request\Processor\HttpInputProcessor
      */
-    class HttpInputConverterSpec extends ObjectBehavior
+    class HttpInputProcessorSpec extends ObjectBehavior
     {
         function it_is_initializable()
         {
-            $this->shouldHaveType('Lamudi\UseCaseBundle\Request\Converter\HttpInputConverter');
+            $this->shouldHaveType('Lamudi\UseCaseBundle\Request\Processor\HttpInputProcessor');
         }
 
-        public function it_is_an_input_converter()
+        public function it_is_an_input_processor()
         {
-            $this->shouldHaveType(InputConverterInterface::class);
+            $this->shouldHaveType(InputProcessorInterface::class);
         }
 
         public function it_collects_data_from_http_request(HttpRequest $httpRequest)

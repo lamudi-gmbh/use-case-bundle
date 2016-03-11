@@ -55,7 +55,7 @@ class UseCase
      */
     public function getInputType()
     {
-        return $this->config->getInputConverterName();
+        return $this->config->getInputProcessorName();
     }
 
     /**
@@ -63,7 +63,7 @@ class UseCase
      */
     public function getInputOptions()
     {
-        return $this->config->getInputConverterOptions();
+        return $this->config->getInputProcessorOptions();
     }
 
     /**

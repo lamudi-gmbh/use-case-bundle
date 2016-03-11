@@ -11,28 +11,28 @@ services:
     lamudi_use_case.container:
         class: "%lamudi_use_case.container.class%"
         calls:
-            - ["setDefaultInputConverter", ["%lamudi_angi_client.default_input_type%", "%lamudi_angi_client.default_input_options%"]]
+            - ["setDefaultInputProcessor", ["%lamudi_angi_client.default_input_type%", "%lamudi_angi_client.default_input_options%"]]
             - ["setDefaultResponseProcessor", ["%lamudi_angi_client.default_output_type%", "%lamudi_angi_client.default_output_options%"]]
 
     lamudi_use_case.request.resolver:
         class: "%lamudi_use_case.request.resolver.class%"
 
-    lamudi_use_case.form_input_converter:
-        class: Lamudi\UseCaseBundle\Request\Converter\FormInputConverter
+    lamudi_use_case.form_input_processor:
+        class: Lamudi\UseCaseBundle\Request\Processor\FormInputProcessor
         arguments: ["@form.factory"]
         tags:
-            - { name: use_case_input_converter, alias: form }
+            - { name: use_case_input_processor, alias: form }
 
-    lamudi_use_case.converter.http_input_converter:
-        class: Lamudi\UseCaseBundle\Request\Converter\HttpInputConverter
+    lamudi_use_case.input_processor.http:
+        class: Lamudi\UseCaseBundle\Request\Processor\HttpInputProcessor
         tags:
-            - { name: use_case_input_converter, alias: http }
+            - { name: use_case_input_processor, alias: http }
 
-    lamudi_use_case.converter.json_body_input_converter:
-        class: Lamudi\UseCaseBundle\Request\Converter\JsonBodyInputConverter
+    lamudi_use_case.input_processor.json_body:
+        class: Lamudi\UseCaseBundle\Request\Processor\JsonInputProcessor
         arguments: ["@serializer.encoder.json"]
         tags:
-            - { name: use_case_input_converter, alias: json }
+            - { name: use_case_input_processor, alias: json }
 
 
     lamudi_use_case.processor.twig_response_processor:
@@ -43,7 +43,7 @@ services:
         tags:
             - { name: use_case_response_processor, alias: twig }
 
-    app.use_case.json_response_processor:
+    lamudi_use_case.json_response_processor:
         class: Lamudi\UseCaseBundle\Response\Processor\JsonRenderer
         arguments: ["@serializer"]
         tags:

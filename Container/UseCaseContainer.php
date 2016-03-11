@@ -2,12 +2,12 @@
 
 namespace Lamudi\UseCaseBundle\Container;
 
-use Lamudi\UseCaseBundle\Exception\InputConverterNotFoundException;
+use Lamudi\UseCaseBundle\Exception\InputProcessorNotFoundException;
 use Lamudi\UseCaseBundle\Exception\RequestClassNotFoundException;
 use Lamudi\UseCaseBundle\Exception\ResponseProcessorNotFoundException;
 use Lamudi\UseCaseBundle\Exception\UseCaseNotFoundException;
-use Lamudi\UseCaseBundle\Request\Converter\DefaultInputConverter;
-use Lamudi\UseCaseBundle\Request\Converter\InputConverterInterface;
+use Lamudi\UseCaseBundle\Request\Processor\DefaultInputProcessor;
+use Lamudi\UseCaseBundle\Request\Processor\InputProcessorInterface;
 use Lamudi\UseCaseBundle\Request\Request;
 use Lamudi\UseCaseBundle\Response\Processor\IdentityResponseProcessor;
 use Lamudi\UseCaseBundle\Response\Processor\ResponseProcessorInterface;
@@ -23,7 +23,7 @@ class UseCaseContainer
     /**
      * @var array
      */
-    private $inputConverters = array();
+    private $inputProcessors = array();
 
     /**
      * @var ResponseProcessorInterface[]
@@ -36,29 +36,29 @@ class UseCaseContainer
     private $defaultConfiguration;
 
     /**
-     * @param InputConverterInterface    $defaultInputConverter
+     * @param InputProcessorInterface    $defaultInputProcessor
      * @param ResponseProcessorInterface $defaultResponseProcessor
      */
     public function __construct(
-        InputConverterInterface $defaultInputConverter = null,
+        InputProcessorInterface $defaultInputProcessor = null,
         ResponseProcessorInterface $defaultResponseProcessor = null
     )
     {
         $this->defaultConfiguration = new UseCaseConfiguration();
-        $this->setDefaultInputConverter('default', array());
+        $this->setDefaultInputProcessor('default', array());
         $this->setDefaultResponseProcessor('default', array());
         $this->defaultConfiguration->setRequestClass(Request::class);
 
-        $this->setInputConverter('default', $defaultInputConverter ?: new DefaultInputConverter());
+        $this->setInputProcessor('default', $defaultInputProcessor ?: new DefaultInputProcessor());
         $this->setResponseProcessor('default', $defaultResponseProcessor ?: new IdentityResponseProcessor());
     }
 
     /**
      * @param string $useCaseName
-     * @param mixed $inputData
+     * @param mixed $input
      * @return mixed
      */
-    public function execute($useCaseName, $inputData = null)
+    public function execute($useCaseName, $input = null)
     {
         $definition = $this->getDefinition($useCaseName);
         $useCase = $definition->getInstance();
@@ -68,7 +68,7 @@ class UseCaseContainer
         $processorOptions = $this->getResponseProcessorOptionsForUseCase($useCaseName);
 
         try {
-            $this->initializeRequest($request, $inputData, $definition);
+            $this->initializeRequest($request, $input, $definition);
             $response = $useCase->execute($request);
             return $processor->processResponse($response, $processorOptions);
         } catch (\Exception $e) {
@@ -78,21 +78,21 @@ class UseCaseContainer
 
     /**
      * @param Request           $request
-     * @param mixed             $inputData
+     * @param mixed             $input
      * @param UseCaseDefinition $definition
      */
-    private function initializeRequest(Request $request, $inputData, UseCaseDefinition $definition)
+    private function initializeRequest(Request $request, $input, UseCaseDefinition $definition)
     {
-        if ($definition->getInputConverterName()) {
-            $converterName = $definition->getInputConverterName();
-            $converterOptions = $definition->getInputConverterOptions();
+        if ($definition->getInputProcessorName()) {
+            $processorName = $definition->getInputProcessorName();
+            $processorOptions = $definition->getInputProcessorOptions();
         } else {
-            $converterName = $this->defaultConfiguration->getInputConverterName();
-            $converterOptions = $this->defaultConfiguration->getInputConverterOptions();
+            $processorName = $this->defaultConfiguration->getInputProcessorName();
+            $processorOptions = $this->defaultConfiguration->getInputProcessorOptions();
         }
 
-        $converter = $this->getInputConverter($converterName);
-        $converter->initializeRequest($request, $inputData, $converterOptions);
+        $inputProcessor = $this->getInputProcessor($processorName);
+        $inputProcessor->initializeRequest($request, $input, $processorOptions);
     }
 
     /**
@@ -115,39 +115,39 @@ class UseCaseContainer
 
     /**
      * @param string $name
-     * @return InputConverterInterface
+     * @return InputProcessorInterface
      */
-    public function getInputConverter($name)
+    public function getInputProcessor($name)
     {
-        if (!array_key_exists($name, $this->inputConverters)) {
-            throw new InputConverterNotFoundException(sprintf('Input converter "%s" not found.', $name));
+        if (!array_key_exists($name, $this->inputProcessors)) {
+            throw new InputProcessorNotFoundException(sprintf('Input Processor "%s" not found.', $name));
         }
 
-        return $this->inputConverters[$name];
+        return $this->inputProcessors[$name];
     }
 
     /**
      * @param string $name
-     * @param InputConverterInterface $inputConverter
+     * @param InputProcessorInterface $inputProcessor
      */
-    public function setInputConverter($name, InputConverterInterface $inputConverter)
+    public function setInputProcessor($name, InputProcessorInterface $inputProcessor)
     {
-        $this->inputConverters[$name] = $inputConverter;
+        $this->inputProcessors[$name] = $inputProcessor;
     }
 
     /**
      * @param string $type
      * @param array $options
      */
-    public function setDefaultInputConverter($type, $options)
+    public function setDefaultInputProcessor($type, $options)
     {
-        $this->defaultConfiguration->setInputConverterName($type);
-        $this->defaultConfiguration->setInputConverterOptions($options);
+        $this->defaultConfiguration->setInputProcessorName($type);
+        $this->defaultConfiguration->setInputProcessorOptions($options);
     }
 
     /**
      * @param string $name
-     * @return InputConverterInterface
+     * @return InputProcessorInterface
      */
     public function getResponseProcessor($name)
     {
@@ -188,13 +188,13 @@ class UseCaseContainer
 
     /**
      * @param string $useCaseName
-     * @param string $converterName
+     * @param string $processorName
      * @param array $options
      */
-    public function assignInputConverter($useCaseName, $converterName, $options = array())
+    public function assignInputProcessor($useCaseName, $processorName, $options = array())
     {
-        $this->getDefinition($useCaseName)->setInputConverterName($converterName);
-        $this->getDefinition($useCaseName)->setInputConverterOptions($options);
+        $this->getDefinition($useCaseName)->setInputProcessorName($processorName);
+        $this->getDefinition($useCaseName)->setInputProcessorOptions($options);
     }
 
     /**

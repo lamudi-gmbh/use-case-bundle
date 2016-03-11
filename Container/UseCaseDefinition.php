@@ -107,36 +107,36 @@ class UseCaseDefinition
     /**
      * @return string
      */
-    public function getInputConverterName()
+    public function getInputProcessorName()
     {
-        return $this->configuration->getInputConverterName();
+        return $this->configuration->getInputProcessorName();
     }
 
     /**
-     * @param string $inputConverterName
+     * @param string $inputProcessorName
      * @return UseCaseDefinition
      */
-    public function setInputConverterName($inputConverterName)
+    public function setInputProcessorName($inputProcessorName)
     {
-        $this->configuration->setInputConverterName($inputConverterName);
+        $this->configuration->setInputProcessorName($inputProcessorName);
         return $this;
     }
 
     /**
      * @return array
      */
-    public function getInputConverterOptions()
+    public function getInputProcessorOptions()
     {
-        return $this->configuration->getInputConverterOptions();
+        return $this->configuration->getInputProcessorOptions();
     }
 
     /**
-     * @param array $inputConverterOptions
+     * @param array $inputProcessorOptions
      * @return UseCaseDefinition
      */
-    public function setInputConverterOptions($inputConverterOptions)
+    public function setInputProcessorOptions($inputProcessorOptions)
     {
-        $this->configuration->setInputConverterOptions($inputConverterOptions);
+        $this->configuration->setInputProcessorOptions($inputProcessorOptions);
         return $this;
     }
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace Lamudi\UseCaseBundle\Request\Converter;
+namespace Lamudi\UseCaseBundle\Request\Processor;
 
 use Lamudi\UseCaseBundle\Request\Request;
 use Symfony\Component\Form\FormFactoryInterface;
 
-class FormInputConverter implements InputConverterInterface
+class FormInputProcessor implements InputProcessorInterface
 {
     /**
      * @var FormFactoryInterface
@@ -25,10 +25,10 @@ class FormInputConverter implements InputConverterInterface
      * determine the way to initialize the use case request object.
      *
      * @param Request $request The use case request object to be initialized.
-     * @param mixed $inputData Any object that contains input data.
+     * @param mixed $input Any object that contains input data.
      * @param array $options An array of options used to create the request object.
      */
-    public function initializeRequest($request, $inputData, $options = array())
+    public function initializeRequest($request, $input, $options = array())
     {
         if (!isset($options['name'])) {
             throw new \InvalidArgumentException();
@@ -36,13 +36,13 @@ class FormInputConverter implements InputConverterInterface
 
         if (isset($options['data_field'])) {
             $form = $this->formFactory->create($options['name']);
-            $form->handleRequest($inputData);
+            $form->handleRequest($input);
 
             $fieldName = $options['data_field'];
             $request->$fieldName = $form->getData();
         } else {
             $form = $this->formFactory->create($options['name'], $request, array('data_class' => get_class($request)));
-            $form->handleRequest($inputData);
+            $form->handleRequest($input);
         }
 
         return $request;

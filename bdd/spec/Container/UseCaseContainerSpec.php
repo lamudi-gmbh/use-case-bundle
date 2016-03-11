@@ -4,9 +4,9 @@ namespace spec\Lamudi\UseCaseBundle\Container;
 
 use Lamudi\UseCaseBundle\Exception\UseCaseException;
 use Lamudi\UseCaseBundle\Exception\UseCaseNotFoundException;
-use Lamudi\UseCaseBundle\Exception\InputConverterNotFoundException;
+use Lamudi\UseCaseBundle\Exception\InputProcessorNotFoundException;
 use Lamudi\UseCaseBundle\Exception\ResponseProcessorNotFoundException;
-use Lamudi\UseCaseBundle\Request\Converter\InputConverterInterface;
+use Lamudi\UseCaseBundle\Request\Processor\InputProcessorInterface;
 use Lamudi\UseCaseBundle\Request\Request;
 use Lamudi\UseCaseBundle\Response\Response;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -41,36 +41,36 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->shouldThrow(UseCaseNotFoundException::class)->duringExecute('no_such_use_case_here', array());
     }
 
-    public function it_creates_request_instance_based_on_use_case_configuration_and_passes_it_into_input_converter(
-        InputConverterInterface $inputConverter, UseCaseInterface $useCase
+    public function it_creates_request_instance_based_on_use_case_configuration_and_passes_it_into_input_processor(
+        InputProcessorInterface $inputProcessor, UseCaseInterface $useCase
     )
     {
         $this->set('use_case', $useCase);
-        $this->setInputConverter('form', $inputConverter);
-        $this->assignInputConverter('use_case', 'form');
+        $this->setInputProcessor('form', $inputProcessor);
+        $this->assignInputProcessor('use_case', 'form');
         $this->assignRequestClass('use_case', SomeUseCaseRequest::class);
 
-        $inputData = array('foo' => 'bar', 'key' => 'value');
-        $this->execute('use_case', $inputData);
+        $input = array('foo' => 'bar', 'key' => 'value');
+        $this->execute('use_case', $input);
 
-        $this->getInputConverter('form')->shouldReturn($inputConverter);
+        $this->getInputProcessor('form')->shouldReturn($inputProcessor);
         $useCase->execute(Argument::type(SomeUseCaseRequest::class))->shouldHaveBeenCalled();
-        $inputConverter->initializeRequest(Argument::type(SomeUseCaseRequest::class), $inputData, array())
+        $inputProcessor->initializeRequest(Argument::type(SomeUseCaseRequest::class), $input, array())
             ->shouldHaveBeenCalled();
     }
 
-    public function it_throws_an_exception_if_input_converter_does_not_exist(
-        InputConverterInterface $inputConverter, UseCaseInterface $useCase
+    public function it_throws_an_exception_if_input_processor_does_not_exist(
+        InputProcessorInterface $inputProcessor, UseCaseInterface $useCase
     )
     {
-        $inputData = array();
+        $input = array();
 
         $this->set('use_case', $useCase);
-        $this->setInputConverter('form', $inputConverter);
-        $this->assignInputConverter('use_case', 'no_such_converter_here');
+        $this->setInputProcessor('form', $inputProcessor);
+        $this->assignInputProcessor('use_case', 'no_such_processor_here');
 
-        $this->shouldThrow(InputConverterNotFoundException::class)->duringExecute('use_case', $inputData);
-        $this->shouldThrow(InputConverterNotFoundException::class)->duringGetInputConverter('no_such_converter_too');
+        $this->shouldThrow(InputProcessorNotFoundException::class)->duringExecute('use_case', $input);
+        $this->shouldThrow(InputProcessorNotFoundException::class)->duringGetInputProcessor('no_such_processor_too');
     }
 
     public function it_registers_response_processor_for_use_case_with_options(
@@ -135,26 +135,26 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->shouldThrow(ResponseProcessorNotFoundException::class)->duringGetResponseProcessor('no_such_processor_too');
     }
 
-    public function it_uses_default_input_converter_and_request_processor_when_no_custom_ones_are_registered(
-        InputConverterInterface $defaultInputConverter, ResponseProcessorInterface $defaultResponseProcessor,
+    public function it_uses_default_input_processor_and_request_processor_when_no_custom_ones_are_registered(
+        InputProcessorInterface $defaultInputProcessor, ResponseProcessorInterface $defaultResponseProcessor,
         UseCaseInterface $useCase, Response $response
     )
     {
-        $inputData = array('id' => 123);
+        $input = array('id' => 123);
 
-        $this->setInputConverter('default', $defaultInputConverter);
+        $this->setInputProcessor('default', $defaultInputProcessor);
         $this->setResponseProcessor('default', $defaultResponseProcessor);
         $this->set('another_use_case', $useCase);
         $useCase->execute(Argument::any())->willReturn($response);
 
-        $this->execute('another_use_case', $inputData);
+        $this->execute('another_use_case', $input);
 
-        $defaultInputConverter->initializeRequest(Argument::type(Request::class), $inputData, array())->shouldHaveBeenCalled();
+        $defaultInputProcessor->initializeRequest(Argument::type(Request::class), $input, array())->shouldHaveBeenCalled();
         $defaultResponseProcessor->processResponse($response, array())->shouldHaveBeenCalled();
 
     }
 
-    public function it_always_has_default_input_converter_and_request_processor(UseCaseInterface $useCase)
+    public function it_always_has_default_input_processor_and_request_processor(UseCaseInterface $useCase)
     {
         $this->set('yet_another_use_case', $useCase);
         $this->execute('yet_another_use_case', array())->shouldNotThrow(\Exception::class);
@@ -162,7 +162,7 @@ class UseCaseContainerSpec extends ObjectBehavior
 
     public function it_works_like_a_charm_with_several_use_cases_configured(
         UseCaseInterface $useCase1, UseCaseInterface $useCase2, UseCaseInterface $useCase3,
-        InputConverterInterface $inputConverter,
+        InputProcessorInterface $inputProcessor,
         ResponseProcessorInterface $responseProcessor, ResponseProcessorInterface $responseProcessor2
     )
     {
@@ -171,7 +171,7 @@ class UseCaseContainerSpec extends ObjectBehavior
         $useCase3->execute(Argument::any())->willThrow(new UseCaseException());
 
         $request = new Request();
-        $inputConverter->initializeRequest(Argument::type(Request::class), null, array('name' => 'registration_form'))->willReturn($request);
+        $inputProcessor->initializeRequest(Argument::type(Request::class), null, array('name' => 'registration_form'))->willReturn($request);
         $responseProcessor->processResponse(Argument::cetera())->willReturn('uc2 success');
         $responseProcessor2->processResponse(Argument::cetera())->willReturn('uc2 alias success');
         $responseProcessor2->handleException(Argument::cetera())->willReturn('uc3 error');
@@ -180,11 +180,11 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->set('uc2', $useCase2);
         $this->set('uc2_alias', $useCase2);
         $this->set('uc3', $useCase3);
-        $this->setInputConverter('form', $inputConverter);
+        $this->setInputProcessor('form', $inputProcessor);
         $this->setResponseProcessor('twig', $responseProcessor);
         $this->setResponseProcessor('twig2', $responseProcessor2);
 
-        $this->assignInputConverter('uc1', 'form', array('name' => 'registration_form'));
+        $this->assignInputProcessor('uc1', 'form', array('name' => 'registration_form'));
         $this->assignResponseProcessor('uc2', 'twig', array('template' => 'AppBundle:hello:index.html.twig'));
         $this->assignResponseProcessor('uc2_alias', 'twig2', array('template' => 'AppBundle:hello:index.html.twig'));
         $this->assignResponseProcessor('uc3', 'twig2', array('template' => 'AppBundle:hello:index.html.twig'));
@@ -195,20 +195,20 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->execute('uc3')->shouldReturn('uc3 error');
     }
 
-    public function it_sets_a_default_input_converter_using_its_alias(
-        InputConverterInterface $httpInputConverter, InputConverterInterface $formInputConverter,
+    public function it_sets_a_default_input_processor_using_its_alias(
+        InputProcessorInterface $httpInputProcessor, InputProcessorInterface $formInputProcessor,
         UseCaseInterface $useCase
     )
     {
         $this->set('use_case_with_defaults', $useCase);
-        $this->setInputConverter('default', $httpInputConverter);
-        $this->setInputConverter('form', $formInputConverter);
+        $this->setInputProcessor('default', $httpInputProcessor);
+        $this->setInputProcessor('form', $formInputProcessor);
         $defaultOptions = array('name' => 'default_form');
-        $this->setDefaultInputConverter('form', $defaultOptions);
+        $this->setDefaultInputProcessor('form', $defaultOptions);
 
         $this->execute('use_case_with_defaults', array());
 
-        $formInputConverter->initializeRequest(Argument::type(Request::class), array(), $defaultOptions)
+        $formInputProcessor->initializeRequest(Argument::type(Request::class), array(), $defaultOptions)
             ->shouldHaveBeenCalled();
     }
 

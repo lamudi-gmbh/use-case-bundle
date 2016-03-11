@@ -77,7 +77,7 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $annotationReader->getClassAnnotations(new \ReflectionClass('\\Exception'))->willReturn(array($useCase3Annotation));
 
         $useCaseContainerDefinition->addMethodCall('set', array('use_case_1', new Reference('uc1')))->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('assignInputConverter', array('use_case_1', 'form', array('name' => 'registration_form')))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('assignInputProcessor', array('use_case_1', 'form', array('name' => 'registration_form')))->shouldBeCalled();
 
         $useCaseContainerDefinition->addMethodCall('set', array('use_case_2', new Reference('uc2')))->shouldBeCalled();
         $useCaseContainerDefinition->addMethodCall('assignResponseProcessor', array('use_case_2', 'twig', array('template' => 'AppBundle:hello:index.html.twig')))->shouldBeCalled();
@@ -86,25 +86,25 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $useCaseContainerDefinition->addMethodCall('assignResponseProcessor', array('use_case_2_alias', 'twig', array('template' => 'AppBundle:goodbye:index.html.twig')))->shouldBeCalled();
 
         $useCaseContainerDefinition->addMethodCall('set', array('use_case_3', new Reference('uc3')))->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('assignInputConverter', array('use_case_3', 'http', array()))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('assignInputProcessor', array('use_case_3', 'http', array()))->shouldBeCalled();
         $useCaseContainerDefinition->addMethodCall('assignResponseProcessor', array('use_case_3', 'twig', array('template' => 'AppBundle:hello:index.html.twig')))->shouldBeCalled();
 
         $this->process($containerBuilder);
     }
 
-    public function it_adds_input_converters_to_container_under_an_alias(
+    public function it_adds_input_processors_to_container_under_an_alias(
         ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition
     )
     {
-        $inputConvertersWithTags = array(
-            'input_converter_1' => array(array('alias' => 'foo')),
-            'input_converter_2' => array(array('alias' => 'bar'))
+        $inputProcessorsWithTags = array(
+            'input_processor_1' => array(array('alias' => 'foo')),
+            'input_processor_2' => array(array('alias' => 'bar'))
         );
-        $containerBuilder->findTaggedServiceIds('use_case_input_converter')->willReturn($inputConvertersWithTags);
+        $containerBuilder->findTaggedServiceIds('use_case_input_processor')->willReturn($inputProcessorsWithTags);
 
-        $useCaseContainerDefinition->addMethodCall('setInputConverter', array('foo', new Reference('input_converter_1')))
+        $useCaseContainerDefinition->addMethodCall('setInputProcessor', array('foo', new Reference('input_processor_1')))
             ->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('setInputConverter', array('bar', new Reference('input_converter_2')))
+        $useCaseContainerDefinition->addMethodCall('setInputProcessor', array('bar', new Reference('input_processor_2')))
             ->shouldBeCalled();
 
         $this->process($containerBuilder);
@@ -114,11 +114,11 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition
     )
     {
-        $inputConvertersWithTags = array(
+        $inputProcessorsWithTags = array(
             'response_processor_1' => array(array('alias' => 'faz')),
             'response_processor_2' => array(array('alias' => 'baz'))
         );
-        $containerBuilder->findTaggedServiceIds('use_case_response_processor')->willReturn($inputConvertersWithTags);
+        $containerBuilder->findTaggedServiceIds('use_case_response_processor')->willReturn($inputProcessorsWithTags);
 
         $useCaseContainerDefinition->addMethodCall('setResponseProcessor', array('faz', new Reference('response_processor_1')))
             ->shouldBeCalled();

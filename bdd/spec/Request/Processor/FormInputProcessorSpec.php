@@ -1,8 +1,8 @@
 <?php
 
-namespace spec\Lamudi\UseCaseBundle\Request\Converter;
+namespace spec\Lamudi\UseCaseBundle\Request\Processor;
 
-use Lamudi\UseCaseBundle\Request\Converter\InputConverterInterface;
+use Lamudi\UseCaseBundle\Request\Processor\InputProcessorInterface;
 use Lamudi\UseCaseBundle\Request\Request;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
@@ -10,9 +10,9 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 
 /**
- * @mixin \Lamudi\UseCaseBundle\Request\Converter\FormInputConverter
+ * @mixin \Lamudi\UseCaseBundle\Request\Processor\FormInputProcessor
  */
-class FormInputConverterSpec extends ObjectBehavior
+class FormInputProcessorSpec extends ObjectBehavior
 {
     public function let(FormFactoryInterface $formFactory, FormInterface $form)
     {
@@ -22,12 +22,12 @@ class FormInputConverterSpec extends ObjectBehavior
 
     function it_is_initializable()
     {
-        $this->shouldHaveType('Lamudi\UseCaseBundle\Request\Converter\FormInputConverter');
+        $this->shouldHaveType('Lamudi\UseCaseBundle\Request\Processor\FormInputProcessor');
     }
 
-    public function it_is_an_input_converter()
+    public function it_is_an_input_processor()
     {
-        $this->shouldHaveType(InputConverterInterface::class);
+        $this->shouldHaveType(InputProcessorInterface::class);
     }
 
     public function it_throws_an_exception_if_form_name_is_not_specified()
@@ -49,10 +49,10 @@ class FormInputConverterSpec extends ObjectBehavior
         $request = new Request();
         $formFactory->create('order_form', Argument::cetera())->willReturn($form);
 
-        $inputData = array('foo' => 'bar', 'baz' => 213);
-        $this->initializeRequest($request, $inputData, array('name' => 'order_form'));
+        $input = array('foo' => 'bar', 'baz' => 213);
+        $this->initializeRequest($request, $input, array('name' => 'order_form'));
 
-        $form->handleRequest($inputData)->shouldHaveBeenCalled();
+        $form->handleRequest($input)->shouldHaveBeenCalled();
     }
 
     public function it_dumps_form_data_to_specified_field(FormFactoryInterface $formFactory, FormInterface $form)
@@ -60,14 +60,14 @@ class FormInputConverterSpec extends ObjectBehavior
         $request = new Request();
         $formFactory->create('order_form')->willReturn($form);
 
-        $inputData = array('foo' => 'bar', 'baz' => 213);
+        $input = array('foo' => 'bar', 'baz' => 213);
         $formData = array('foo' => 'bar_', 'baz' => 213312, 'csrf_token' => 'xyz');
-        $form->handleRequest($inputData)->shouldBeCalled();
+        $form->handleRequest($input)->shouldBeCalled();
         $form->getData()->willReturn($formData);
 
-        $request = $this->initializeRequest($request, $inputData, array('name' => 'order_form', 'data_field' => 'formData'));
+        $request = $this->initializeRequest($request, $input, array('name' => 'order_form', 'data_field' => 'formData'));
 
-        $form->submit($inputData)->shouldNotHaveBeenCalled();
+        $form->submit($input)->shouldNotHaveBeenCalled();
         $request->formData->shouldBe($formData);
     }
 }

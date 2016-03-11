@@ -15,12 +15,12 @@ class UseCaseConfiguration
     /**
      * @var string
      */
-    private $inputConverterName;
+    private $inputProcessorName;
 
     /**
      * @var array
      */
-    private $inputConverterOptions = array();
+    private $inputProcessorOptions = array();
 
     /**
      * @var string
@@ -38,7 +38,7 @@ class UseCaseConfiguration
     public function __construct($data = array())
     {
         if (isset($data['input'])) {
-            $this->setConfiguration('inputConverter', $data['input']);
+            $this->setConfiguration('inputProcessor', $data['input']);
         }
         if (isset($data['output'])) {
             $this->setConfiguration('responseProcessor', $data['output']);
@@ -66,36 +66,36 @@ class UseCaseConfiguration
     /**
      * @return string
      */
-    public function getInputConverterName()
+    public function getInputProcessorName()
     {
-        return $this->inputConverterName;
+        return $this->inputProcessorName;
     }
 
     /**
-     * @param string $inputConverterName
+     * @param string $inputProcessorName
      * @return UseCaseConfiguration
      */
-    public function setInputConverterName($inputConverterName)
+    public function setInputProcessorName($inputProcessorName)
     {
-        $this->inputConverterName = $inputConverterName;
+        $this->inputProcessorName = $inputProcessorName;
         return $this;
     }
 
     /**
      * @return array
      */
-    public function getInputConverterOptions()
+    public function getInputProcessorOptions()
     {
-        return $this->inputConverterOptions;
+        return $this->inputProcessorOptions;
     }
 
     /**
-     * @param array $inputConverterOptions
+     * @param array $inputProcessorOptions
      * @return UseCaseConfiguration
      */
-    public function setInputConverterOptions($inputConverterOptions)
+    public function setInputProcessorOptions($inputProcessorOptions)
     {
-        $this->inputConverterOptions = $inputConverterOptions;
+        $this->inputProcessorOptions = $inputProcessorOptions;
         return $this;
     }
 

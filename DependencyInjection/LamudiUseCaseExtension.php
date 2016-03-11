@@ -28,9 +28,9 @@ class LamudiUseCaseExtension extends Extension
 
         if (isset($config['defaults'])) {
             $defaultUseCaseConfig = new UseCaseConfiguration($config['defaults']);
-            if ($defaultUseCaseConfig->getInputConverterName()) {
-                $container->setParameter('lamudi_angi_client.default_input_type', $defaultUseCaseConfig->getInputConverterName());
-                $container->setParameter('lamudi_angi_client.default_input_options', $defaultUseCaseConfig->getInputConverterOptions());
+            if ($defaultUseCaseConfig->getInputProcessorName()) {
+                $container->setParameter('lamudi_angi_client.default_input_type', $defaultUseCaseConfig->getInputProcessorName());
+                $container->setParameter('lamudi_angi_client.default_input_options', $defaultUseCaseConfig->getInputProcessorOptions());
             }
             if ($defaultUseCaseConfig->getResponseProcessorName()) {
                 $container->setParameter('lamudi_angi_client.default_output_type', $defaultUseCaseConfig->getResponseProcessorName());
