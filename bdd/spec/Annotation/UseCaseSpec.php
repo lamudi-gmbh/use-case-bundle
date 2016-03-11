@@ -12,7 +12,7 @@ class UseCaseSpec extends ObjectBehavior
 {
     public function let()
     {
-        $this->beConstructedWith(array('value' => 'use_case'));
+        $this->beConstructedWith(['value' => 'use_case']);
     }
 
     function it_is_initializable()
@@ -22,51 +22,49 @@ class UseCaseSpec extends ObjectBehavior
 
     public function it_requires_value()
     {
-        $this->beConstructedWith(array('input' => 'http', 'output' => 'json'));
+        $this->beConstructedWith(['input' => 'http', 'output' => 'json']);
         $this->shouldThrow(\InvalidArgumentException::class)->duringInstantiation();
     }
 
     public function it_sets_input()
     {
         $this->beConstructedWith(
-            array(
+            [
                 'value' => 'uc',
-                'input' => array(
+                'input' => [
                     'type' => 'form',
                     'name' => 'search_form',
                     'class' => 'DumbForm',
                     'method' => 'DELETE'
-                )
-            )
+                ]
+            ]
         );
 
         $this->getInputType()->shouldBe('form');
-        $this->getInputOptions()->shouldBe(array(
+        $this->getInputOptions()->shouldBe([
             'name'   => 'search_form',
             'class'  => 'DumbForm',
             'method' => 'DELETE'
-        ));
+        ]);
     }
 
     public function it_sets_output()
     {
-        $this->beConstructedWith(
-            array(
-                'value' => 'uc',
-                'output' => array(
-                    'type' => 'twig',
-                    'template' => 'base.html.twig',
-                    'form' => 'DumberForm',
-                    'css' => 'none'
-                )
-            )
-        );
+        $this->beConstructedWith([
+            'value' => 'uc',
+            'output' => [
+                'type' => 'twig',
+                'template' => 'base.html.twig',
+                'form' => 'DumberForm',
+                'css' => 'none'
+            ]
+        ]);
 
         $this->getOutputType()->shouldBe('twig');
-        $this->getOutputOptions()->shouldBe(array(
+        $this->getOutputOptions()->shouldBe([
             'template' => 'base.html.twig',
             'form'     => 'DumberForm',
             'css'      => 'none'
-        ));
+        ]);
     }
 }

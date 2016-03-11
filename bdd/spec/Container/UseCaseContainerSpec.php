@@ -38,7 +38,7 @@ class UseCaseContainerSpec extends ObjectBehavior
     {
         $this->set('a_use_case', $useCase);
         $this->shouldThrow(UseCaseNotFoundException::class)->duringGet('no_such_use_case_here');
-        $this->shouldThrow(UseCaseNotFoundException::class)->duringExecute('no_such_use_case_here', array());
+        $this->shouldThrow(UseCaseNotFoundException::class)->duringExecute('no_such_use_case_here', []);
     }
 
     public function it_creates_request_instance_based_on_use_case_configuration_and_passes_it_into_input_processor(
@@ -50,12 +50,12 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->assignInputProcessor('use_case', 'form');
         $this->assignRequestClass('use_case', SomeUseCaseRequest::class);
 
-        $input = array('foo' => 'bar', 'key' => 'value');
+        $input = ['foo' => 'bar', 'key' => 'value'];
         $this->execute('use_case', $input);
 
         $this->getInputProcessor('form')->shouldReturn($inputProcessor);
         $useCase->execute(Argument::type(SomeUseCaseRequest::class))->shouldHaveBeenCalled();
-        $inputProcessor->initializeRequest(Argument::type(SomeUseCaseRequest::class), $input, array())
+        $inputProcessor->initializeRequest(Argument::type(SomeUseCaseRequest::class), $input, [])
             ->shouldHaveBeenCalled();
     }
 
@@ -63,7 +63,7 @@ class UseCaseContainerSpec extends ObjectBehavior
         InputProcessorInterface $inputProcessor, UseCaseInterface $useCase
     )
     {
-        $input = array();
+        $input = [];
 
         $this->set('use_case', $useCase);
         $this->setInputProcessor('form', $inputProcessor);
@@ -83,13 +83,13 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->assignResponseProcessor('use_case', 'twig');
         $useCase->execute(Argument::any())->willReturn($useCaseResponse);
 
-        $useCaseResponseOptions = array('template' => 'HelloBundle:hello:index.html.twig');
+        $useCaseResponseOptions = ['template' => 'HelloBundle:hello:index.html.twig'];
         $responseProcessor->processResponse($useCaseResponse, $useCaseResponseOptions)->willReturn($httpResponse);
 
         $this->setResponseProcessor('twig', $responseProcessor);
         $this->assignResponseProcessor('use_case', 'twig', $useCaseResponseOptions);
 
-        $this->execute('use_case', array())->shouldReturn($httpResponse);
+        $this->execute('use_case', [])->shouldReturn($httpResponse);
         $this->getResponseProcessor('twig')->shouldReturn($responseProcessor);
     }
 
@@ -104,16 +104,16 @@ class UseCaseContainerSpec extends ObjectBehavior
         $exception = new UseCaseException();
         $useCase->execute(Argument::any())->willThrow($exception);
 
-        $useCaseResponseOptions = array(
+        $useCaseResponseOptions = [
             'template' => 'HelloBundle:hello:index.html.twig',
             'error_template' => 'HelloBundle:goodbye:epic_fail.html.twig'
-        );
+        ];
         $responseProcessor->handleException($exception, $useCaseResponseOptions)->willReturn($httpResponse);
 
         $this->setResponseProcessor('twig', $responseProcessor);
         $this->assignResponseProcessor('use_case', 'twig', $useCaseResponseOptions);
 
-        $this->execute('use_case', array())->shouldReturn($httpResponse);
+        $this->execute('use_case', [])->shouldReturn($httpResponse);
     }
 
 
@@ -126,12 +126,12 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->assignResponseProcessor('use_case', 'twig');
 
         $useCase->execute(Argument::any())->willReturn($useCaseResponse);
-        $useCaseResponseOptions = array('template' => 'HelloBundle:hello:index.html.twig');
+        $useCaseResponseOptions = ['template' => 'HelloBundle:hello:index.html.twig'];
 
         $this->setResponseProcessor('twig', $responseProcessor);
         $this->assignResponseProcessor('use_case', 'no_such_processor', $useCaseResponseOptions);
 
-        $this->shouldThrow(ResponseProcessorNotFoundException::class)->duringExecute('use_case', array());
+        $this->shouldThrow(ResponseProcessorNotFoundException::class)->duringExecute('use_case', []);
         $this->shouldThrow(ResponseProcessorNotFoundException::class)->duringGetResponseProcessor('no_such_processor_too');
     }
 
@@ -140,7 +140,7 @@ class UseCaseContainerSpec extends ObjectBehavior
         UseCaseInterface $useCase, Response $response
     )
     {
-        $input = array('id' => 123);
+        $input = ['id' => 123];
 
         $this->setInputProcessor('default', $defaultInputProcessor);
         $this->setResponseProcessor('default', $defaultResponseProcessor);
@@ -149,15 +149,15 @@ class UseCaseContainerSpec extends ObjectBehavior
 
         $this->execute('another_use_case', $input);
 
-        $defaultInputProcessor->initializeRequest(Argument::type(Request::class), $input, array())->shouldHaveBeenCalled();
-        $defaultResponseProcessor->processResponse($response, array())->shouldHaveBeenCalled();
+        $defaultInputProcessor->initializeRequest(Argument::type(Request::class), $input, [])->shouldHaveBeenCalled();
+        $defaultResponseProcessor->processResponse($response, [])->shouldHaveBeenCalled();
 
     }
 
     public function it_always_has_default_input_processor_and_request_processor(UseCaseInterface $useCase)
     {
         $this->set('yet_another_use_case', $useCase);
-        $this->execute('yet_another_use_case', array())->shouldNotThrow(\Exception::class);
+        $this->execute('yet_another_use_case', [])->shouldNotThrow(\Exception::class);
     }
 
     public function it_works_like_a_charm_with_several_use_cases_configured(
@@ -171,7 +171,7 @@ class UseCaseContainerSpec extends ObjectBehavior
         $useCase3->execute(Argument::any())->willThrow(new UseCaseException());
 
         $request = new Request();
-        $inputProcessor->initializeRequest(Argument::type(Request::class), null, array('name' => 'registration_form'))->willReturn($request);
+        $inputProcessor->initializeRequest(Argument::type(Request::class), null, ['name' => 'registration_form'])->willReturn($request);
         $responseProcessor->processResponse(Argument::cetera())->willReturn('uc2 success');
         $responseProcessor2->processResponse(Argument::cetera())->willReturn('uc2 alias success');
         $responseProcessor2->handleException(Argument::cetera())->willReturn('uc3 error');
@@ -184,10 +184,10 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->setResponseProcessor('twig', $responseProcessor);
         $this->setResponseProcessor('twig2', $responseProcessor2);
 
-        $this->assignInputProcessor('uc1', 'form', array('name' => 'registration_form'));
-        $this->assignResponseProcessor('uc2', 'twig', array('template' => 'AppBundle:hello:index.html.twig'));
-        $this->assignResponseProcessor('uc2_alias', 'twig2', array('template' => 'AppBundle:hello:index.html.twig'));
-        $this->assignResponseProcessor('uc3', 'twig2', array('template' => 'AppBundle:hello:index.html.twig'));
+        $this->assignInputProcessor('uc1', 'form', ['name' => 'registration_form']);
+        $this->assignResponseProcessor('uc2', 'twig', ['template' => 'AppBundle:hello:index.html.twig']);
+        $this->assignResponseProcessor('uc2_alias', 'twig2', ['template' => 'AppBundle:hello:index.html.twig']);
+        $this->assignResponseProcessor('uc3', 'twig2', ['template' => 'AppBundle:hello:index.html.twig']);
 
         $this->execute('uc1')->shouldReturnAnInstanceOf(Response::class);
         $this->execute('uc2')->shouldReturn('uc2 success');
@@ -203,12 +203,12 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->set('use_case_with_defaults', $useCase);
         $this->setInputProcessor('default', $httpInputProcessor);
         $this->setInputProcessor('form', $formInputProcessor);
-        $defaultOptions = array('name' => 'default_form');
+        $defaultOptions = ['name' => 'default_form'];
         $this->setDefaultInputProcessor('form', $defaultOptions);
 
-        $this->execute('use_case_with_defaults', array());
+        $this->execute('use_case_with_defaults', []);
 
-        $formInputProcessor->initializeRequest(Argument::type(Request::class), array(), $defaultOptions)
+        $formInputProcessor->initializeRequest(Argument::type(Request::class), [], $defaultOptions)
             ->shouldHaveBeenCalled();
     }
 
@@ -220,12 +220,12 @@ class UseCaseContainerSpec extends ObjectBehavior
         $this->set('use_case_with_more_defaults', $useCase);
         $this->setResponseProcessor('twig', $twigResponseProcessor);
         $this->setResponseProcessor('json', $jsonResponseProcessor);
-        $defaultOptions = array('template' => '::base.html.twig');
+        $defaultOptions = ['template' => '::base.html.twig'];
 
         $this->setDefaultResponseProcessor('twig', $defaultOptions);
         $useCase->execute(Argument::any())->willReturn($response);
 
-        $this->execute('use_case_with_more_defaults', array());
+        $this->execute('use_case_with_more_defaults', []);
 
         $twigResponseProcessor->processResponse($response, $defaultOptions)->shouldHaveBeenCalled();
     }

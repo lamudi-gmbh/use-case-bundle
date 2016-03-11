@@ -36,8 +36,8 @@ class JsonRendererSpec extends ObjectBehavior
     {
         $serializer->serialize(Argument::any(), 'json')->will(function($arguments) { return json_encode($arguments[0]); });
 
-        $extraFields = array('code' => 200, 'success' => true, 'praise' => 'u r awesome');
-        $result = $this->processResponse(array('foo' => 'bar'), array('append_on_success' => $extraFields));
+        $extraFields = ['code' => 200, 'success' => true, 'praise' => 'u r awesome'];
+        $result = $this->processResponse(['foo' => 'bar'], ['append_on_success' => $extraFields]);
 
         $result->getContent()->shouldMatch('/"foo":"bar"/');
         $result->getContent()->shouldMatch('/"code":200/');
@@ -50,8 +50,8 @@ class JsonRendererSpec extends ObjectBehavior
         $serializer->serialize(Argument::any(), 'json')->will(function($arguments) { return json_encode($arguments[0]); });
         $exception = new UseCaseException('epic fail', 500);
 
-        $extraFields = array('code' => 500, 'success' => false);
-        $result = $this->handleException($exception, array('append_on_error' => $extraFields));
+        $extraFields = ['code' => 500, 'success' => false];
+        $result = $this->handleException($exception, ['append_on_error' => $extraFields]);
 
         $result->getStatusCode()->shouldBe(500);
         $result->getContent()->shouldMatch('/"code":' . $exception->getCode() . '/');

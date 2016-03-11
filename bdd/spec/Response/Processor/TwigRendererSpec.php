@@ -12,7 +12,7 @@ use Symfony\Component\Form\FormView;
 
 /**
  * Class TwigRendererSpec
- * @mixin \Lamudi\UseCaseBundle\Response\Processor\TwigRenLamudi\UseCaseBundle\Responsederer
+ * @mixin \Lamudi\UseCaseBundle\Response\Processor\TwigRenderer
  */
 class TwigRendererSpec extends ObjectBehavior
 {
@@ -28,7 +28,7 @@ class TwigRendererSpec extends ObjectBehavior
 
     public function it_throws_an_exception_when_no_template_is_specified()
     {
-        $this->shouldThrow(\InvalidArgumentException::class)->duringProcessResponse(new Response(), array());
+        $this->shouldThrow(\InvalidArgumentException::class)->duringProcessResponse(new Response(), []);
     }
 
     public function it_creates_views_of_specified_forms(
@@ -42,20 +42,20 @@ class TwigRendererSpec extends ObjectBehavior
         $contactForm->createView()->willReturn($contactFormView);
         $searchForm->createView()->willReturn($searchFormView);
 
-        $options = array(
+        $options = [
             'template' => ':default:index.html.twig',
-            'forms' => array(
+            'forms' => [
                 'form' => 'contact_form',
                 'anotherForm' => 'search_form'
-            )
-        );
+            ]
+        ];
 
         $this->setFormFactory($formFactory);
         $this->processResponse(new Response(), $options);
 
-        $templatingEngine->renderResponse(':default:index.html.twig', array(
+        $templatingEngine->renderResponse(':default:index.html.twig', [
             'form' => $contactFormView->getWrappedObject(), 'anotherForm' => $searchFormView->getWrappedObject()
-        ))->shouldHaveBeenCalled();
+        ])->shouldHaveBeenCalled();
     }
 
     public function it_sets_data_of_displayed_form(
@@ -63,29 +63,28 @@ class TwigRendererSpec extends ObjectBehavior
     )
     {
         $response = new Response();
-        $response->formData = array('name' => 'John', 'age' => 40, 'city' => 'Wąbrzeźno');
+        $response->formData = ['name' => 'John', 'age' => 40, 'city' => 'Wąbrzeźno'];
 
         $formFactory->create('some_form')->willReturn($form);
 
         $form->setData($response->formData)->shouldBeCalled();
         $form->createView()->willReturn($formView);
 
-        $options = array(
+        $options = [
             'template' => ':default:index.html.twig',
-            'forms'    => array(
-                'formView' => array(
+            'forms'    => [
+                'formView' => [
                     'name' => 'some_form',
                     'data_field' => 'formData'
-                )
-            )
-        );
+                ]
+            ]
+        ];
 
         $this->setFormFactory($formFactory);
         $this->processResponse($response, $options);
 
         $templatingEngine
-            ->renderResponse(':default:index.html.twig', array('formView' => $formView->getWrappedObject()))
+            ->renderResponse(':default:index.html.twig', ['formView' => $formView->getWrappedObject()])
             ->shouldHaveBeenCalled();
-
     }
 }

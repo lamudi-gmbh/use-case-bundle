@@ -30,15 +30,15 @@ namespace spec\Lamudi\UseCaseBundle\Request\Processor {
 
         public function it_collects_data_from_http_request(HttpRequest $httpRequest)
         {
-            $httpRequestData = array(
-                'GET'        => array('query'     => 'query_value'),
-                'POST'       => array('request'   => 'request_value'),
-                'FILES'      => array('file'      => 'file_value'),
-                'COOKIE'     => array('cookie'    => 'cookie_value'),
-                'SERVER'     => array('server'    => 'server_value'),
-                'headers'    => array('header'    => 'header_value'),
-                'attrs'      => array('attribute' => 'attribute_value'),
-            );
+            $httpRequestData = [
+                'GET'     => ['query' => 'query_value'],
+                'POST'    => ['request' => 'request_value'],
+                'FILES'   => ['file' => 'file_value'],
+                'COOKIE'  => ['cookie' => 'cookie_value'],
+                'SERVER'  => ['server' => 'server_value'],
+                'headers' => ['header' => 'header_value'],
+                'attrs'   => ['attribute' => 'attribute_value'],
+            ];
             $this->initializeHttpRequest($httpRequest, $httpRequestData);
 
             /** @var DataFromHttpRequest $request */
@@ -65,38 +65,39 @@ namespace spec\Lamudi\UseCaseBundle\Request\Processor {
 
         public function it_reads_data_from_http_request_with_given_priority(HttpRequest $httpRequest)
         {
-            $this->initializeHttpRequest($httpRequest, array(
-                'GET'     => array('var1' => 'G_value_1', 'var2' => 'G_value_2', 'var3' => 'G_value_3'),
-                'POST'    => array('var1' => 'P_value_1', 'var2' => 'P_value_2'),
-                'FILES'   => array(                       'var2' => 'F_value_2', 'var3' => 'F_value_3'),
-                'COOKIE'  => array('var1' => 'C_value_1'),
-                'SERVER'  => array('var1' => 'S_value_1',                        'var3' => 'S_value_3'),
-                'headers' => array(                       'var2' => 'H_value_2'),
-                'attrs'   => array(                                              'var3' => 'A_value_3'),
-            ));
+            $this->initializeHttpRequest($httpRequest, [
+                'GET'     => ['var1' => 'G_value_1', 'var2' => 'G_value_2', 'var3' => 'G_value_3'],
+                'POST'    => ['var1' => 'P_value_1', 'var2' => 'P_value_2'],
+                'FILES'   => [                       'var2' => 'F_value_2', 'var3' => 'F_value_3'],
+                'COOKIE'  => ['var1' => 'C_value_1'],
+                'SERVER'  => ['var1' => 'S_value_1',                        'var3' => 'S_value_3'],
+                'headers' => [                       'var2' => 'H_value_2'],
+                'attrs'   => [                                              'var3' => 'A_value_3'],
+            ]
+            );
 
             /** @var DataFromHttpRequest $request */
-            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, array('order' => 'GPC'));
+            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, ['order' => 'GPC']);
             $request->var1->shouldBe('C_value_1');
             $request->var2->shouldBe('P_value_2');
             $request->var3->shouldBe('G_value_3');
 
-            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, array('order' => 'PCG'));
+            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, ['order' => 'PCG']);
             $request->var1->shouldBe('G_value_1');
             $request->var2->shouldBe('G_value_2');
             $request->var3->shouldBe('G_value_3');
 
-            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, array('order' => 'GCP'));
+            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, ['order' => 'GCP']);
             $request->var1->shouldBe('P_value_1');
             $request->var2->shouldBe('P_value_2');
             $request->var3->shouldBe('G_value_3');
 
-            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, array('order' => 'PSA'));
+            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, ['order' => 'PSA']);
             $request->var1->shouldBe('S_value_1');
             $request->var2->shouldBe('P_value_2');
             $request->var3->shouldBe('A_value_3');
 
-            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, array('order' => 'FSCAGH'));
+            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, ['order' => 'FSCAGH']);
             $request->var1->shouldBe('G_value_1');
             $request->var2->shouldBe('H_value_2');
             $request->var3->shouldBe('G_value_3');
@@ -113,13 +114,13 @@ namespace spec\Lamudi\UseCaseBundle\Request\Processor {
             $cookiesBag = $prophet->prophesize(ParameterBag::class);
             $headersBag = $prophet->prophesize(HeaderBag::class);
 
-            $attributesBag->all()->willReturn(isset($data['attrs']) ? $data['attrs'] : array());
-            $requestBag->all()->willReturn(isset($data['POST']) ? $data['POST'] : array());
-            $queryBag->all()->willReturn(isset($data['GET']) ? $data['GET'] : array());
-            $serverBag->all()->willReturn(isset($data['SERVER']) ? $data['SERVER'] : array());
-            $filesBag->all()->willReturn(isset($data['FILES']) ? $data['FILES'] : array());
-            $cookiesBag->all()->willReturn(isset($data['COOKIE']) ? $data['COOKIE'] : array());
-            $headersBag->all()->willReturn(isset($data['headers']) ? $data['headers'] : array());
+            $attributesBag->all()->willReturn(isset($data['attrs']) ? $data['attrs'] : []);
+            $requestBag->all()->willReturn(isset($data['POST']) ? $data['POST'] : []);
+            $queryBag->all()->willReturn(isset($data['GET']) ? $data['GET'] : []);
+            $serverBag->all()->willReturn(isset($data['SERVER']) ? $data['SERVER'] : []);
+            $filesBag->all()->willReturn(isset($data['FILES']) ? $data['FILES'] : []);
+            $cookiesBag->all()->willReturn(isset($data['COOKIE']) ? $data['COOKIE'] : []);
+            $headersBag->all()->willReturn(isset($data['headers']) ? $data['headers'] : []);
 
             $httpRequest->attributes = $attributesBag;
             $httpRequest->request = $requestBag;
@@ -136,19 +137,19 @@ namespace spec\Lamudi\UseCaseBundle\Request\Processor {
          */
         private function attributesOverrideAll(HttpRequest $httpRequest)
         {
-            $httpRequestData = array(
-                'GET' => array('var' => 'query_value'),
-                'POST' => array('var' => 'request_value'),
-                'FILES' => array('var' => 'file_value'),
-                'COOKIE' => array('var' => 'cookie_value'),
-                'SERVER' => array('var' => 'server_value'),
-                'headers' => array('var' => 'header_value'),
-                'attrs' => array('var' => 'attribute_value'),
-            );
+            $httpRequestData = [
+                'GET'     => ['var' => 'query_value'],
+                'POST'    => ['var' => 'request_value'],
+                'FILES'   => ['var' => 'file_value'],
+                'COOKIE'  => ['var' => 'cookie_value'],
+                'SERVER'  => ['var' => 'server_value'],
+                'headers' => ['var' => 'header_value'],
+                'attrs'   => ['var' => 'attribute_value'],
+            ];
             $this->initializeHttpRequest($httpRequest, $httpRequestData);
 
             /** @var DataFromHttpRequest $request */
-            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, array('options' => 'foo'));
+            $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, ['options' => 'foo']);
             $request->var->shouldBe('attribute_value');
         }
 
@@ -157,14 +158,14 @@ namespace spec\Lamudi\UseCaseBundle\Request\Processor {
          */
         private function headersOverrideGetPostFilesCookiesAndServer(HttpRequest $httpRequest)
         {
-            $httpRequestData = array(
-                'GET' => array('var' => 'query_value'),
-                'POST' => array('var' => 'request_value'),
-                'FILES' => array('var' => 'file_value'),
-                'COOKIE' => array('var' => 'cookie_value'),
-                'SERVER' => array('var' => 'server_value'),
-                'headers' => array('var' => 'header_value'),
-            );
+            $httpRequestData = [
+                'GET'     => ['var' => 'query_value'],
+                'POST'    => ['var' => 'request_value'],
+                'FILES'   => ['var' => 'file_value'],
+                'COOKIE'  => ['var' => 'cookie_value'],
+                'SERVER'  => ['var' => 'server_value'],
+                'headers' => ['var' => 'header_value'],
+            ];
             $this->initializeHttpRequest($httpRequest, $httpRequestData);
 
             /** @var DataFromHttpRequest $request */
@@ -177,13 +178,13 @@ namespace spec\Lamudi\UseCaseBundle\Request\Processor {
          */
         private function serverOverridesGetPostFilesAndCookies(HttpRequest $httpRequest)
         {
-            $httpRequestData = array(
-                'GET' => array('var' => 'query_value'),
-                'POST' => array('var' => 'request_value'),
-                'FILES' => array('var' => 'file_value'),
-                'COOKIE' => array('var' => 'cookie_value'),
-                'SERVER' => array('var' => 'server_value'),
-            );
+            $httpRequestData = [
+                'GET'    => ['var' => 'query_value'],
+                'POST'   => ['var' => 'request_value'],
+                'FILES'  => ['var' => 'file_value'],
+                'COOKIE' => ['var' => 'cookie_value'],
+                'SERVER' => ['var' => 'server_value'],
+            ];
             $this->initializeHttpRequest($httpRequest, $httpRequestData);
 
             /** @var DataFromHttpRequest $request */
@@ -196,12 +197,12 @@ namespace spec\Lamudi\UseCaseBundle\Request\Processor {
          */
         private function cookiesOverrideGetPostAndFiles(HttpRequest $httpRequest)
         {
-            $httpRequestData = array(
-                'GET' => array('var' => 'query_value'),
-                'POST' => array('var' => 'request_value'),
-                'FILES' => array('var' => 'file_value'),
-                'COOKIE' => array('var' => 'cookie_value'),
-            );
+            $httpRequestData = [
+                'GET'    => ['var' => 'query_value'],
+                'POST'   => ['var' => 'request_value'],
+                'FILES'  => ['var' => 'file_value'],
+                'COOKIE' => ['var' => 'cookie_value'],
+            ];
             $this->initializeHttpRequest($httpRequest, $httpRequestData);
 
             /** @var DataFromHttpRequest $request */
@@ -214,11 +215,11 @@ namespace spec\Lamudi\UseCaseBundle\Request\Processor {
          */
         private function filesOverrideGetAndPost(HttpRequest $httpRequest)
         {
-            $httpRequestData = array(
-                'GET' => array('var' => 'query_value'),
-                'POST' => array('var' => 'request_value'),
-                'FILES' => array('var' => 'file_value'),
-            );
+            $httpRequestData = [
+                'GET'   => ['var' => 'query_value'],
+                'POST'  => ['var' => 'request_value'],
+                'FILES' => ['var' => 'file_value'],
+            ];
             $this->initializeHttpRequest($httpRequest, $httpRequestData);
 
             /** @var DataFromHttpRequest $request */
@@ -231,10 +232,10 @@ namespace spec\Lamudi\UseCaseBundle\Request\Processor {
          */
         private function postOverridesGet(HttpRequest $httpRequest)
         {
-            $httpRequestData = array(
-                'GET' => array('var' => 'query_value'),
-                'POST' => array('var' => 'request_value'),
-            );
+            $httpRequestData = [
+                'GET'  => ['var' => 'query_value'],
+                'POST' => ['var' => 'request_value'],
+            ];
             $this->initializeHttpRequest($httpRequest, $httpRequestData);
 
             /** @var DataFromHttpRequest $request */

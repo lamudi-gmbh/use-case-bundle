@@ -25,8 +25,8 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $this->beConstructedWith($annotationReader, $requestResolver);
 
         $containerBuilder->findDefinition('lamudi_use_case.container')->willReturn($useCaseContainerDefinition);
-        $containerBuilder->findTaggedServiceIds(Argument::any())->willReturn(array());
-        $containerBuilder->getDefinitions()->willReturn(array());
+        $containerBuilder->findTaggedServiceIds(Argument::any())->willReturn([]);
+        $containerBuilder->getDefinitions()->willReturn([]);
         $containerBuilder->has('lamudi_use_case.container')->willReturn(true);
         $useCaseContainerDefinition->addMethodCall(Argument::cetera())->willReturn();
     }
@@ -48,46 +48,56 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition, AnnotationReader $annotationReader
     )
     {
-        $containerBuilder->getDefinitions()->willReturn(array(
+        $containerBuilder->getDefinitions()->willReturn([
             'uc1' => new Definition('\\stdClass'),
             'uc2' => new Definition('\\DateTime'),
             'uc3' => new Definition('\\Exception')
-        ));
+        ]);
 
-        $useCase1Annotation = new UseCaseAnnotation(array(
+        $useCase1Annotation = new UseCaseAnnotation([
             'value' => 'use_case_1',
-            'input' => array('type' => 'form', 'name' => 'registration_form')
-        ));
-        $useCase2Annotation1 = new UseCaseAnnotation(array(
+            'input' => ['type' => 'form', 'name' => 'registration_form']
+        ]);
+        $useCase2Annotation1 = new UseCaseAnnotation([
             'value'  => 'use_case_2',
-            'output' => array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig')
-        ));
-        $useCase2Annotation2 = new UseCaseAnnotation(array(
+            'output' => ['type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig']
+        ]);
+        $useCase2Annotation2 = new UseCaseAnnotation([
             'value'  => 'use_case_2_alias',
-            'output' => array('type' => 'twig', 'template' => 'AppBundle:goodbye:index.html.twig')
-        ));
-        $useCase3Annotation = new UseCaseAnnotation(array(
+            'output' => ['type' => 'twig', 'template' => 'AppBundle:goodbye:index.html.twig']
+        ]);
+        $useCase3Annotation = new UseCaseAnnotation([
             'value' => 'use_case_3',
             'input' => 'http',
-            'output' => array('type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig')
-        ));
+            'output' => ['type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig']
+        ]);
 
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn(array($useCase1Annotation));
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\DateTime'))->willReturn(array($useCase2Annotation1, $useCase2Annotation2));
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\Exception'))->willReturn(array($useCase3Annotation));
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn([$useCase1Annotation]);
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\DateTime'))->willReturn([
+            $useCase2Annotation1, $useCase2Annotation2
+        ]);
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\Exception'))->willReturn([$useCase3Annotation]);
 
-        $useCaseContainerDefinition->addMethodCall('set', array('use_case_1', new Reference('uc1')))->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('assignInputProcessor', array('use_case_1', 'form', array('name' => 'registration_form')))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('set', ['use_case_1', new Reference('uc1')])->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall(
+            'assignInputProcessor', ['use_case_1', 'form', ['name' => 'registration_form']]
+        )->shouldBeCalled();
 
-        $useCaseContainerDefinition->addMethodCall('set', array('use_case_2', new Reference('uc2')))->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('assignResponseProcessor', array('use_case_2', 'twig', array('template' => 'AppBundle:hello:index.html.twig')))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('set', ['use_case_2', new Reference('uc2')])->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall(
+            'assignResponseProcessor', ['use_case_2', 'twig', ['template' => 'AppBundle:hello:index.html.twig']]
+        )->shouldBeCalled();
 
-        $useCaseContainerDefinition->addMethodCall('set', array('use_case_2_alias', new Reference('uc2')))->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('assignResponseProcessor', array('use_case_2_alias', 'twig', array('template' => 'AppBundle:goodbye:index.html.twig')))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('set', ['use_case_2_alias', new Reference('uc2')])->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall(
+            'assignResponseProcessor', ['use_case_2_alias', 'twig', ['template' => 'AppBundle:goodbye:index.html.twig']]
+        )->shouldBeCalled();
 
-        $useCaseContainerDefinition->addMethodCall('set', array('use_case_3', new Reference('uc3')))->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('assignInputProcessor', array('use_case_3', 'http', array()))->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('assignResponseProcessor', array('use_case_3', 'twig', array('template' => 'AppBundle:hello:index.html.twig')))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('set', ['use_case_3', new Reference('uc3')])->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('assignInputProcessor', ['use_case_3', 'http', []])->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall(
+            'assignResponseProcessor', ['use_case_3', 'twig', ['template' => 'AppBundle:hello:index.html.twig']]
+        )->shouldBeCalled();
 
         $this->process($containerBuilder);
     }
@@ -96,15 +106,15 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition
     )
     {
-        $inputProcessorsWithTags = array(
-            'input_processor_1' => array(array('alias' => 'foo')),
-            'input_processor_2' => array(array('alias' => 'bar'))
-        );
+        $inputProcessorsWithTags = [
+            'input_processor_1' => [['alias' => 'foo']],
+            'input_processor_2' => [['alias' => 'bar']]
+        ];
         $containerBuilder->findTaggedServiceIds('use_case_input_processor')->willReturn($inputProcessorsWithTags);
 
-        $useCaseContainerDefinition->addMethodCall('setInputProcessor', array('foo', new Reference('input_processor_1')))
+        $useCaseContainerDefinition->addMethodCall('setInputProcessor', ['foo', new Reference('input_processor_1')])
             ->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('setInputProcessor', array('bar', new Reference('input_processor_2')))
+        $useCaseContainerDefinition->addMethodCall('setInputProcessor', ['bar', new Reference('input_processor_2')])
             ->shouldBeCalled();
 
         $this->process($containerBuilder);
@@ -114,15 +124,17 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition
     )
     {
-        $inputProcessorsWithTags = array(
-            'response_processor_1' => array(array('alias' => 'faz')),
-            'response_processor_2' => array(array('alias' => 'baz'))
-        );
+        $inputProcessorsWithTags = [
+            'response_processor_1' => [['alias' => 'faz']],
+            'response_processor_2' => [['alias' => 'baz']]
+        ];
         $containerBuilder->findTaggedServiceIds('use_case_response_processor')->willReturn($inputProcessorsWithTags);
 
-        $useCaseContainerDefinition->addMethodCall('setResponseProcessor', array('faz', new Reference('response_processor_1')))
+        $useCaseContainerDefinition->addMethodCall('setResponseProcessor', ['faz', new Reference('response_processor_1')]
+        )
             ->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('setResponseProcessor', array('baz', new Reference('response_processor_2')))
+        $useCaseContainerDefinition->addMethodCall('setResponseProcessor', ['baz', new Reference('response_processor_2')]
+        )
             ->shouldBeCalled();
 
         $this->process($containerBuilder);
@@ -133,31 +145,33 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         AnnotationReader $annotationReader, RequestResolver $requestResolver
     )
     {
-        $useCase1Annotation = new UseCaseAnnotation(array('value' => 'use_case_1'));
-        $useCase2Annotation = new UseCaseAnnotation(array('value' => 'use_case_2'));
-        $useCase3Annotation = new UseCaseAnnotation(array('value' => 'use_case_3'));
+        $useCase1Annotation = new UseCaseAnnotation(['value' => 'use_case_1']);
+        $useCase2Annotation = new UseCaseAnnotation(['value' => 'use_case_2']);
+        $useCase3Annotation = new UseCaseAnnotation(['value' => 'use_case_3']);
 
-        $containerBuilder->getDefinitions()->willReturn(array(
+        $containerBuilder->getDefinitions()->willReturn(
+            [
             'uc1' => new Definition('\\stdClass'),
             'uc2' => new Definition('\\DateTime'),
             'uc3' => new Definition('\\Exception')
-        ));
+            ]
+        );
 
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn(array($useCase1Annotation));
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\DateTime'))->willReturn(array($useCase2Annotation));
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\Exception'))->willReturn(array($useCase3Annotation));
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn([$useCase1Annotation]);
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\DateTime'))->willReturn([$useCase2Annotation]);
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\Exception'))->willReturn([$useCase3Annotation]);
 
         $requestResolver->resolve('\\stdClass')->willReturn('\StdClassRequest');
         $requestResolver->resolve('\\DateTime')->willReturn('Foo\Bar\DateTimeRequest');
         $requestResolver->resolve('\\Exception')->willReturn('Ohnoes\FunnyRequest');
 
-        $useCaseContainerDefinition->addMethodCall('set', array('use_case_1', new Reference('uc1')))->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('set', array('use_case_2', new Reference('uc2')))->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('set', array('use_case_3', new Reference('uc3')))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('set', ['use_case_1', new Reference('uc1')])->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('set', ['use_case_2', new Reference('uc2')])->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('set', ['use_case_3', new Reference('uc3')])->shouldBeCalled();
 
-        $useCaseContainerDefinition->addMethodCall('assignRequestClass', array('use_case_1', '\StdClassRequest'))->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('assignRequestClass', array('use_case_2', 'Foo\Bar\DateTimeRequest'))->shouldBeCalled();
-        $useCaseContainerDefinition->addMethodCall('assignRequestClass', array('use_case_3', 'Ohnoes\FunnyRequest'))->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('assignRequestClass', ['use_case_1', '\StdClassRequest'])->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('assignRequestClass', ['use_case_2', 'Foo\Bar\DateTimeRequest'])->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('assignRequestClass', ['use_case_3', 'Ohnoes\FunnyRequest'])->shouldBeCalled();
 
         $this->process($containerBuilder);
     }
