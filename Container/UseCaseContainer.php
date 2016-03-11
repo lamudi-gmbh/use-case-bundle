@@ -18,17 +18,17 @@ class UseCaseContainer
     /**
      * @var UseCaseDefinition[]
      */
-    private $useCaseDefinitions = array();
+    private $useCaseDefinitions = [];
 
     /**
      * @var array
      */
-    private $inputProcessors = array();
+    private $inputProcessors = [];
 
     /**
      * @var ResponseProcessorInterface[]
      */
-    private $responseProcessors = array();
+    private $responseProcessors = [];
 
     /**
      * @var UseCaseConfiguration
@@ -45,8 +45,8 @@ class UseCaseContainer
     )
     {
         $this->defaultConfiguration = new UseCaseConfiguration();
-        $this->setDefaultInputProcessor('default', array());
-        $this->setDefaultResponseProcessor('default', array());
+        $this->setDefaultInputProcessor('default', []);
+        $this->setDefaultResponseProcessor('default', []);
         $this->defaultConfiguration->setRequestClass(Request::class);
 
         $this->setInputProcessor('default', $defaultInputProcessor ?: new DefaultInputProcessor());
@@ -191,7 +191,7 @@ class UseCaseContainer
      * @param string $processorName
      * @param array $options
      */
-    public function assignInputProcessor($useCaseName, $processorName, $options = array())
+    public function assignInputProcessor($useCaseName, $processorName, $options = [])
     {
         $this->getDefinition($useCaseName)->setInputProcessorName($processorName);
         $this->getDefinition($useCaseName)->setInputProcessorOptions($options);
@@ -202,7 +202,7 @@ class UseCaseContainer
      * @param string $processorName
      * @param array $options
      */
-    public function assignResponseProcessor($useCaseName, $processorName, $options = array())
+    public function assignResponseProcessor($useCaseName, $processorName, $options = [])
     {
         $this->getDefinition($useCaseName)->setResponseProcessorName($processorName);
         $this->getDefinition($useCaseName)->setResponseProcessorOptions($options);

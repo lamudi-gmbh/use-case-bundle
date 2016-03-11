@@ -30,7 +30,7 @@ class JsonRenderer implements ResponseProcessorInterface
      * @param array $options
      * @return mixed
      */
-    public function processResponse($response, $options = array())
+    public function processResponse($response, $options = [])
     {
         $array = (array)$response;
         if (isset($options['append_on_success'])) {
@@ -50,12 +50,12 @@ class JsonRenderer implements ResponseProcessorInterface
      * @param array $options
      * @return mixed
      */
-    public function handleException($exception, $options = array())
+    public function handleException($exception, $options = [])
     {
         try {
             throw $exception;
         } catch (UseCaseException $e) {
-            $array = array('code' => $e->getCode(), 'message' => $e->getMessage());
+            $array = ['code' => $e->getCode(), 'message' => $e->getMessage()];
             if (isset($options['append_on_error'])) {
                 $array = array_merge($options['append_on_error'], $array);
             }

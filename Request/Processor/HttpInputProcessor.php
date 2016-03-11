@@ -17,14 +17,14 @@ class HttpInputProcessor implements InputProcessorInterface
      * @param HttpFoundation\Request $input Symfony HTTP request object.
      * @param array $options An array of options used to create the request object.
      */
-    public function initializeRequest($request, $input, $options = array())
+    public function initializeRequest($request, $input, $options = [])
     {
         if (!isset($options['order'])) {
             $options['order'] = self::DEFAULT_ORDER;
         }
 
         if ($input instanceof HttpFoundation\Request) {
-            $httpRequestData = array(
+            $httpRequestData = [
                 'G' => $input->query->all(),
                 'P' => $input->request->all(),
                 'F' => $input->files->all(),
@@ -32,9 +32,9 @@ class HttpInputProcessor implements InputProcessorInterface
                 'S' => $input->server->all(),
                 'H' => $input->headers->all(),
                 'A' => $input->attributes->all()
-            );
+            ];
 
-            $mergedData = array();
+            $mergedData = [];
             for ($i = 0; $i < strlen($options['order']); $i++) {
                 $mergedData = array_merge($mergedData, $httpRequestData[$options['order'][$i]]);
             }

@@ -90,7 +90,7 @@ class UseCaseCompilerPass implements CompilerPassInterface
         $inputProcessors = $container->findTaggedServiceIds('use_case_input_processor');
         foreach ($inputProcessors as $id => $tags) {
             foreach ($tags as $attributes) {
-                $definition->addMethodCall('setInputProcessor', array($attributes['alias'], new Reference($id)));
+                $definition->addMethodCall('setInputProcessor', [$attributes['alias'], new Reference($id)]);
             }
         }
     }
@@ -104,7 +104,7 @@ class UseCaseCompilerPass implements CompilerPassInterface
         $responseProcessors = $container->findTaggedServiceIds('use_case_response_processor');
         foreach ($responseProcessors as $id => $tags) {
             foreach ($tags as $attributes) {
-                $definition->addMethodCall('setResponseProcessor', array($attributes['alias'], new Reference($id)));
+                $definition->addMethodCall('setResponseProcessor', [$attributes['alias'], new Reference($id)]);
             }
         }
     }
@@ -117,23 +117,23 @@ class UseCaseCompilerPass implements CompilerPassInterface
      */
     private function registerUseCase($serviceId, $serviceClass, $annotation, $containerDefinition)
     {
-        $containerDefinition->addMethodCall('set', array($annotation->getName(), new Reference($serviceId)));
+        $containerDefinition->addMethodCall('set', [$annotation->getName(), new Reference($serviceId)]);
 
         if ($annotation->getInputType()) {
             $containerDefinition->addMethodCall(
                 'assignInputProcessor',
-                array($annotation->getName(), $annotation->getInputType(), $annotation->getInputOptions())
+                [$annotation->getName(), $annotation->getInputType(), $annotation->getInputOptions()]
             );
         }
 
         if ($annotation->getOutputType()) {
             $containerDefinition->addMethodCall(
                 'assignResponseProcessor',
-                array($annotation->getName(), $annotation->getOutputType(), $annotation->getOutputOptions())
+                [$annotation->getName(), $annotation->getOutputType(), $annotation->getOutputOptions()]
             );
         }
 
         $requestClass = $this->requestResolver->resolve($serviceClass);
-        $containerDefinition->addMethodCall('assignRequestClass', array($annotation->getName(), $requestClass));
+        $containerDefinition->addMethodCall('assignRequestClass', [$annotation->getName(), $requestClass]);
     }
 }

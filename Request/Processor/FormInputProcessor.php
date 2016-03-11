@@ -28,7 +28,7 @@ class FormInputProcessor implements InputProcessorInterface
      * @param mixed $input Any object that contains input data.
      * @param array $options An array of options used to create the request object.
      */
-    public function initializeRequest($request, $input, $options = array())
+    public function initializeRequest($request, $input, $options = [])
     {
         if (!isset($options['name'])) {
             throw new \InvalidArgumentException();
@@ -41,7 +41,7 @@ class FormInputProcessor implements InputProcessorInterface
             $fieldName = $options['data_field'];
             $request->$fieldName = $form->getData();
         } else {
-            $form = $this->formFactory->create($options['name'], $request, array('data_class' => get_class($request)));
+            $form = $this->formFactory->create($options['name'], $request, ['data_class' => get_class($request)]);
             $form->handleRequest($input);
         }
 

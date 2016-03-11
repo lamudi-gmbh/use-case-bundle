@@ -13,7 +13,7 @@ class DefaultInputProcessor implements InputProcessorInterface
      * @param mixed $input
      * @param array $options
      */
-    public function initializeRequest($request, $input, $options = array())
+    public function initializeRequest($request, $input, $options = [])
     {
     }
 }

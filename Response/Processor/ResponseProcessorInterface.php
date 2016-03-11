@@ -14,7 +14,7 @@ interface ResponseProcessorInterface
      * @param array $options
      * @return mixed
      */
-    public function processResponse($response, $options = array());
+    public function processResponse($response, $options = []);
 
     /**
      * When an exception is thrown during use case execution, this method is invoked
@@ -23,5 +23,5 @@ interface ResponseProcessorInterface
      * @param array $options
      * @return mixed
      */
-    public function handleException($exception, $options = array());
+    public function handleException($exception, $options = []);
 }

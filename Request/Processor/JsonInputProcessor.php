@@ -29,7 +29,7 @@ class JsonInputProcessor implements InputProcessorInterface
      * @param HttpFoundation\Request $input Any object that contains input data.
      * @param array $options An array of options used to create the request object.
      */
-    public function initializeRequest($request, $input, $options = array())
+    public function initializeRequest($request, $input, $options = [])
     {
         if (!$input instanceof HttpFoundation\Request) {
             return;

@@ -36,7 +36,7 @@ class TwigRenderer implements ResponseProcessorInterface
      * @param array $options
      * @return mixed
      */
-    public function processResponse($response, $options = array())
+    public function processResponse($response, $options = [])
     {
         if (!$this->templating) {
             throw new \Exception('The templating engine has not been initialised.');
@@ -51,7 +51,7 @@ class TwigRenderer implements ResponseProcessorInterface
         if (isset($options['forms']) && $this->formFactory) {
             foreach ($options['forms'] as $formVariable => $formConfig) {
                 if (is_string($formConfig)) {
-                    $formConfig = array('name' => $formConfig);
+                    $formConfig = ['name' => $formConfig];
                 }
 
                 $form = $this->formFactory->create($formConfig['name']);
@@ -76,7 +76,7 @@ class TwigRenderer implements ResponseProcessorInterface
      * @param array $options
      * @return mixed
      */
-    public function handleException($exception, $options = array())
+    public function handleException($exception, $options = [])
     {
         try {
             throw $exception;

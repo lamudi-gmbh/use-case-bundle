@@ -20,7 +20,7 @@ class UseCaseConfiguration
     /**
      * @var array
      */
-    private $inputProcessorOptions = array();
+    private $inputProcessorOptions = [];
 
     /**
      * @var string
@@ -30,12 +30,12 @@ class UseCaseConfiguration
     /**
      * @var array
      */
-    private $responseProcessorOptions = array();
+    private $responseProcessorOptions = [];
 
     /**
      * @param array $data
      */
-    public function __construct($data = array())
+    public function __construct($data = [])
     {
         if (isset($data['input'])) {
             $this->setConfiguration('inputProcessor', $data['input']);
