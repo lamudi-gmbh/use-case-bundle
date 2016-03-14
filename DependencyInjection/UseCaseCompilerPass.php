@@ -41,25 +41,29 @@ class UseCaseCompilerPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        if (!$container->has('lamudi_use_case.container')) {
+        if (!$container->has('lamudi_use_case.executor')) {
             return;
         }
 
-        $definition = $container->findDefinition('lamudi_use_case.container');
+        $executorDefinition = $container->findDefinition('lamudi_use_case.executor');
+        $inputProcessorContainerDefinition = $container->findDefinition('lamudi_use_case.container.input_processor');
+        $responseProcessorContainerDefinition = $container->findDefinition('lamudi_use_case.container.response_processor');
 
-        $this->addInputProcessorsToContainer($container, $definition);
-        $this->addResponseProcessorsToContainer($container, $definition);
-        $this->addUseCasesToContainer($container, $definition);
+        $this->addInputProcessorsToContainer($container, $inputProcessorContainerDefinition);
+        $this->addResponseProcessorsToContainer($container, $responseProcessorContainerDefinition);
+        $this->addUseCasesToContainer($container, $executorDefinition);
     }
 
     /**
      * @param ContainerBuilder $container
-     * @param Definition       $containerDefinition
+     * @param Definition       $executorDefinition
      * @return array
      */
-    private function addUseCasesToContainer(ContainerBuilder $container, $containerDefinition)
+    private function addUseCasesToContainer(ContainerBuilder $container, $executorDefinition)
     {
+        $useCaseContainerDefinition = $container->findDefinition('lamudi_use_case.container.use_case');
         $services = $container->getDefinitions();
+
         foreach ($services as $id => $serviceDefinition) {
             $serviceClass = $serviceDefinition->getClass();
             if (!class_exists($serviceClass)) {
@@ -75,7 +79,7 @@ class UseCaseCompilerPass implements CompilerPassInterface
 
             foreach ($annotations as $annotation) {
                 if ($annotation instanceof UseCaseAnnotation) {
-                    $this->registerUseCase($id, $serviceClass, $annotation, $containerDefinition);
+                    $this->registerUseCase($id, $serviceClass, $annotation, $executorDefinition, $useCaseContainerDefinition);
                 }
             }
         }
@@ -90,7 +94,7 @@ class UseCaseCompilerPass implements CompilerPassInterface
         $inputProcessors = $container->findTaggedServiceIds('use_case_input_processor');
         foreach ($inputProcessors as $id => $tags) {
             foreach ($tags as $attributes) {
-                $definition->addMethodCall('setInputProcessor', [$attributes['alias'], new Reference($id)]);
+                $definition->addMethodCall('set', [$attributes['alias'], new Reference($id)]);
             }
         }
     }
@@ -104,7 +108,7 @@ class UseCaseCompilerPass implements CompilerPassInterface
         $responseProcessors = $container->findTaggedServiceIds('use_case_response_processor');
         foreach ($responseProcessors as $id => $tags) {
             foreach ($tags as $attributes) {
-                $definition->addMethodCall('setResponseProcessor', [$attributes['alias'], new Reference($id)]);
+                $definition->addMethodCall('set', [$attributes['alias'], new Reference($id)]);
             }
         }
     }
@@ -113,27 +117,28 @@ class UseCaseCompilerPass implements CompilerPassInterface
      * @param string            $serviceId
      * @param string            $serviceClass
      * @param UseCaseAnnotation $annotation
+     * @param Definition        $executorDefinition
      * @param Definition        $containerDefinition
      */
-    private function registerUseCase($serviceId, $serviceClass, $annotation, $containerDefinition)
+    private function registerUseCase($serviceId, $serviceClass, $annotation, $executorDefinition, $containerDefinition)
     {
         $containerDefinition->addMethodCall('set', [$annotation->getName(), new Reference($serviceId)]);
 
         if ($annotation->getInputType()) {
-            $containerDefinition->addMethodCall(
+            $executorDefinition->addMethodCall(
                 'assignInputProcessor',
                 [$annotation->getName(), $annotation->getInputType(), $annotation->getInputOptions()]
             );
         }
 
         if ($annotation->getOutputType()) {
-            $containerDefinition->addMethodCall(
+            $executorDefinition->addMethodCall(
                 'assignResponseProcessor',
                 [$annotation->getName(), $annotation->getOutputType(), $annotation->getOutputOptions()]
             );
         }
 
         $requestClass = $this->requestResolver->resolve($serviceClass);
-        $containerDefinition->addMethodCall('assignRequestClass', [$annotation->getName(), $requestClass]);
+        $executorDefinition->addMethodCall('assignRequestClass', [$annotation->getName(), $requestClass]);
     }
 }
