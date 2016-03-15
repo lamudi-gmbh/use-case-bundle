@@ -27,6 +27,7 @@ services:
 
     lamudi_use_case.container.use_case:
         class: "%lamudi_use_case.container.use_case.class%"
+        arguments: ["@service_container"]
 
     lamudi_use_case.container.input_processor:
         class: "%lamudi_use_case.container.input_processor.class%"
