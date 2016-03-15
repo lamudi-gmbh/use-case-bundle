@@ -1,7 +1,7 @@
 parameters:
     lamudi_use_case.executor.class: Lamudi\UseCaseBundle\Container\UseCaseExecutor
     lamudi_use_case.request.resolver.class: Lamudi\UseCaseBundle\Request\RequestResolver
-    lamudi_use_case.container.use_case.class: Lamudi\UseCaseBundle\Container\Container
+    lamudi_use_case.container.use_case.class: Lamudi\UseCaseBundle\Container\DelegatingContainer
     lamudi_use_case.container.input_processor.class: Lamudi\UseCaseBundle\Container\Container
     lamudi_use_case.container.response_processor.class: Lamudi\UseCaseBundle\Container\Container
 

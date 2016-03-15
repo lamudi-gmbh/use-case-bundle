@@ -4,6 +4,7 @@ namespace Lamudi\UseCaseBundle\DependencyInjection;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
+use Lamudi\UseCaseBundle\Container\ReferenceAcceptingContainerInterface;
 use Lamudi\UseCaseBundle\Request\RequestResolver;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -45,22 +46,18 @@ class UseCaseCompilerPass implements CompilerPassInterface
             return;
         }
 
-        $executorDefinition = $container->findDefinition('lamudi_use_case.executor');
-        $inputProcessorContainerDefinition = $container->findDefinition('lamudi_use_case.container.input_processor');
-        $responseProcessorContainerDefinition = $container->findDefinition('lamudi_use_case.container.response_processor');
-
-        $this->addInputProcessorsToContainer($container, $inputProcessorContainerDefinition);
-        $this->addResponseProcessorsToContainer($container, $responseProcessorContainerDefinition);
-        $this->addUseCasesToContainer($container, $executorDefinition);
+        $this->addInputProcessorsToContainer($container);
+        $this->addResponseProcessorsToContainer($container);
+        $this->addUseCasesToContainer($container);
     }
 
     /**
      * @param ContainerBuilder $container
-     * @param Definition       $executorDefinition
      * @return array
      */
-    private function addUseCasesToContainer(ContainerBuilder $container, $executorDefinition)
+    private function addUseCasesToContainer(ContainerBuilder $container)
     {
+        $executorDefinition = $container->findDefinition('lamudi_use_case.executor');
         $useCaseContainerDefinition = $container->findDefinition('lamudi_use_case.container.use_case');
         $services = $container->getDefinitions();
 
@@ -86,29 +83,38 @@ class UseCaseCompilerPass implements CompilerPassInterface
     }
 
     /**
-     * @param ContainerBuilder $container
-     * @param Definition       $definition
+     * @param ContainerBuilder $containerBuilder
      */
-    private function addInputProcessorsToContainer(ContainerBuilder $container, $definition)
+    private function addInputProcessorsToContainer(ContainerBuilder $containerBuilder)
     {
-        $inputProcessors = $container->findTaggedServiceIds('use_case_input_processor');
+        $processorContainerDefinition = $containerBuilder->findDefinition('lamudi_use_case.container.input_processor');
+        $inputProcessors = $containerBuilder->findTaggedServiceIds('use_case_input_processor');
         foreach ($inputProcessors as $id => $tags) {
             foreach ($tags as $attributes) {
-                $definition->addMethodCall('set', [$attributes['alias'], new Reference($id)]);
+                if ($this->containerAcceptsReferences($processorContainerDefinition)) {
+                    $processorContainerDefinition->addMethodCall('set', [$attributes['alias'], $id]);
+                } else {
+                    $processorContainerDefinition->addMethodCall('set', [$attributes['alias'], new Reference($id)]);
+                }
             }
         }
     }
 
     /**
-     * @param ContainerBuilder $container
-     * @param Definition       $definition
+     * @param ContainerBuilder $containerBuilder
      */
-    private function addResponseProcessorsToContainer(ContainerBuilder $container, $definition)
+    private function addResponseProcessorsToContainer(ContainerBuilder $containerBuilder)
     {
-        $responseProcessors = $container->findTaggedServiceIds('use_case_response_processor');
+        $processorContainerDefinition = $containerBuilder->findDefinition('lamudi_use_case.container.response_processor');
+        $responseProcessors = $containerBuilder->findTaggedServiceIds('use_case_response_processor');
+
         foreach ($responseProcessors as $id => $tags) {
             foreach ($tags as $attributes) {
-                $definition->addMethodCall('set', [$attributes['alias'], new Reference($id)]);
+                if ($this->containerAcceptsReferences($processorContainerDefinition)) {
+                    $processorContainerDefinition->addMethodCall('set', [$attributes['alias'], $id]);
+                } else {
+                    $processorContainerDefinition->addMethodCall('set', [$attributes['alias'], new Reference($id)]);
+                }
             }
         }
     }
@@ -122,7 +128,11 @@ class UseCaseCompilerPass implements CompilerPassInterface
      */
     private function registerUseCase($serviceId, $serviceClass, $annotation, $executorDefinition, $containerDefinition)
     {
-        $containerDefinition->addMethodCall('set', [$annotation->getName(), new Reference($serviceId)]);
+        if ($this->containerAcceptsReferences($containerDefinition)) {
+            $containerDefinition->addMethodCall('set', [$annotation->getName(), $serviceId]);
+        } else {
+            $containerDefinition->addMethodCall('set', [$annotation->getName(), new Reference($serviceId)]);
+        }
 
         if ($annotation->getInputType()) {
             $executorDefinition->addMethodCall(
@@ -140,5 +150,19 @@ class UseCaseCompilerPass implements CompilerPassInterface
 
         $requestClass = $this->requestResolver->resolve($serviceClass);
         $executorDefinition->addMethodCall('assignRequestClass', [$annotation->getName(), $requestClass]);
+    }
+
+    /**
+     * @param Definition $containerDefinition
+     * @return bool
+     */
+    private function containerAcceptsReferences($containerDefinition)
+    {
+        $interfaces = class_implements($containerDefinition->getClass());
+        if (is_array($interfaces)) {
+            return in_array(ReferenceAcceptingContainerInterface::class, $interfaces);
+        } else {
+            return false;
+        }
     }
 }

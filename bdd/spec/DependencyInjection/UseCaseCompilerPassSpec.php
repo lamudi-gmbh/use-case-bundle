@@ -4,6 +4,8 @@ namespace spec\Lamudi\UseCaseBundle\DependencyInjection;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
+use Lamudi\UseCaseBundle\Container\Container;
+use Lamudi\UseCaseBundle\Container\ReferenceAcceptingContainerInterface;
 use Lamudi\UseCaseBundle\Request\RequestResolver;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
@@ -31,6 +33,9 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $containerBuilder->findDefinition('lamudi_use_case.container.input_processor')->willReturn($inputProcessorContainerDefinition);
         $containerBuilder->findDefinition('lamudi_use_case.container.response_processor')->willReturn($responseProcessorContainerDefinition);
         $containerBuilder->has('lamudi_use_case.executor')->willReturn(true);
+        $useCaseContainerDefinition->getClass()->willReturn(Container::class);
+        $inputProcessorContainerDefinition->getClass()->willReturn(Container::class);
+        $responseProcessorContainerDefinition->getClass()->willReturn(Container::class);
 
         $containerBuilder->findTaggedServiceIds(Argument::any())->willReturn([]);
         $containerBuilder->getDefinitions()->willReturn([]);
@@ -127,11 +132,11 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         ContainerBuilder $containerBuilder, Definition $responseProcessorContainerDefinition
     )
     {
-        $inputProcessorsWithTags = [
+        $responseProcessorsWithTags = [
             'response_processor_1' => [['alias' => 'faz']],
             'response_processor_2' => [['alias' => 'baz']]
         ];
-        $containerBuilder->findTaggedServiceIds('use_case_response_processor')->willReturn($inputProcessorsWithTags);
+        $containerBuilder->findTaggedServiceIds('use_case_response_processor')->willReturn($responseProcessorsWithTags);
 
         $responseProcessorContainerDefinition
             ->addMethodCall('set', ['faz', new Reference('response_processor_1')])
@@ -176,4 +181,34 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
 
         $this->process($containerBuilder);
     }
+
+    public function it_adds_service_names_instead_of_references_to_container_that_accepts_references(
+        AnnotationReader $annotationReader, ContainerBuilder $containerBuilder, Definition $useCaseContainerDefinition,
+        Definition $inputProcessorContainerDefinition, Definition $responseProcessorContainerDefinition
+    )
+    {
+        $useCaseContainerDefinition->getClass()->willReturn(ContainerThatAcceptsReferences::class);
+        $inputProcessorContainerDefinition->getClass()->willReturn(ContainerThatAcceptsReferences::class);
+        $responseProcessorContainerDefinition->getClass()->willReturn(ContainerThatAcceptsReferences::class);
+
+        $containerBuilder->getDefinitions()->willReturn(['service.use_case_1' => new Definition('\\stdClass')]);
+        $useCaseAnnotation = new UseCaseAnnotation(['value' => 'use_case_1']);
+        $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn([$useCaseAnnotation]);
+
+        $inputProcessorsWithTags = ['service.input_processor' => [['alias' => 'input']]];
+        $responseProcessorsWithTags = ['service.response_processor' => [['alias' => 'output']]];
+        $containerBuilder->findTaggedServiceIds('use_case_input_processor')->willReturn($inputProcessorsWithTags);
+        $containerBuilder->findTaggedServiceIds('use_case_response_processor')->willReturn($responseProcessorsWithTags);
+
+        $useCaseContainerDefinition->addMethodCall('set', Argument::is(['use_case_1', 'service.use_case_1']))->shouldBeCalled();
+        $inputProcessorContainerDefinition->addMethodCall('set', Argument::is(['input', 'service.input_processor']))->shouldBeCalled();
+        $responseProcessorContainerDefinition->addMethodCall('set', Argument::is(['output', 'service.response_processor']))->shouldBeCalled();
+
+        $this->process($containerBuilder);
+    }
+}
+
+class ContainerThatAcceptsReferences implements ReferenceAcceptingContainerInterface {
+    public function set($name, $service) { }
+    public function get($name) { }
 }
