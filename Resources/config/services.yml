@@ -1,6 +1,7 @@
 parameters:
     lamudi_use_case.executor.class: Lamudi\UseCaseBundle\Container\UseCaseExecutor
-    lamudi_use_case.request.resolver.class: Lamudi\UseCaseBundle\Request\RequestResolver
+    lamudi_use_case.context_resolver.class: Lamudi\UseCaseBundle\Container\UseCaseContextResolver
+    lamudi_use_case.request_resolver.class: Lamudi\UseCaseBundle\Request\RequestResolver
     lamudi_use_case.container.use_case.class: Lamudi\UseCaseBundle\Container\DelegatingContainer
     lamudi_use_case.container.input_processor.class: Lamudi\UseCaseBundle\Container\Container
     lamudi_use_case.container.response_processor.class: Lamudi\UseCaseBundle\Container\Container
@@ -19,11 +20,11 @@ services:
         class: "%lamudi_use_case.executor.class%"
         arguments:
             - "@lamudi_use_case.container.use_case"
-            - "@lamudi_use_case.container.input_processor"
-            - "@lamudi_use_case.container.response_processor"
-        calls:
-            - ["setDefaultInputProcessor", ["%lamudi_angi_client.default_input_type%", "%lamudi_angi_client.default_input_options%"]]
-            - ["setDefaultResponseProcessor", ["%lamudi_angi_client.default_output_type%", "%lamudi_angi_client.default_output_options%"]]
+            - "@lamudi_use_case.context_resolver"
+
+    lamudi_use_case.context_resolver:
+        class: "%lamudi_use_case.context_resolver.class%"
+        arguments: ["@lamudi_use_case.container.input_processor", "@lamudi_use_case.container.response_processor"]
 
     lamudi_use_case.container.use_case:
         class: "%lamudi_use_case.container.use_case.class%"
@@ -35,8 +36,8 @@ services:
     lamudi_use_case.container.response_processor:
         class: "%lamudi_use_case.container.response_processor.class%"
 
-    lamudi_use_case.request.resolver:
-        class: "%lamudi_use_case.request.resolver.class%"
+    lamudi_use_case.request_resolver:
+        class: "%lamudi_use_case.request_resolver.class%"
 
     ##################################
     # INPUT PROCESSORS

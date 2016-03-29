@@ -2,14 +2,10 @@
 
 namespace Lamudi\UseCaseBundle\Container;
 
-use Lamudi\UseCaseBundle\Exception\InputProcessorNotFoundException;
 use Lamudi\UseCaseBundle\Exception\RequestClassNotFoundException;
-use Lamudi\UseCaseBundle\Exception\ResponseProcessorNotFoundException;
 use Lamudi\UseCaseBundle\Exception\ServiceNotFoundException;
 use Lamudi\UseCaseBundle\Exception\UseCaseNotFoundException;
-use Lamudi\UseCaseBundle\Request\Processor\InputProcessorInterface;
 use Lamudi\UseCaseBundle\Request\Request;
-use Lamudi\UseCaseBundle\Response\Processor\ResponseProcessorInterface;
 use Lamudi\UseCaseBundle\UseCaseInterface;
 
 class UseCaseExecutor
@@ -20,55 +16,37 @@ class UseCaseExecutor
     private $useCaseConfigurations = [];
 
     /**
-     * @var UseCaseConfiguration
-     */
-    private $defaultConfiguration;
-
-    /**
      * @var ContainerInterface
      */
     private $useCaseContainer;
 
     /**
-     * @var ContainerInterface
+     * @var UseCaseContextResolver
      */
-    private $inputProcessorContainer;
-
-    /**
-     * @var ContainerInterface
-     */
-    private $responseProcessorContainer;
+    private $contextResolver;
 
     /**
      * @param ContainerInterface $useCaseContainer
-     * @param ContainerInterface $inputProcessorContainer
-     * @param ContainerInterface $responseProcessorContainer
+     * @param UseCaseContextResolver $contextResolver
      */
-    public function __construct(
-        ContainerInterface $useCaseContainer,
-        ContainerInterface $inputProcessorContainer,
-        ContainerInterface $responseProcessorContainer
-    )
+    public function __construct(ContainerInterface $useCaseContainer, UseCaseContextResolver $contextResolver)
     {
+        $this->contextResolver = $contextResolver;
         $this->useCaseContainer = $useCaseContainer;
-        $this->inputProcessorContainer = $inputProcessorContainer;
-        $this->responseProcessorContainer = $responseProcessorContainer;
-
-        $this->defaultConfiguration = new UseCaseConfiguration(['input' => 'default', 'output' => 'default']);
-        $this->defaultConfiguration->setRequestClass(Request::class);
     }
 
     /**
      * @param string $useCaseName
      * @param mixed $input
+     * @param string|array $context
      * @return mixed
      */
-    public function execute($useCaseName, $input = null)
+    public function execute($useCaseName, $input = null, $context = null)
     {
-        $context = $this->getUseCaseContext($useCaseName);
+        $context = $this->getUseCaseContext($useCaseName, $context);
 
-        $useCase = $context->getUseCase();
-        $request = $context->getUseCaseRequest();
+        $useCase = $this->getUseCase($useCaseName);
+        $request = $this->getRequestForUseCase($useCaseName);
         $inputProcessor = $context->getInputProcessor();
         $inputProcessorOptions = $context->getInputProcessorOptions();
         $responseProcessor = $context->getResponseProcessor();
@@ -81,26 +59,6 @@ class UseCaseExecutor
         } catch (\Exception $exception) {
             return $responseProcessor->handleException($exception, $responseProcessorOptions);
         }
-    }
-
-    /**
-     * @param string $type
-     * @param array $options
-     */
-    public function setDefaultInputProcessor($type, $options)
-    {
-        $this->defaultConfiguration->setInputProcessorName($type);
-        $this->defaultConfiguration->setInputProcessorOptions($options);
-    }
-
-    /**
-     * @param string $type
-     * @param array $options
-     */
-    public function setDefaultResponseProcessor($type, $options)
-    {
-        $this->defaultConfiguration->setResponseProcessorName($type);
-        $this->defaultConfiguration->setResponseProcessorOptions($options);
     }
 
     /**
@@ -136,26 +94,12 @@ class UseCaseExecutor
 
     /**
      * @param string $useCaseName
+     * @param string|array $context
      * @return UseCaseContext
      */
-    private function getUseCaseContext($useCaseName)
+    private function getUseCaseContext($useCaseName, $context)
     {
-        $useCase = $this->getUseCase($useCaseName);
-        $useCaseRequest = $this->getRequestForUseCase($useCaseName);
-        $inputProcessor = $this->getInputProcessorForUseCase($useCaseName);
-        $inputProcessorOptions = $this->getInputProcessorOptionsForUseCase($useCaseName);
-        $responseProcessor = $this->getResponseProcessorForUseCase($useCaseName);
-        $responseProcessorOptions = $this->getResponseProcessorOptionsForUseCase($useCaseName);
-
-        $context = new UseCaseContext();
-        $context->setUseCase($useCase);
-        $context->setUseCaseRequest($useCaseRequest);
-        $context->setInputProcessor($inputProcessor);
-        $context->setInputProcessorOptions($inputProcessorOptions);
-        $context->setResponseProcessor($responseProcessor);
-        $context->setResponseProcessorOptions($responseProcessorOptions);
-
-        return $context;
+        return $this->contextResolver->resolveContext($context ?: $this->getUseCaseConfiguration($useCaseName));
     }
 
     /**
@@ -177,58 +121,12 @@ class UseCaseExecutor
      */
     private function getRequestForUseCase($useCaseName)
     {
-        $requestClass = $this->getUseCaseConfiguration($useCaseName)->getRequestClass();
+        $requestClass = $this->getUseCaseConfiguration($useCaseName)->getRequestClass() ?: Request::class;
         if (class_exists($requestClass)) {
             return new $requestClass;
         } else {
             throw new RequestClassNotFoundException(sprintf('Class "%s" not found.', $requestClass));
         }
-    }
-
-    /**
-     * @param string $useCaseName
-     * @return InputProcessorInterface
-     */
-    private function getInputProcessorForUseCase($useCaseName)
-    {
-        $processorName = $this->getUseCaseConfiguration($useCaseName)->getInputProcessorName();
-        try {
-            return $this->inputProcessorContainer->get($processorName);
-        } catch (ServiceNotFoundException $e) {
-            throw new InputProcessorNotFoundException(sprintf('Input Processor "%s" not found.', $processorName));
-        }
-    }
-
-    /**
-     * @param string $useCaseName
-     * @return array
-     */
-    private function getInputProcessorOptionsForUseCase($useCaseName)
-    {
-        return $this->getUseCaseConfiguration($useCaseName)->getInputProcessorOptions();
-    }
-
-    /**
-     * @param string $useCaseName
-     * @return ResponseProcessorInterface
-     */
-    private function getResponseProcessorForUseCase($useCaseName)
-    {
-        $processorName = $this->getUseCaseConfiguration($useCaseName)->getResponseProcessorName();
-        try {
-            return $this->responseProcessorContainer->get($processorName);
-        } catch (ServiceNotFoundException $e) {
-            throw new ResponseProcessorNotFoundException(sprintf('Response Processor "%s" not found.', $processorName));
-        }
-    }
-
-    /**
-     * @param string $useCaseName
-     * @return array
-     */
-    private function getResponseProcessorOptionsForUseCase($useCaseName)
-    {
-        return $this->getUseCaseConfiguration($useCaseName)->getResponseProcessorOptions();
     }
 
     /**
@@ -238,7 +136,7 @@ class UseCaseExecutor
     private function getUseCaseConfiguration($name)
     {
         if (!array_key_exists($name, $this->useCaseConfigurations)) {
-            $this->useCaseConfigurations[$name] = clone $this->defaultConfiguration;
+            $this->useCaseConfigurations[$name] = new UseCaseConfiguration();
         }
 
         return $this->useCaseConfigurations[$name];
