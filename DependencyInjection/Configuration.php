@@ -24,7 +24,7 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->arrayNode('defaults')->children()
                     ->variableNode('input')->end()
-                    ->variableNode('output')->end()
+                    ->variableNode('response')->end()
                 ->end()
             ->end();
 

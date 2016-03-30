@@ -38,7 +38,7 @@ class UseCaseContextResolver
     {
         $this->inputProcessorContainer = $inputProcessorContainer;
         $this->responseProcessorContainer = $responseProcessorContainer;
-        $this->configurations[$this->defaultContext] = new UseCaseConfiguration(['input' => 'default', 'output' => 'default']);
+        $this->configurations[$this->defaultContext] = new UseCaseConfiguration(['input' => 'default', 'response' => 'default']);
     }
 
     /**
@@ -49,7 +49,7 @@ class UseCaseContextResolver
     public function setContext($contextName, $inputProcessor = null, $responseProcessor = null)
     {
         $this->configurations[$contextName] = new UseCaseConfiguration([
-            'input' => $inputProcessor, 'output' => $responseProcessor
+            'input' => $inputProcessor, 'response' => $responseProcessor
         ]);
     }
 

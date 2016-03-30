@@ -141,10 +141,10 @@ class UseCaseCompilerPass implements CompilerPassInterface
             );
         }
 
-        if ($annotation->getOutputType()) {
+        if ($annotation->getResponseType()) {
             $executorDefinition->addMethodCall(
                 'assignResponseProcessor',
-                [$annotation->getName(), $annotation->getOutputType(), $annotation->getOutputOptions()]
+                [$annotation->getName(), $annotation->getResponseType(), $annotation->getResponseOptions()]
             );
         }
 

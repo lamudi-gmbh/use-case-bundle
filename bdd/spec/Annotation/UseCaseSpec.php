@@ -22,11 +22,11 @@ class UseCaseSpec extends ObjectBehavior
 
     public function it_requires_value()
     {
-        $this->beConstructedWith(['input' => 'http', 'output' => 'json']);
+        $this->beConstructedWith(['input' => 'http', 'response' => 'json']);
         $this->shouldThrow(\InvalidArgumentException::class)->duringInstantiation();
     }
 
-    public function it_sets_input()
+    public function it_sets_input_options()
     {
         $this->beConstructedWith(
             [
@@ -48,11 +48,11 @@ class UseCaseSpec extends ObjectBehavior
         ]);
     }
 
-    public function it_sets_output()
+    public function it_sets_response_options()
     {
         $this->beConstructedWith([
             'value' => 'uc',
-            'output' => [
+            'response' => [
                 'type' => 'twig',
                 'template' => 'base.html.twig',
                 'form' => 'DumberForm',
@@ -60,8 +60,8 @@ class UseCaseSpec extends ObjectBehavior
             ]
         ]);
 
-        $this->getOutputType()->shouldBe('twig');
-        $this->getOutputOptions()->shouldBe([
+        $this->getResponseType()->shouldBe('twig');
+        $this->getResponseOptions()->shouldBe([
             'template' => 'base.html.twig',
             'form'     => 'DumberForm',
             'css'      => 'none'

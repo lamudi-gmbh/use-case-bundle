@@ -40,8 +40,8 @@ class UseCaseConfiguration
         if (isset($data['input'])) {
             $this->setConfiguration('inputProcessor', $data['input']);
         }
-        if (isset($data['output'])) {
-            $this->setConfiguration('responseProcessor', $data['output']);
+        if (isset($data['response'])) {
+            $this->setConfiguration('responseProcessor', $data['response']);
         }
     }
 

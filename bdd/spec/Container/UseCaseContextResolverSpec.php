@@ -135,11 +135,11 @@ class UseCaseContextResolverSpec extends ObjectBehavior
         InputProcessorInterface $httpInputProcessor, ResponseProcessorInterface $twigResponseProcessor
     )
     {
-        $defaultContext = $this->resolveContext(['input' => 'default', 'output' => 'default']);
+        $defaultContext = $this->resolveContext(['input' => 'default', 'response' => 'default']);
         $defaultContext->getInputProcessor()->shouldBe($defaultInputProcessor);
         $defaultContext->getResponseProcessor()->shouldBe($defaultResponseProcessor);
 
-        $webContext = $this->resolveContext(['input' => 'http', 'output' => 'twig']);
+        $webContext = $this->resolveContext(['input' => 'http', 'response' => 'twig']);
         $webContext->getInputProcessor()->shouldBe($httpInputProcessor);
         $webContext->getResponseProcessor()->shouldBe($twigResponseProcessor);
     }
@@ -151,7 +151,7 @@ class UseCaseContextResolverSpec extends ObjectBehavior
         $this->setContext('default', ['type' => 'cli', 'yes' => true, 'maybe' => 5], ['type' => 'cli', 'maybe' => 3, 'no' => false]);
         $context = $this->resolveContext([
             'input' => ['type' => 'http', 'yes' => false, 'probably' => 'not'],
-            'output' => ['type' => 'twig', 'yes' => true, 'maybe' => 10]
+            'response' => ['type' => 'twig', 'yes' => true, 'maybe' => 10]
         ]);
 
         $context->getInputProcessor()->shouldBe($httpInputProcessor);

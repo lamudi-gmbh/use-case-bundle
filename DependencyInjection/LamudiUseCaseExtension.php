@@ -33,8 +33,8 @@ class LamudiUseCaseExtension extends Extension
                 $container->setParameter('lamudi_angi_client.default_input_options', $defaultUseCaseConfig->getInputProcessorOptions());
             }
             if ($defaultUseCaseConfig->getResponseProcessorName()) {
-                $container->setParameter('lamudi_angi_client.default_output_type', $defaultUseCaseConfig->getResponseProcessorName());
-                $container->setParameter('lamudi_angi_client.default_output_options', $defaultUseCaseConfig->getResponseProcessorOptions());
+                $container->setParameter('lamudi_angi_client.default_response_type', $defaultUseCaseConfig->getResponseProcessorName());
+                $container->setParameter('lamudi_angi_client.default_response_options', $defaultUseCaseConfig->getResponseProcessorOptions());
             }
         }
     }

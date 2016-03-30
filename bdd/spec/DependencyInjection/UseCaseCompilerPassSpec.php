@@ -72,16 +72,16 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         ]);
         $useCase2Annotation1 = new UseCaseAnnotation([
             'value'  => 'use_case_2',
-            'output' => ['type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig']
+            'response' => ['type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig']
         ]);
         $useCase2Annotation2 = new UseCaseAnnotation([
             'value'  => 'use_case_2_alias',
-            'output' => ['type' => 'twig', 'template' => 'AppBundle:goodbye:index.html.twig']
+            'response' => ['type' => 'twig', 'template' => 'AppBundle:goodbye:index.html.twig']
         ]);
         $useCase3Annotation = new UseCaseAnnotation([
             'value' => 'use_case_3',
             'input' => 'http',
-            'output' => ['type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig']
+            'response' => ['type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig']
         ]);
 
         $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn([$useCase1Annotation]);
@@ -196,13 +196,13 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn([$useCaseAnnotation]);
 
         $inputProcessorsWithTags = ['service.input_processor' => [['alias' => 'input']]];
-        $responseProcessorsWithTags = ['service.response_processor' => [['alias' => 'output']]];
+        $responseProcessorsWithTags = ['service.response_processor' => [['alias' => 'response']]];
         $containerBuilder->findTaggedServiceIds('use_case_input_processor')->willReturn($inputProcessorsWithTags);
         $containerBuilder->findTaggedServiceIds('use_case_response_processor')->willReturn($responseProcessorsWithTags);
 
         $useCaseContainerDefinition->addMethodCall('set', Argument::is(['use_case_1', 'service.use_case_1']))->shouldBeCalled();
         $inputProcessorContainerDefinition->addMethodCall('set', Argument::is(['input', 'service.input_processor']))->shouldBeCalled();
-        $responseProcessorContainerDefinition->addMethodCall('set', Argument::is(['output', 'service.response_processor']))->shouldBeCalled();
+        $responseProcessorContainerDefinition->addMethodCall('set', Argument::is(['response', 'service.response_processor']))->shouldBeCalled();
 
         $this->process($containerBuilder);
     }

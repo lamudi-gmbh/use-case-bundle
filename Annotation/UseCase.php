@@ -69,7 +69,7 @@ class UseCase
     /**
      * @return string
      */
-    public function getOutputType()
+    public function getResponseType()
     {
         return $this->config->getResponseProcessorName();
     }
@@ -77,7 +77,7 @@ class UseCase
     /**
      * @return array
      */
-    public function getOutputOptions()
+    public function getResponseOptions()
     {
         return $this->config->getResponseProcessorOptions();
     }

@@ -8,8 +8,8 @@ parameters:
 
     lamudi_angi_client.default_input_type: default
     lamudi_angi_client.default_input_options: []
-    lamudi_angi_client.default_output_type: default
-    lamudi_angi_client.default_output_options: []
+    lamudi_angi_client.default_response_type: default
+    lamudi_angi_client.default_response_options: []
 
 services:
 
