@@ -6,10 +6,10 @@ parameters:
     lamudi_use_case.container.input_processor.class: Lamudi\UseCaseBundle\Container\Container
     lamudi_use_case.container.response_processor.class: Lamudi\UseCaseBundle\Container\Container
 
-    lamudi_angi_client.default_input_type: default
-    lamudi_angi_client.default_input_options: []
-    lamudi_angi_client.default_response_type: default
-    lamudi_angi_client.default_response_options: []
+    lamudi_use_case.default_input_type: default
+    lamudi_use_case.default_input_options: []
+    lamudi_use_case.default_response_type: default
+    lamudi_use_case.default_response_options: []
 
 services:
 
