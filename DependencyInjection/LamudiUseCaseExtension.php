@@ -2,7 +2,6 @@
 
 namespace Lamudi\UseCaseBundle\DependencyInjection;
 
-use Lamudi\UseCaseBundle\Container\UseCaseConfiguration;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
@@ -26,16 +25,7 @@ class LamudiUseCaseExtension extends Extension
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
-        if (isset($config['defaults'])) {
-            $defaultUseCaseConfig = new UseCaseConfiguration($config['defaults']);
-            if ($defaultUseCaseConfig->getInputProcessorName()) {
-                $container->setParameter('lamudi_use_case.default_input_type', $defaultUseCaseConfig->getInputProcessorName());
-                $container->setParameter('lamudi_use_case.default_input_options', $defaultUseCaseConfig->getInputProcessorOptions());
-            }
-            if ($defaultUseCaseConfig->getResponseProcessorName()) {
-                $container->setParameter('lamudi_use_case.default_response_type', $defaultUseCaseConfig->getResponseProcessorName());
-                $container->setParameter('lamudi_use_case.default_response_options', $defaultUseCaseConfig->getResponseProcessorOptions());
-            }
-        }
+        $container->setParameter('lamudi_use_case.default_context', $config['default_context']);
+        $container->setParameter('lamudi_use_case.contexts', $config['contexts']);
     }
 }

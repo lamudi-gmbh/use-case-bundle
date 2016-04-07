@@ -14,7 +14,6 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
- * Class UseCaseCompilerPassSpec
  * @mixin \Lamudi\UseCaseBundle\DependencyInjection\UseCaseCompilerPass
  */
 class UseCaseCompilerPassSpec extends ObjectBehavior
@@ -23,15 +22,18 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         AnnotationReader $annotationReader, RequestResolver $requestResolver,
         ContainerBuilder $containerBuilder, Definition $useCaseExecutorDefinition,
         Definition $useCaseContainerDefinition, Definition $inputProcessorContainerDefinition,
-        Definition $responseProcessorContainerDefinition
+        Definition $responseProcessorContainerDefinition, Definition $contextResolverDefinition
     )
     {
         $this->beConstructedWith($annotationReader, $requestResolver);
 
         $containerBuilder->findDefinition('lamudi_use_case.executor')->willReturn($useCaseExecutorDefinition);
+        $containerBuilder->findDefinition('lamudi_use_case.context_resolver')->willReturn($contextResolverDefinition);
         $containerBuilder->findDefinition('lamudi_use_case.container.use_case')->willReturn($useCaseContainerDefinition);
         $containerBuilder->findDefinition('lamudi_use_case.container.input_processor')->willReturn($inputProcessorContainerDefinition);
         $containerBuilder->findDefinition('lamudi_use_case.container.response_processor')->willReturn($responseProcessorContainerDefinition);
+        $containerBuilder->getParameter('lamudi_use_case.default_context')->willReturn('default');
+        $containerBuilder->getParameter('lamudi_use_case.contexts')->willReturn([]);
         $containerBuilder->has('lamudi_use_case.executor')->willReturn(true);
         $useCaseContainerDefinition->getClass()->willReturn(Container::class);
         $inputProcessorContainerDefinition->getClass()->willReturn(Container::class);
@@ -203,6 +205,27 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $useCaseContainerDefinition->addMethodCall('set', Argument::is(['use_case_1', 'service.use_case_1']))->shouldBeCalled();
         $inputProcessorContainerDefinition->addMethodCall('set', Argument::is(['input', 'service.input_processor']))->shouldBeCalled();
         $responseProcessorContainerDefinition->addMethodCall('set', Argument::is(['response', 'service.response_processor']))->shouldBeCalled();
+
+        $this->process($containerBuilder);
+    }
+
+    public function it_adds_context_definitions_to_the_resolver(
+        ContainerBuilder $containerBuilder, Definition $contextResolverDefinition
+    )
+    {
+        $contexts = [
+            ['input' => 'must_have_a_name', 'response' => 'json'],
+            ['name' => 'my_default_context', 'response' => 'json'],
+            ['name' => 'my_other_context', 'input' => 'array'],
+            ['name' => 'web', 'input' => ['type' => 'http', 'accept' => 'json'], 'response' => 'twig']
+        ];
+        $containerBuilder->getParameter('lamudi_use_case.default_context')->willReturn('my_default_context');
+        $containerBuilder->getParameter('lamudi_use_case.contexts')->willReturn($contexts);
+
+        $contextResolverDefinition->addMethodCall('setDefaultContextName', ['my_default_context'])->shouldBeCalled();
+        $contextResolverDefinition->addMethodCall('setContext', ['my_default_context', null, 'json'])->shouldBeCalled();
+        $contextResolverDefinition->addMethodCall('setContext', ['my_other_context', 'array', null])->shouldBeCalled();
+        $contextResolverDefinition->addMethodCall('setContext', ['web', ['type' => 'http', 'accept' => 'json'], 'twig'])->shouldBeCalled();
 
         $this->process($containerBuilder);
     }

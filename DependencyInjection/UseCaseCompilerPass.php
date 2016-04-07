@@ -49,6 +49,7 @@ class UseCaseCompilerPass implements CompilerPassInterface
         $this->addInputProcessorsToContainer($container);
         $this->addResponseProcessorsToContainer($container);
         $this->addUseCasesToContainer($container);
+        $this->addContextsToResolver($container);
     }
 
     /**
@@ -115,6 +116,26 @@ class UseCaseCompilerPass implements CompilerPassInterface
                 } else {
                     $processorContainerDefinition->addMethodCall('set', [$attributes['alias'], new Reference($id)]);
                 }
+            }
+        }
+    }
+
+    /**
+     * @param ContainerBuilder $containerBuilder
+     */
+    private function addContextsToResolver(ContainerBuilder $containerBuilder)
+    {
+        $resolverDefinition = $containerBuilder->findDefinition('lamudi_use_case.context_resolver');
+        $defaultContextName = $containerBuilder->getParameter('lamudi_use_case.default_context');
+        $contexts = (array)$containerBuilder->getParameter('lamudi_use_case.contexts');
+        
+        $resolverDefinition->addMethodCall('setDefaultContextName', [$defaultContextName]);
+        foreach ($contexts as $context) {
+            if (isset($context['name'])) {
+                $name = $context['name'];
+                $input = isset($context['input']) ? $context['input'] : null;
+                $response = isset($context['response']) ? $context['response'] : null;
+                $resolverDefinition->addMethodCall('setContext', [$name, $input, $response]);
             }
         }
     }

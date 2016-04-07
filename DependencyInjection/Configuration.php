@@ -22,9 +22,15 @@ class Configuration implements ConfigurationInterface
 
         $root
             ->children()
-                ->arrayNode('defaults')->children()
-                    ->variableNode('input')->end()
-                    ->variableNode('response')->end()
+                ->scalarNode('default_context')->defaultValue('default')->cannotBeEmpty()->end()
+                ->arrayNode('contexts')
+                    ->useAttributeAsKey('name')
+                    ->prototype('array')
+                        ->children()
+                            ->variableNode('input')->defaultNull()->end()
+                            ->variableNode('response')->defaultNull()->end()
+                        ->end()
+                    ->end()
                 ->end()
             ->end();
 
