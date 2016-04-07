@@ -3,6 +3,7 @@
 namespace spec\Lamudi\UseCaseBundle\Request\Processor {
 
     use Foo\Bar\Request\DataFromHttpRequest;
+    use Foo\Bar\Request\SpecificRequest;
     use Lamudi\UseCaseBundle\Request\Processor\InputProcessorInterface;
     use PhpSpec\ObjectBehavior;
     use Prophecy\Argument;
@@ -101,6 +102,31 @@ namespace spec\Lamudi\UseCaseBundle\Request\Processor {
             $request->var1->shouldBe('G_value_1');
             $request->var2->shouldBe('H_value_2');
             $request->var3->shouldBe('G_value_3');
+        }
+
+        public function it_maps_fields_from_array_to_object_using_custom_mappings(HttpRequest $httpRequest)
+        {
+            $this->initializeHttpRequest($httpRequest, [
+                'GET' => ['q' => 'cheap hotels', 'p' => 3],
+                'COOKIE' => ['PHPSESSID' => 'asd123'],
+                'SERVER' => ['REMOTE_ADDR' => '127.0.0.1']
+            ]);
+
+            $options = [
+                'map' => [
+                    'q'           => 'searchQuery',
+                    'p'           => 'pageNumber',
+                    'PHPSESSID'   => 'sessionId',
+                    'REMOTE_ADDR' => 'ipAddress'
+                ]
+            ];
+
+            /** @var SpecificRequest $request */
+            $request = $this->initializeRequest(new SpecificRequest(), $httpRequest, $options);
+            $request->searchQuery->shouldBe('cheap hotels');
+            $request->pageNumber->shouldBe(3);
+            $request->sessionId->shouldBe('asd123');
+            $request->ipAddress->shouldBe('127.0.0.1');
         }
 
         private function initializeHttpRequest(HttpRequest $httpRequest, $data)
@@ -251,8 +277,6 @@ namespace Foo\Bar\Request {
 
     class SomeRequest extends Request {}
 
-    class NotARequest {}
-
     class DataFromHttpRequest extends Request {
         public $attribute;
         public $request;
@@ -265,5 +289,13 @@ namespace Foo\Bar\Request {
         public $var1;
         public $var2;
         public $var3;
+    }
+
+    class SpecificRequest
+    {
+        public $searchQuery;
+        public $pageNumber;
+        public $sessionId;
+        public $ipAddress;
     }
 }

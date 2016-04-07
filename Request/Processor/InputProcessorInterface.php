@@ -12,7 +12,7 @@ interface InputProcessorInterface
      *
      * @param Request $request The use case request object to be initialized.
      * @param mixed $input Any object that contains input data.
-     * @param array $options An array of options used to create the request object.
+     * @param array $options An array of options to the input processor.
      */
     public function initializeRequest($request, $input, $options = []);
 }

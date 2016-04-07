@@ -4,6 +4,7 @@ namespace Lamudi\UseCaseBundle\Request\Processor;
 
 use Lamudi\UseCaseBundle\Request\Request;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\HttpFoundation;
 
 class FormInputProcessor implements InputProcessorInterface
 {
@@ -21,12 +22,15 @@ class FormInputProcessor implements InputProcessorInterface
     }
 
     /**
-     * Initializes a use case request based on the input data received. Additional options may help
-     * determine the way to initialize the use case request object.
+     * Populates the request object by having a Symfony form handle the HTTP request. By default it uses
+     * the entire request object as a target for data from the form.
+     * Available options:
+     * - data_field - optional. If specified, instead of populating the request fields, the processor dumps
+     *     all the form data into this field in the use case request as an associative array.
      *
      * @param Request $request The use case request object to be initialized.
-     * @param mixed $input Any object that contains input data.
-     * @param array $options An array of options used to create the request object.
+     * @param HttpFoundation\Request $input Symfony HTTP request object.
+     * @param array $options An array of options to the input processor.
      */
     public function initializeRequest($request, $input, $options = [])
     {
