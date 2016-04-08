@@ -2,9 +2,9 @@
 
 namespace spec\Lamudi\UseCaseBundle\Container;
 
-use Lamudi\UseCaseBundle\Exception\ServiceNotFoundException;
-use Lamudi\UseCaseBundle\Request\Processor\InputProcessorInterface;
-use Lamudi\UseCaseBundle\UseCaseInterface;
+use Lamudi\UseCaseBundle\Container\ServiceNotFoundException;
+use Lamudi\UseCaseBundle\Processor\Input\InputProcessorInterface;
+use Lamudi\UseCaseBundle\UseCase\UseCaseInterface;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\DependencyInjection\ContainerInterface;

@@ -5,7 +5,7 @@ namespace Lamudi\UseCaseBundle\DependencyInjection;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
 use Lamudi\UseCaseBundle\Container\ReferenceAcceptingContainerInterface;
-use Lamudi\UseCaseBundle\Request\RequestResolver;
+use Lamudi\UseCaseBundle\UseCase\RequestResolver;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;

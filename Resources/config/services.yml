@@ -1,7 +1,7 @@
 parameters:
-    lamudi_use_case.executor.class: Lamudi\UseCaseBundle\Container\UseCaseExecutor
-    lamudi_use_case.context_resolver.class: Lamudi\UseCaseBundle\Container\UseCaseContextResolver
-    lamudi_use_case.request_resolver.class: Lamudi\UseCaseBundle\Request\RequestResolver
+    lamudi_use_case.executor.class: Lamudi\UseCaseBundle\Execution\UseCaseExecutor
+    lamudi_use_case.context_resolver.class: Lamudi\UseCaseBundle\Execution\UseCaseContextResolver
+    lamudi_use_case.request_resolver.class: Lamudi\UseCaseBundle\UseCase\RequestResolver
     lamudi_use_case.container.use_case.class: Lamudi\UseCaseBundle\Container\DelegatingContainer
     lamudi_use_case.container.input_processor.class: Lamudi\UseCaseBundle\Container\Container
     lamudi_use_case.container.response_processor.class: Lamudi\UseCaseBundle\Container\Container
@@ -41,23 +41,23 @@ services:
     # INPUT PROCESSORS
     ##################################
     lamudi_use_case.input_processor.default:
-        class: Lamudi\UseCaseBundle\Request\Processor\DefaultInputProcessor
+        class: Lamudi\UseCaseBundle\Processor\Input\DefaultInputProcessor
         tags:
             - { name: use_case_input_processor, alias: default }
 
     lamudi_use_case.input_processor.form:
-        class: Lamudi\UseCaseBundle\Request\Processor\FormInputProcessor
+        class: Lamudi\UseCaseBundle\Processor\Input\FormInputProcessor
         arguments: ["@form.factory"]
         tags:
             - { name: use_case_input_processor, alias: form }
 
     lamudi_use_case.input_processor.http:
-        class: Lamudi\UseCaseBundle\Request\Processor\HttpInputProcessor
+        class: Lamudi\UseCaseBundle\Processor\Input\HttpInputProcessor
         tags:
             - { name: use_case_input_processor, alias: http }
 
     lamudi_use_case.input_processor.json_body:
-        class: Lamudi\UseCaseBundle\Request\Processor\JsonInputProcessor
+        class: Lamudi\UseCaseBundle\Processor\Input\JsonInputProcessor
         arguments: ["@serializer.encoder.json"]
         tags:
             - { name: use_case_input_processor, alias: json }
@@ -66,12 +66,12 @@ services:
     # RESPONSE PROCESSORS
     ##################################
     lamudi_use_case.processor.response_processor.default:
-        class: Lamudi\UseCaseBundle\Response\Processor\IdentityResponseProcessor
+        class: Lamudi\UseCaseBundle\Processor\Response\IdentityResponseProcessor
         tags:
             - { name: use_case_response_processor, alias: default }
 
     lamudi_use_case.processor.response_processor.twig:
-        class: Lamudi\UseCaseBundle\Response\Processor\TwigRenderer
+        class: Lamudi\UseCaseBundle\Processor\Response\TwigRenderer
         arguments: ["@?templating"]
         calls:
             - ["setFormFactory", ["@form.factory"]]
@@ -79,7 +79,7 @@ services:
             - { name: use_case_response_processor, alias: twig }
 
     lamudi_use_case.response_processor.json:
-        class: Lamudi\UseCaseBundle\Response\Processor\JsonRenderer
+        class: Lamudi\UseCaseBundle\Processor\Response\JsonRenderer
         arguments: ["@serializer"]
         tags:
             - { name: use_case_response_processor, alias: json }

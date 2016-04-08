@@ -4,11 +4,11 @@ Installation
 Add the following content in your composer.json file
 
     "require": {
-        "lamudi/use-case-bundle" : "dev-master"
+        "lamudi/use-case-bundle" : "~0.2"
     },
     "repositories": [{
         "type": "vcs",
-        "url":  "ssh://git@stash.lamudi.net:7999/lmd/use-case-bundle.git"
+        "url":  "ssh://git@bitbucket.lamudi.com:7999/lmd/use-case-bundle.git"
     }]
 
 then run 
@@ -45,30 +45,52 @@ class AppKernel extends Kernel
 2. Enable serializer in app/config.yml:
 
 ```
-// app/config.yml
+# app/config.yml
 
 framework:
     serializer: ~
     
 ```
 
-Usage
-=====
+Basic usage
+===========
 
-1. Register your use cases as Symfony services and tag them as "use_case":
+1. Register your use case as a Symfony service:
 
 ```
 // app.services.yml
 
 app.my_use_case:
     class: AppBundle\UseCase\MyUseCase
-    tags:
-        - { name: use_case }
 
 ```
 
-2. Use the use case container to retrieve your use cases:
+
+2. Using an annotation, name the use case and optionally assign an input processor and a response processor to it.
+Make sure that the use case class contains an execute() method with one type-hinted parameter.
 
 ```php
-$this->get('lamudi_use_case.container')->get('app.my_use_case');
+// AppBundle/UseCase/MyUseCase.php
+
+namespace AppBundle\UseCase;
+
+use Lamudi\UseCaseBundle\Annotation\UseCase;
+
+/**
+ * @UseCase("My Use Case", input="http", response="json")
+ */
+class MyUseCase
+{
+    public function execute(MyUseCaseRequest $request)
+    {
+        // ...
+    }
+}
+```
+
+
+3. Use the use case executor to retrieve your use cases:
+
+```php
+$this->get('lamudi_use_case.executor')->get('app.my_use_case');
 ```

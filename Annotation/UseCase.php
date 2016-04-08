@@ -2,7 +2,7 @@
 
 namespace Lamudi\UseCaseBundle\Annotation;
 
-use Lamudi\UseCaseBundle\Container\UseCaseConfiguration;
+use Lamudi\UseCaseBundle\Execution\UseCaseConfiguration;
 
 /**
  * @Annotation
@@ -13,7 +13,7 @@ class UseCase
     /**
      * @var string
      */
-    private $alias;
+    private $name;
 
     /**
      * @var UseCaseConfiguration
@@ -26,7 +26,7 @@ class UseCase
     public function __construct(array $data)
     {
         if (isset($data['value'])) {
-            $this->setAlias($data['value']);
+            $this->setName($data['value']);
         } else {
             throw new \InvalidArgumentException('Missing use case name.');
         }
@@ -39,15 +39,15 @@ class UseCase
      */
     public function getName()
     {
-        return $this->alias;
+        return $this->name;
     }
 
     /**
-     * @param string $alias
+     * @param string $name
      */
-    public function setAlias($alias)
+    public function setName($name)
     {
-        $this->alias = $alias;
+        $this->name = $name;
     }
 
     /**

@@ -2,8 +2,6 @@
 
 namespace Lamudi\UseCaseBundle\Container;
 
-use Lamudi\UseCaseBundle\Exception\ServiceNotFoundException;
-
 interface ContainerInterface
 {
     /**

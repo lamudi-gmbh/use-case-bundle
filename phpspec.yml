@@ -3,5 +3,5 @@ suites:
         namespace: Lamudi\UseCaseBundle
         psr4_prefix: Lamudi\UseCaseBundle\
         spec_prefix: spec
-        src_path: %paths.config%
-        spec_path: %paths.config%/bdd
+        src_path: "%paths.config%"
+        spec_path: "%paths.config%/bdd"

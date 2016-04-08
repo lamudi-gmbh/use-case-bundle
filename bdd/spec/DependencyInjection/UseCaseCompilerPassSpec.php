@@ -6,7 +6,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
 use Lamudi\UseCaseBundle\Container\Container;
 use Lamudi\UseCaseBundle\Container\ReferenceAcceptingContainerInterface;
-use Lamudi\UseCaseBundle\Request\RequestResolver;
+use Lamudi\UseCaseBundle\UseCase\RequestResolver;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\DependencyInjection\ContainerBuilder;

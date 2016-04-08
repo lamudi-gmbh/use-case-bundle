@@ -2,7 +2,6 @@
 
 namespace Lamudi\UseCaseBundle\Container;
 
-use Lamudi\UseCaseBundle\Exception\ServiceNotFoundException;
 use Symfony\Component\DependencyInjection as DI;
 
 class DelegatingContainer implements ReferenceAcceptingContainerInterface
