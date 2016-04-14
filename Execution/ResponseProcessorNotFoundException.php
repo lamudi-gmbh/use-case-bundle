@@ -2,6 +2,11 @@
 
 namespace Lamudi\UseCaseBundle\Execution;
 
-class ResponseProcessorNotFoundException extends \OutOfBoundsException
+/**
+ * Thrown when the provided response processor name could not be resolved to a valid Response Processor.
+ *
+ * @package Lamudi\UseCaseBundle\Execution
+ */
+class ResponseProcessorNotFoundException extends \Exception
 {
 }

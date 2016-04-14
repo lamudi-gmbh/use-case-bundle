@@ -38,6 +38,7 @@ class UseCaseCompilerPass implements CompilerPassInterface
      *
      * @param ContainerBuilder $container
      *
+     * @throws \Exception
      * @api
      */
     public function process(ContainerBuilder $container)
@@ -54,7 +55,9 @@ class UseCaseCompilerPass implements CompilerPassInterface
 
     /**
      * @param ContainerBuilder $container
+     *
      * @return array
+     * @throws \Exception
      */
     private function addUseCasesToContainer(ContainerBuilder $container)
     {
@@ -106,7 +109,9 @@ class UseCaseCompilerPass implements CompilerPassInterface
      */
     private function addResponseProcessorsToContainer(ContainerBuilder $containerBuilder)
     {
-        $processorContainerDefinition = $containerBuilder->findDefinition('lamudi_use_case.container.response_processor');
+        $processorContainerDefinition = $containerBuilder->findDefinition(
+            'lamudi_use_case.container.response_processor'
+        );
         $responseProcessors = $containerBuilder->findTaggedServiceIds('use_case_response_processor');
 
         foreach ($responseProcessors as $id => $tags) {
@@ -128,14 +133,14 @@ class UseCaseCompilerPass implements CompilerPassInterface
         $resolverDefinition = $containerBuilder->findDefinition('lamudi_use_case.context_resolver');
         $defaultContextName = $containerBuilder->getParameter('lamudi_use_case.default_context');
         $contexts = (array)$containerBuilder->getParameter('lamudi_use_case.contexts');
-        
+
         $resolverDefinition->addMethodCall('setDefaultContextName', [$defaultContextName]);
         foreach ($contexts as $context) {
             if (isset($context['name'])) {
                 $name = $context['name'];
                 $input = isset($context['input']) ? $context['input'] : null;
                 $response = isset($context['response']) ? $context['response'] : null;
-                $resolverDefinition->addMethodCall('setContext', [$name, $input, $response]);
+                $resolverDefinition->addMethodCall('addContextDefinition', [$name, $input, $response]);
             }
         }
     }
@@ -146,6 +151,8 @@ class UseCaseCompilerPass implements CompilerPassInterface
      * @param UseCaseAnnotation $annotation
      * @param Definition        $executorDefinition
      * @param Definition        $containerDefinition
+     *
+     * @throws \Lamudi\UseCaseBundle\UseCase\RequestClassNotFoundException
      */
     private function registerUseCase($serviceId, $serviceClass, $annotation, $executorDefinition, $containerDefinition)
     {
@@ -169,12 +176,13 @@ class UseCaseCompilerPass implements CompilerPassInterface
             );
         }
 
-        $requestClass = $this->requestResolver->resolve($serviceClass);
-        $executorDefinition->addMethodCall('assignRequestClass', [$annotation->getName(), $requestClass]);
+        $requestClassName = $this->requestResolver->resolve($serviceClass);
+        $executorDefinition->addMethodCall('assignRequestClass', [$annotation->getName(), $requestClassName]);
     }
 
     /**
      * @param Definition $containerDefinition
+     *
      * @return bool
      */
     private function containerAcceptsReferences($containerDefinition)

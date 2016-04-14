@@ -2,9 +2,8 @@
 
 namespace Lamudi\UseCaseBundle\Processor\Input;
 
-use Lamudi\UseCaseBundle\UseCase\Request;
-use Symfony\Component\Serializer\Encoder\DecoderInterface;
 use Symfony\Component\HttpFoundation;
+use Symfony\Component\Serializer\Encoder\DecoderInterface;
 
 class JsonInputProcessor extends ArrayInputProcessor implements InputProcessorInterface
 {
@@ -22,16 +21,16 @@ class JsonInputProcessor extends ArrayInputProcessor implements InputProcessorIn
     }
 
     /**
-     * Decodes the body of the HTTP request as JSON and uses the result to populate the use case request.
+     * Decodes the body of the HTTP request as JSON and uses the result to populate the Use Case Request fields.
      * Available options:
-     * - map - optional. This option allows to specify custom mapping from the fields found in the JSON object
-     *     to the fields in the use case request. Use an associative array with input array keys as keys
-     *     and use case request field names as values.
+     * - map - optional. Allows to specify custom mapping from JSON object fields to Use Case Request fields.
+     *     Use an associative array with input array keys as keys and Use Case Request field names as values.
      *
-     * @param Request $request The use case request object to be initialized.
-     * @param HttpFoundation\Request $input Symfony HTTP request.
-     * @param array $options An array of options to the input processor.
-     * @return Request returned for testability purposes
+     * @param object                 $request The Use Case Request object to be initialized.
+     * @param HttpFoundation\Request $input   Symfony HTTP request.
+     * @param array                  $options An array of configuration options.
+     *
+     * @return object the Use Case Request object is returned for testability purposes.
      */
     public function initializeRequest($request, $input, $options = [])
     {

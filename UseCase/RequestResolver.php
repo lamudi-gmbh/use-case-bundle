@@ -5,10 +5,12 @@ namespace Lamudi\UseCaseBundle\UseCase;
 class RequestResolver
 {
     /**
-     * Returns the name of a Request class suitable for specified use case.
+     * Returns the name of a Request class suitable for specified Use Case.
      *
      * @param UseCaseInterface|string $useCase A use case object, or its class name.
+     *
      * @return string
+     * @throws RequestClassNotFoundException
      */
     public function resolve($useCase)
     {
@@ -47,13 +49,9 @@ class RequestResolver
         preg_match('/@param\s+(\w+)\s+\$request/', $docBlock, $matches);
         $className = $matches[1];
 
-        if ($className === 'Request') {
-            $className = Request::class;
-        } else {
-            $className = $classReflection->getNamespaceName() . '\Request\\' . $className;
-        }
+        $fullClassName = $classReflection->getNamespaceName() . '\Request\\' . $className;
 
-        return $className;
+        return $fullClassName;
     }
 
     /**

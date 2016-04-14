@@ -2,7 +2,6 @@
 
 namespace Lamudi\UseCaseBundle\Processor\Input;
 
-use Lamudi\UseCaseBundle\UseCase\Request;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation;
 
@@ -28,10 +27,11 @@ class FormInputProcessor implements InputProcessorInterface
      * - data_field - optional. If specified, instead of populating the request fields, the processor dumps
      *     all the form data into this field in the use case request as an associative array.
      *
-     * @param Request $request The use case request object to be initialized.
-     * @param HttpFoundation\Request $input Symfony HTTP request object.
-     * @param array $options An array of options to the input processor.
-     * @return Request returned for testability purposes
+     * @param object                 $request The Use Case Request object to be initialized.
+     * @param HttpFoundation\Request $input   Symfony HTTP request object.
+     * @param array                  $options An array of configuration options.
+     *
+     * @return object the Use Case Request object is returned for testability purposes.
      */
     public function initializeRequest($request, $input, $options = [])
     {

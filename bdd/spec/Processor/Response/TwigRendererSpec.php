@@ -2,7 +2,6 @@
 
 namespace spec\Lamudi\UseCaseBundle\Response\Processor;
 
-use Lamudi\UseCaseBundle\UseCase\Response;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
@@ -16,9 +15,9 @@ use Symfony\Component\Form\FormView;
  */
 class TwigRendererSpec extends ObjectBehavior
 {
-    public function let(EngineInterface $templatingEngine)
+    public function let(EngineInterface $templatingEngine, FormFactoryInterface $formFactory)
     {
-        $this->beConstructedWith($templatingEngine);
+        $this->beConstructedWith($templatingEngine, $formFactory);
     }
 
     function it_is_initializable()
@@ -28,7 +27,7 @@ class TwigRendererSpec extends ObjectBehavior
 
     public function it_throws_an_exception_when_no_template_is_specified()
     {
-        $this->shouldThrow(\InvalidArgumentException::class)->duringProcessResponse(new Response(), []);
+        $this->shouldThrow(\InvalidArgumentException::class)->duringProcessResponse(new \stdClass(), []);
     }
 
     public function it_creates_views_of_specified_forms(
@@ -51,7 +50,7 @@ class TwigRendererSpec extends ObjectBehavior
         ];
 
         $this->setFormFactory($formFactory);
-        $this->processResponse(new Response(), $options);
+        $this->processResponse(new \stdClass(), $options);
 
         $templatingEngine->renderResponse(':default:index.html.twig', [
             'form' => $contactFormView->getWrappedObject(), 'anotherForm' => $searchFormView->getWrappedObject()
@@ -62,7 +61,7 @@ class TwigRendererSpec extends ObjectBehavior
         EngineInterface $templatingEngine, FormFactoryInterface $formFactory, Form $form, FormView $formView
     )
     {
-        $response = new Response();
+        $response = new \stdClass();
         $response->formData = ['name' => 'John', 'age' => 40, 'city' => 'Wąbrzeźno'];
 
         $formFactory->create('some_form')->willReturn($form);
@@ -80,7 +79,6 @@ class TwigRendererSpec extends ObjectBehavior
             ]
         ];
 
-        $this->setFormFactory($formFactory);
         $this->processResponse($response, $options);
 
         $templatingEngine

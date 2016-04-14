@@ -18,7 +18,7 @@ then run
 Configuration
 =============
 
-1. Register your bundle in AppKernel.php:
+Register your bundle in AppKernel.php:
 
 ```php
 <?php
@@ -42,7 +42,7 @@ class AppKernel extends Kernel
 }
 ```
 
-2. Enable serializer in app/config.yml:
+Enable serializer in app/config.yml:
 
 ```
 # app/config.yml
@@ -55,22 +55,21 @@ framework:
 Basic usage
 ===========
 
-1. Register your use case as a Symfony service:
+Register your use case as a Symfony service:
 
 ```
-// app.services.yml
+# app/services.yml
 
 app.my_use_case:
     class: AppBundle\UseCase\MyUseCase
-
 ```
 
-
-2. Using an annotation, name the use case and optionally assign an input processor and a response processor to it.
-Make sure that the use case class contains an execute() method with one type-hinted parameter.
+Using an annotation, name the use case and optionally assign an input processor and a response processor to it.
+Make sure that the use case class contains an ```execute()``` method with one type-hinted parameter.
 
 ```php
-// AppBundle/UseCase/MyUseCase.php
+<?php
+// src/AppBundle/UseCase/MyUseCase.php
 
 namespace AppBundle\UseCase;
 
@@ -88,9 +87,25 @@ class MyUseCase
 }
 ```
 
-
-3. Use the use case executor to retrieve your use cases:
+Use the use case executor to retrieve your use cases:
 
 ```php
-$this->get('lamudi_use_case.executor')->get('app.my_use_case');
+<?php
+// src/AppBundle/Controller/MyController.php
+
+namespace AppBundle\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
+
+class MyController extends Controller
+{
+    public function myAction(Request $request)
+    {
+        return $this->get('lamudi_use_case.executor')->execute('My Use Case', $request);
+    }
+}
+
 ```
+
+Refer to [the documentation](https://confluence.lamudi.com/display/AP/UseCaseBundle) for more details.

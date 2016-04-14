@@ -10,8 +10,10 @@ namespace Lamudi\UseCaseBundle\UseCase;
 interface UseCaseInterface
 {
     /**
-     * @param Request $request
-     * @return Response
+     * Executes the business logic of your application's use case.
+     *
+     * @param object $request An object containing request data in public fields.
+     * @return object An object containing response data in public fields.
      */
     public function execute($request);
 }

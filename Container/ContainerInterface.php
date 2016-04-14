@@ -5,15 +5,20 @@ namespace Lamudi\UseCaseBundle\Container;
 interface ContainerInterface
 {
     /**
-     * @param string $name A name under which to store a service.
-     * @param string|object $service An object or a string reference to an object, use acceptsReferences to determine which.
+     * Stores the item in the container.
+     *
+     * @param string $name A name under which to store the item.
+     * @param object $item The object to be stored.
      */
-    public function set($name, $service);
+    public function set($name, $item);
 
     /**
-     * @param string $name The name of the service.
+     * Returns an item from the container by its name. Throws an exception if an item by given name does not exist.
+     *
+     * @param string $name
+     *
      * @return object
-     * @throws ServiceNotFoundException
+     * @throws ItemNotFoundException
      */
     public function get($name);
 }

@@ -2,17 +2,15 @@
 
 namespace Lamudi\UseCaseBundle\Processor\Input;
 
-use Lamudi\UseCaseBundle\UseCase\Request;
-
 interface InputProcessorInterface
 {
     /**
-     * Initializes a use case request based on the input data received. Additional options may help
-     * determine the way to initialize the use case request object.
+     * Initializes a Use Case Request object fields based on the input data received. Additional, processor-specific
+     * options may be required. Refer to the documentation of the Processor of choice.
      *
-     * @param Request $request The use case request object to be initialized.
-     * @param mixed $input Any object that contains input data.
-     * @param array $options An array of options to the input processor.
+     * @param object $request The Use Case Request object to be initialized.
+     * @param mixed  $input   Any object that contains input data.
+     * @param array  $options An array of configuration options to the Input Processor.
      */
     public function initializeRequest($request, $input, $options = []);
 }

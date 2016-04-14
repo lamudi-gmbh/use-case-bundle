@@ -2,26 +2,27 @@
 
 namespace Lamudi\UseCaseBundle\Processor\Response;
 
-use Lamudi\UseCaseBundle\UseCase\Response;
-
 interface ResponseProcessorInterface
 {
     /**
-     * Processes the successful outcome of a use case execution. Returns any object that
-     * satisfies the environment in which the use case is executed.
+     * Processes the successful outcome of a Use Case execution. Returns the appropriate Output object.
      *
-     * @param Response $response
-     * @param array $options
+     * @param object $response The Use Case Response object.
+     * @param array  $options
+     *
      * @return mixed
      */
     public function processResponse($response, $options = []);
 
     /**
-     * When an exception is thrown during use case execution, this method is invoked
+     * When an exception is thrown during Use Case execution, this method is invoked. It should return an Output
+     * appropriate for alternative execution course of the Use Case, or rethrow the exception if it was not the result
+     * of such course.
      *
      * @param \Exception $exception
-     * @param array $options
+     * @param array      $options
+     *
      * @return mixed
      */
-    public function handleException($exception, $options = []);
+    public function handleException(\Exception $exception, $options = []);
 }

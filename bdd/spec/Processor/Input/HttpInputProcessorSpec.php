@@ -273,11 +273,10 @@ namespace spec\Lamudi\UseCaseBundle\Processor\Input {
 
 namespace Foo\Bar\Request {
 
-    use Lamudi\UseCaseBundle\UseCase\Request;
+    class SomeRequest {}
 
-    class SomeRequest extends Request {}
-
-    class DataFromHttpRequest extends Request {
+    class DataFromHttpRequest
+    {
         public $attribute;
         public $request;
         public $query;

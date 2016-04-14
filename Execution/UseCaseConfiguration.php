@@ -2,12 +2,17 @@
 
 namespace Lamudi\UseCaseBundle\Execution;
 
+/**
+ * Provides parameters necessary for the execution of the use case using the Use Case Executor.
+ *
+ * @package Lamudi\UseCaseBundle\Execution
+ */
 class UseCaseConfiguration
 {
     /**
      * @var string
      */
-    private $requestClass;
+    private $requestClassName;
 
     /**
      * @var string
@@ -30,7 +35,15 @@ class UseCaseConfiguration
     private $responseProcessorOptions = [];
 
     /**
+     * Constructs a Use Case Configuration based on provided data. All parameters optional:
+     * - input - string (Input Converter name) or array. In latter case, the Input Converter name must be provided under
+     *   "type" key.
+     * - response - string (Response Converter name) or array. In latter case, the Response Converter name
+     *   must be provided under "type" key.
+     *
      * @param array $data
+     *
+     * @throws InvalidConfigurationException
      */
     public function __construct($data = [])
     {
@@ -45,18 +58,19 @@ class UseCaseConfiguration
     /**
      * @return string
      */
-    public function getRequestClass()
+    public function getRequestClassName()
     {
-        return $this->requestClass;
+        return $this->requestClassName;
     }
 
     /**
-     * @param string $requestClass
+     * @param string $requestClassName
+     *
      * @return UseCaseConfiguration
      */
-    public function setRequestClass($requestClass)
+    public function setRequestClassName($requestClassName)
     {
-        $this->requestClass = $requestClass;
+        $this->requestClassName = $requestClassName;
         return $this;
     }
 
@@ -70,6 +84,7 @@ class UseCaseConfiguration
 
     /**
      * @param string $inputProcessorName
+     *
      * @return UseCaseConfiguration
      */
     public function setInputProcessorName($inputProcessorName)
@@ -88,6 +103,7 @@ class UseCaseConfiguration
 
     /**
      * @param array $inputProcessorOptions
+     *
      * @return UseCaseConfiguration
      */
     public function setInputProcessorOptions($inputProcessorOptions)
@@ -106,6 +122,7 @@ class UseCaseConfiguration
 
     /**
      * @param string $responseProcessorName
+     *
      * @return UseCaseConfiguration
      */
     public function setResponseProcessorName($responseProcessorName)
@@ -124,6 +141,7 @@ class UseCaseConfiguration
 
     /**
      * @param array $responseProcessorOptions
+     *
      * @return UseCaseConfiguration
      */
     public function setResponseProcessorOptions($responseProcessorOptions)
@@ -135,7 +153,9 @@ class UseCaseConfiguration
     /**
      * @param string       $field
      * @param string|array $data
+     *
      * @return string
+     * @throws InvalidConfigurationException
      */
     private function setConfiguration($field, $data)
     {
@@ -146,7 +166,7 @@ class UseCaseConfiguration
             $this->$nameField = $data;
         } else {
             if (!isset($data['type'])) {
-                throw new \Exception('Missing ' . $field . ' type');
+                throw new InvalidConfigurationException('Missing ' . $field . ' processor name.');
             }
 
             $this->$nameField = $data['type'];

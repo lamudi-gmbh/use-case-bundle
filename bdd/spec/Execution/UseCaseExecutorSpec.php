@@ -6,12 +6,10 @@ use Lamudi\UseCaseBundle\Container\ContainerInterface;
 use Lamudi\UseCaseBundle\Execution\UseCaseConfiguration;
 use Lamudi\UseCaseBundle\Execution\UseCaseContext;
 use Lamudi\UseCaseBundle\Execution\UseCaseContextResolver;
-use Lamudi\UseCaseBundle\Container\ServiceNotFoundException;
+use Lamudi\UseCaseBundle\Container\ItemNotFoundException;
 use Lamudi\UseCaseBundle\Exception\UseCaseException;
 use Lamudi\UseCaseBundle\Execution\UseCaseNotFoundException;
 use Lamudi\UseCaseBundle\Processor\Input\InputProcessorInterface;
-use Lamudi\UseCaseBundle\UseCase\Request;
-use Lamudi\UseCaseBundle\UseCase\Response;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use Lamudi\UseCaseBundle\Processor\Response\ResponseProcessorInterface;
 use Lamudi\UseCaseBundle\UseCase\UseCaseInterface;
@@ -32,6 +30,7 @@ class UseCaseExecutorSpec extends ObjectBehavior
         $this->beConstructedWith($useCaseContainer, $contextResolver);
 
         $useCaseContainer->get('use_case')->willReturn($useCase);
+        $this->assignRequestClass('use_case', '\stdClass');
         $context->getInputProcessor()->willReturn($defaultInputProcessor);
         $context->getInputProcessorOptions()->willReturn([]);
         $context->getResponseProcessor()->willReturn($defaultResponseProcessor);
@@ -45,7 +44,7 @@ class UseCaseExecutorSpec extends ObjectBehavior
 
     public function it_throws_exception_when_no_use_case_by_given_name_exists(ContainerInterface $useCaseContainer)
     {
-        $useCaseContainer->get('no_such_use_case_here')->willThrow(new ServiceNotFoundException());
+        $useCaseContainer->get('no_such_use_case_here')->willThrow(new ItemNotFoundException());
         $this->shouldThrow(new UseCaseNotFoundException('Use case "no_such_use_case_here" not found.'))
             ->duringExecute('no_such_use_case_here', []);
     }
@@ -75,7 +74,7 @@ class UseCaseExecutorSpec extends ObjectBehavior
 
     public function it_registers_response_processor_for_use_case_with_options(
         UseCaseContextResolver $contextResolver, UseCaseContext $context, ResponseProcessorInterface $responseProcessor,
-        UseCaseInterface $useCase, Response $useCaseResponse, HttpResponse $output
+        UseCaseInterface $useCase, \stdClass $useCaseResponse, HttpResponse $output
     )
     {
         $responseProcessorOptions = ['template' => 'HelloBundle:hello:index.html.twig'];
@@ -94,7 +93,7 @@ class UseCaseExecutorSpec extends ObjectBehavior
     }
 
     public function it_uses_context_resolver_to_fetch_the_use_case_context(
-        UseCaseInterface $useCase, UseCaseContextResolver $contextResolver, UseCaseContext $context, Response $response,
+        UseCaseInterface $useCase, UseCaseContextResolver $contextResolver, UseCaseContext $context, \stdClass $response,
         InputProcessorInterface $formInputProcessor, ResponseProcessorInterface $twigResponseProcessor, HttpResponse $httpResponse
     )
     {
@@ -103,7 +102,7 @@ class UseCaseExecutorSpec extends ObjectBehavior
         $this->assignResponseProcessor('use_case', 'twig');
 
         $config = new UseCaseConfiguration();
-        $config->setRequestClass(SomeUseCaseRequest::class);
+        $config->setRequestClassName(SomeUseCaseRequest::class);
         $config->setInputProcessorName('form');
         $config->setResponseProcessorName('twig');
 
@@ -149,8 +148,11 @@ class UseCaseExecutorSpec extends ObjectBehavior
         UseCaseContextResolver $contextResolver, UseCaseContext $context
     )
     {
-        $contextResolver->resolveContext(new UseCaseConfiguration())->shouldBeCalled();
-        $contextResolver->resolveContext(new UseCaseConfiguration())->willReturn($context);
+        $defaultEmptyConfiguration = new UseCaseConfiguration();
+        $defaultEmptyConfiguration->setRequestClassName('\stdClass');
+
+        $contextResolver->resolveContext($defaultEmptyConfiguration)->shouldBeCalled();
+        $contextResolver->resolveContext($defaultEmptyConfiguration)->willReturn($context);
 
         $this->execute('use_case', []);
     }
@@ -163,4 +165,4 @@ class UseCaseExecutorSpec extends ObjectBehavior
     }
 }
 
-class SomeUseCaseRequest extends Request {}
+class SomeUseCaseRequest {}

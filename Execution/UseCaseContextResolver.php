@@ -3,16 +3,21 @@
 namespace Lamudi\UseCaseBundle\Execution;
 
 use Lamudi\UseCaseBundle\Container\ContainerInterface;
-use Lamudi\UseCaseBundle\Container\ServiceNotFoundException;
+use Lamudi\UseCaseBundle\Container\ItemNotFoundException;
 use Lamudi\UseCaseBundle\Processor\Input\InputProcessorInterface;
 use Lamudi\UseCaseBundle\Processor\Response\ResponseProcessorInterface;
 
+/**
+ * Creates the context for the Use Case execution.
+ *
+ * @package Lamudi\UseCaseBundle\Execution
+ */
 class UseCaseContextResolver
 {
     /**
      * @var string
      */
-    private $defaultContext = 'default';
+    private $defaultContextName = 'default';
 
     /**
      * @var ContainerInterface
@@ -37,15 +42,18 @@ class UseCaseContextResolver
     {
         $this->inputProcessorContainer = $inputProcessorContainer;
         $this->responseProcessorContainer = $responseProcessorContainer;
-        $this->configurations[$this->defaultContext] = new UseCaseConfiguration(['input' => 'default', 'response' => 'default']);
+        $this->configurations[$this->defaultContextName] = new UseCaseConfiguration(['input' => 'default', 'response' => 'default']);
     }
 
     /**
-     * @param string $contextName
-     * @param string|array|null $inputProcessor
-     * @param string|array|null $responseProcessor
+     * Saves a named context configuration. Both Input Processor and Response Processor configurations
+     * are optional and will fall back to default if not specified.
+     *
+     * @param string            $contextName
+     * @param string|array|null $inputProcessor name or configuration
+     * @param string|array|null $responseProcessor name or configuration
      */
-    public function setContext($contextName, $inputProcessor = null, $responseProcessor = null)
+    public function addContextDefinition($contextName, $inputProcessor = null, $responseProcessor = null)
     {
         $this->configurations[$contextName] = new UseCaseConfiguration([
             'input' => $inputProcessor, 'response' => $responseProcessor
@@ -53,16 +61,26 @@ class UseCaseContextResolver
     }
 
     /**
-     * @param null|string|array|UseCaseConfiguration $contextConfiguration
+     * Creates a Use Case context based on the specified context configuration. The following configuration formats
+     * are supported:
+     * - string - resolved to a named Context created using addContextDefinition() method. The default
+     *   Processors' options will be overriden by those belonging to the Context.
+     * - array or UseCaseConfiguration object - specify the Input Processor, the Response Processor and their options.
+     *   An array should come in the same format as the argument to UseCaseConfiguration constructor. In this case,
+     *   the Input and Response processor options will be merged with the respective default options. The processors
+     *   themselves will fall back to default if not specified.
+     *
+     * @param string|array|UseCaseConfiguration $contextConfiguration
+     *
      * @return UseCaseContext
+     * @throws InvalidConfigurationException
      */
     public function resolveContext($contextConfiguration)
     {
         $defaultConfig = $this->getDefaultConfiguration();
-        if (is_string($contextConfiguration)) {
-            $config = $this->configurations[$contextConfiguration];
-        } else {
-            $config = $this->resolveConfiguration($contextConfiguration);
+        $config = $this->resolveConfiguration($contextConfiguration);
+
+        if (!is_string($contextConfiguration)) {
             $this->mergeOptionsWithDefaultConfig($config, $defaultConfig);
         }
 
@@ -81,54 +99,65 @@ class UseCaseContextResolver
     }
 
     /**
+     * Determines which predefined context configuration will be used as a fallback for a lack of more specific settings.
+     *
      * @param string $contextName
      */
     public function setDefaultContextName($contextName)
     {
-        $this->defaultContext = $contextName;
+        $this->defaultContextName = $contextName;
     }
 
     /**
+     * Returns the default Use Case Configuration.
+     *
      * @return UseCaseConfiguration
+     * @throws InvalidConfigurationException
      */
-    private function getDefaultConfiguration()
+    public function getDefaultConfiguration()
     {
-        return $this->configurations[$this->defaultContext];
+        return $this->getConfigurationByName($this->defaultContextName);
     }
 
     /**
      * @param string $inputProcessorName
+     *
      * @return InputProcessorInterface
      */
     private function getInputProcessor($inputProcessorName)
     {
         try {
             return $this->inputProcessorContainer->get($inputProcessorName);
-        } catch (ServiceNotFoundException $e) {
+        } catch (ItemNotFoundException $e) {
             throw new InputProcessorNotFoundException(sprintf('Input processor "%s" not found.', $inputProcessorName));
         }
     }
 
     /**
      * @param string $responseProcessorName
+     *
      * @return ResponseProcessorInterface
      */
     private function getResponseProcessor($responseProcessorName)
     {
         try {
             return $this->responseProcessorContainer->get($responseProcessorName);
-        } catch (ServiceNotFoundException $e) {
+        } catch (ItemNotFoundException $e) {
             throw new ResponseProcessorNotFoundException(sprintf('Response processor "%s" not found.', $responseProcessorName));
         }
     }
 
     /**
-     * @param mixed $contextConfiguration
+     * @param string|array|UseCaseConfiguration $contextConfiguration
+     *
      * @return UseCaseConfiguration
+     * @throws InvalidConfigurationException
      */
     private function resolveConfiguration($contextConfiguration)
     {
-        if (is_array($contextConfiguration)) {
+        if (is_string($contextConfiguration)) {
+            return $this->getConfigurationByName($contextConfiguration);
+        } elseif (is_array($contextConfiguration)) {
             return new UseCaseConfiguration($contextConfiguration);
         } elseif ($contextConfiguration instanceof UseCaseConfiguration) {
             return clone $contextConfiguration;
@@ -149,5 +178,22 @@ class UseCaseContextResolver
         $config->setResponseProcessorOptions(
             array_merge($defaultConfig->getResponseProcessorOptions(), $config->getResponseProcessorOptions())
         );
+    }
+
+    /**
+     * @param string $contextConfiguration
+     *
+     * @return UseCaseConfiguration
+     * @throws InvalidConfigurationException
+     */
+    private function getConfigurationByName($contextConfiguration)
+    {
+        if (array_key_exists($contextConfiguration, $this->configurations)) {
+            return $this->configurations[$contextConfiguration];
+        } else {
+            throw new InvalidConfigurationException(
+                sprintf('Context "%s" has not been defined.', $contextConfiguration)
+            );
+        }
     }
 }

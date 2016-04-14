@@ -2,7 +2,6 @@
 
 namespace Lamudi\UseCaseBundle\Processor\Input;
 
-use Lamudi\UseCaseBundle\UseCase\Request;
 use Symfony\Component\HttpFoundation;
 
 class HttpInputProcessor extends ArrayInputProcessor implements InputProcessorInterface
@@ -10,20 +9,22 @@ class HttpInputProcessor extends ArrayInputProcessor implements InputProcessorIn
     const DEFAULT_ORDER = 'GPFCSHA';
 
     /**
-     * Populates the request object by data from the Symfony HTTP request. By default, the variables in the HTTP
-     * request are matched to the use case request fields by their names in the following order, later values
+     * Populates the Use Case Request object with data from the Symfony HTTP request. By default, the variables in
+     * the HTTP request are matched to the Use Case Request fields by their names in the following order, later values
      * overriding the older: GET, POST, FILES, COOKIES, SESSION, Headers, Attributes.
      * Available options:
-     * - priority - optional, default value: GPFCSHA. Use this option to apply different priority than described above.
-     *     The letters correspond to the first letters in the aforementioned variable names. It is possible to omit letters.
-     * - map - optional. This option allows to specify custom mapping from the fields found in the HTTP request
-     *     to the fields in the use case request. Use an associative array with HTTP request variables names as keys
-     *     and use case request field names as values.
+     * - priority - optional, default value: GPFCSHA. Use this option to apply a priority different from the above.
+     *     The letters correspond to the first letters in the aforementioned variable names. It is possible to omit
+     *     some letters.
+     * - map - optional. This option allows to specify custom mapping from fields found in the HTTP request
+     *     to the fields in the Use Case Request. Use an associative array with HTTP request variables names as keys
+     *     and Use Case Request field names as values.
      *
-     * @param Request $request The use case object to initialize.
-     * @param HttpFoundation\Request $input Symfony HTTP request object.
-     * @param array $options An array of options to the input processor.
-     * @return Request returned for testability purposes
+     * @param object                 $request The Use Case Request object to be initialized.
+     * @param HttpFoundation\Request $input   Symfony HTTP request object.
+     * @param array                  $options An array of options to the input processor.
+     *
+     * @return object the Use Case Request object is returned for testability purposes.
      */
     public function initializeRequest($request, $input, $options = [])
     {

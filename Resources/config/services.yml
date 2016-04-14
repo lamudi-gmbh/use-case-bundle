@@ -72,9 +72,7 @@ services:
 
     lamudi_use_case.processor.response_processor.twig:
         class: Lamudi\UseCaseBundle\Processor\Response\TwigRenderer
-        arguments: ["@?templating"]
-        calls:
-            - ["setFormFactory", ["@form.factory"]]
+        arguments: ["@?templating", "@form.factory"]
         tags:
             - { name: use_case_response_processor, alias: twig }
 

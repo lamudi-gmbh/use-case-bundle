@@ -4,7 +4,6 @@ namespace spec\Lamudi\UseCaseBundle\Processor\Input;
 
 use Lamudi\UseCaseBundle\Processor\Input\InputProcessorInterface;
 use Lamudi\UseCaseBundle\Processor\Input\JsonInputProcessor;
-use Lamudi\UseCaseBundle\UseCase\Request;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
@@ -33,7 +32,7 @@ class JsonInputProcessorSpec extends ObjectBehavior
     public function it_does_nothing_if_input_is_not_a_symfony_http_request(DecoderInterface $jsonDecoder)
     {
         $jsonDecoder->decode(Argument::cetera())->shouldNotBeCalled();
-        $this->initializeRequest(new Request(), new \stdClass());
+        $this->initializeRequest(new \stdClass(), new \stdClass());
     }
 
     public function it_populates_the_request_with_json_body_data(HttpRequest $httpRequest, DecoderInterface $jsonDecoder)

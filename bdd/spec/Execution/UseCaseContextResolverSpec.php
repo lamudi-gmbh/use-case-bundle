@@ -3,12 +3,13 @@
 namespace spec\Lamudi\UseCaseBundle\Execution;
 
 use Lamudi\UseCaseBundle\Container\ContainerInterface;
+use Lamudi\UseCaseBundle\Execution\InvalidConfigurationException;
 use Lamudi\UseCaseBundle\Execution\UseCaseConfiguration;
 use Lamudi\UseCaseBundle\Execution\UseCaseContext;
 use Lamudi\UseCaseBundle\Execution\UseCaseContextResolver;
 use Lamudi\UseCaseBundle\Execution\InputProcessorNotFoundException;
 use Lamudi\UseCaseBundle\Execution\ResponseProcessorNotFoundException;
-use Lamudi\UseCaseBundle\Container\ServiceNotFoundException;
+use Lamudi\UseCaseBundle\Container\ItemNotFoundException;
 use Lamudi\UseCaseBundle\Processor\Input\InputProcessorInterface;
 use Lamudi\UseCaseBundle\Processor\Response\ResponseProcessorInterface;
 use PhpSpec\ObjectBehavior;
@@ -46,8 +47,8 @@ class UseCaseContextResolverSpec extends ObjectBehavior
         ResponseProcessorInterface $twigResponseProcessor, ResponseProcessorInterface $cliResponseProcessor
     )
     {
-        $this->setContext('web', 'http', 'twig');
-        $this->setContext('console', 'cli', 'cli');
+        $this->addContextDefinition('web', 'http', 'twig');
+        $this->addContextDefinition('console', 'cli', 'cli');
 
         $webContext = $this->resolveContext('web');
         $webContext->shouldHaveType(UseCaseContext::class);
@@ -60,11 +61,18 @@ class UseCaseContextResolverSpec extends ObjectBehavior
         $consoleContext->getResponseProcessor()->shouldBe($cliResponseProcessor);
     }
 
+    public function it_throws_an_exception_if_context_does_not_exist()
+    {
+        $this->shouldThrow(InvalidConfigurationException::class)->duringResolveContext('no_such_context');
+        $this->setDefaultContextName('nothing_here');
+        $this->shouldThrow(InvalidConfigurationException::class)->duringGetDefaultConfiguration();
+    }
+
     public function it_resolves_context_with_options(
         InputProcessorInterface $httpInputProcessor, ResponseProcessorInterface $twigResponseProcessor
     )
     {
-        $this->setContext('web', ['type' => 'http', 'accept' => 'text/html'], ['type' => 'twig', 'template' => 'none']);
+        $this->addContextDefinition('web', ['type' => 'http', 'accept' => 'text/html'], ['type' => 'twig', 'template' => 'none']);
 
         $webContext = $this->resolveContext('web');
         $webContext->shouldHaveType(UseCaseContext::class);
@@ -79,8 +87,8 @@ class UseCaseContextResolverSpec extends ObjectBehavior
         InputProcessorInterface $httpInputProcessor, ResponseProcessorInterface $twigResponseProcessor
     )
     {
-        $this->setContext('only_input', 'http');
-        $this->setContext('only_response', null, 'twig');
+        $this->addContextDefinition('only_input', 'http');
+        $this->addContextDefinition('only_response', null, 'twig');
 
         $onlyInputContext = $this->resolveContext('only_input');
         $onlyInputContext->getInputProcessor()->shouldBe($httpInputProcessor);
@@ -95,9 +103,9 @@ class UseCaseContextResolverSpec extends ObjectBehavior
         InputProcessorInterface $cliInputProcessor, ResponseProcessorInterface $cliResponseProcessor
     )
     {
-        $this->setContext('web', 'http', 'twig');
-        $this->setContext('only_input', 'cli');
-        $this->setContext('only_response', null, 'cli');
+        $this->addContextDefinition('web', 'http', 'twig');
+        $this->addContextDefinition('only_input', 'cli');
+        $this->addContextDefinition('only_response', null, 'cli');
         $this->setDefaultContextName('web');
 
         $onlyInputContext = $this->resolveContext('only_input');
@@ -113,9 +121,9 @@ class UseCaseContextResolverSpec extends ObjectBehavior
         InputProcessorInterface $httpInputProcessor, ResponseProcessorInterface $twigResponseProcessor
     )
     {
-        $this->setContext('default', ['type' => 'default', 'option' => 'foo'], ['type' => 'default', 'foo' => 'bar']);
-        $this->setContext('only_input', ['type' => 'http', 'accept' => 'text/html']);
-        $this->setContext('only_response', null, ['type' => 'twig', 'template' => 'none']);
+        $this->addContextDefinition('default', ['type' => 'default', 'option' => 'foo'], ['type' => 'default', 'foo' => 'bar']);
+        $this->addContextDefinition('only_input', ['type' => 'http', 'accept' => 'text/html']);
+        $this->addContextDefinition('only_response', null, ['type' => 'twig', 'template' => 'none']);
 
         $onlyInputContext = $this->resolveContext('only_input');
         $onlyInputContext->getInputProcessor()->shouldBe($httpInputProcessor);
@@ -148,7 +156,7 @@ class UseCaseContextResolverSpec extends ObjectBehavior
         InputProcessorInterface $httpInputProcessor, ResponseProcessorInterface $twigResponseProcessor
     )
     {
-        $this->setContext('default', ['type' => 'cli', 'yes' => true, 'maybe' => 5], ['type' => 'cli', 'maybe' => 3, 'no' => false]);
+        $this->addContextDefinition('default', ['type' => 'cli', 'yes' => true, 'maybe' => 5], ['type' => 'cli', 'maybe' => 3, 'no' => false]);
         $context = $this->resolveContext([
             'input' => ['type' => 'http', 'yes' => false, 'probably' => 'not'],
             'response' => ['type' => 'twig', 'yes' => true, 'maybe' => 10]
@@ -186,15 +194,15 @@ class UseCaseContextResolverSpec extends ObjectBehavior
 
     public function it_throws_an_exception_if_input_processor_does_not_exist(ContainerInterface $inputProcessorContainer)
     {
-        $inputProcessorContainer->get('no_such_processor')->willThrow(ServiceNotFoundException::class);
-        $this->setContext('broken_context', 'no_such_processor');
+        $inputProcessorContainer->get('no_such_processor')->willThrow(ItemNotFoundException::class);
+        $this->addContextDefinition('broken_context', 'no_such_processor');
         $this->shouldThrow(InputProcessorNotFoundException::class)->duringResolveContext('broken_context');
     }
 
     public function it_throws_an_exception_if_response_processor_does_not_exist(ContainerInterface $responseProcessorContainer)
     {
-        $responseProcessorContainer->get('no_such_processor')->willThrow(ServiceNotFoundException::class);
-        $this->setContext('broken_context', null, 'no_such_processor');
+        $responseProcessorContainer->get('no_such_processor')->willThrow(ItemNotFoundException::class);
+        $this->addContextDefinition('broken_context', null, 'no_such_processor');
         $this->shouldThrow(ResponseProcessorNotFoundException::class)->duringResolveContext('broken_context');
     }
 }

@@ -3,7 +3,6 @@
 namespace spec\Lamudi\UseCaseBundle\Processor\Input;
 
 use Lamudi\UseCaseBundle\Processor\Input\InputProcessorInterface;
-use Lamudi\UseCaseBundle\UseCase\Request;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -32,21 +31,21 @@ class FormInputProcessorSpec extends ObjectBehavior
 
     public function it_throws_an_exception_if_form_name_is_not_specified()
     {
-        $request = new Request();
+        $request = new \stdClass();
         $this->shouldThrow(\InvalidArgumentException::class)->duringInitializeRequest($request, [], []);
     }
 
     public function it_uses_form_factory_to_create_form_by_name(FormFactoryInterface $formFactory)
     {
-        $request = new Request();
+        $request = new FormUseCaseRequest();
         $this->initializeRequest($request, [], ['name' => 'order_form']);
 
-        $formFactory->create('order_form', $request, ['data_class' => Request::class])->shouldHaveBeenCalled();
+        $formFactory->create('order_form', $request, ['data_class' => FormUseCaseRequest::class])->shouldHaveBeenCalled();
     }
 
     public function it_uses_the_created_form_to_populate_request_fields(FormFactoryInterface $formFactory, FormInterface $form)
     {
-        $request = new Request();
+        $request = new \stdClass();
         $formFactory->create('order_form', Argument::cetera())->willReturn($form);
 
         $input = ['foo' => 'bar', 'baz' => 213];
@@ -57,7 +56,7 @@ class FormInputProcessorSpec extends ObjectBehavior
 
     public function it_dumps_form_data_to_specified_field(FormFactoryInterface $formFactory, FormInterface $form)
     {
-        $request = new Request();
+        $request = new \stdClass();
         $formFactory->create('order_form')->willReturn($form);
 
         $input = ['foo' => 'bar', 'baz' => 213];
@@ -71,3 +70,5 @@ class FormInputProcessorSpec extends ObjectBehavior
         $request->formData->shouldBe($formData);
     }
 }
+
+class FormUseCaseRequest {}

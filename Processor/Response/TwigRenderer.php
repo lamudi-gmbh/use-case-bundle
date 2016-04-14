@@ -3,9 +3,9 @@
 namespace Lamudi\UseCaseBundle\Processor\Response;
 
 use Lamudi\UseCaseBundle\Exception\UseCaseException;
-use Lamudi\UseCaseBundle\UseCase\Response;
 use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\HttpFoundation;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class TwigRenderer implements ResponseProcessorInterface
@@ -21,20 +21,30 @@ class TwigRenderer implements ResponseProcessorInterface
     private $formFactory;
 
     /**
-     * @param EngineInterface $templating
+     * @param EngineInterface      $templating
+     * @param FormFactoryInterface $formFactory
      */
-    public function __construct(EngineInterface $templating = null)
+    public function __construct(EngineInterface $templating = null, FormFactoryInterface $formFactory)
     {
         $this->templating = $templating;
+        $this->formFactory = $formFactory;
     }
 
     /**
-     * Processes the successful outcome of a use case execution. Returns any object that
-     * satisfies the environment in which the use case is executed.
+     * Renders a Symfony HTTP response using Symfony Twig engine. The response is cast to array and provided as
+     * template parameters.
+     * Available options:
+     * - template - required. The name of the template to be rendered.
+     * - forms - optional. This option must be an associative array. The keys are names of template variable names
+     *     that will contain the form views. The values can be either strings with form names or arrays with options:
+     *         - name - The name of the form.
+     *         - data_field - The name of the field in the Use Case Response that contains form data.
      *
-     * @param Response $response
-     * @param array $options
-     * @return mixed
+     * @param object $response
+     * @param array  $options
+     *
+     * @return HttpFoundation\Response
+     * @throws \Exception
      */
     public function processResponse($response, $options = [])
     {
@@ -48,7 +58,7 @@ class TwigRenderer implements ResponseProcessorInterface
 
         $templateParams = (array)$response;
 
-        if (isset($options['forms']) && $this->formFactory) {
+        if (isset($options['forms'])) {
             foreach ($options['forms'] as $formVariable => $formConfig) {
                 if (is_string($formConfig)) {
                     $formConfig = ['name' => $formConfig];
@@ -70,13 +80,15 @@ class TwigRenderer implements ResponseProcessorInterface
     }
 
     /**
-     * When an exception is thrown during use case execution, this method is invoked
+     * If a Use Case Exception is thrown, it throws a Symfony NotFoundHttpException. Otherwise, the exception is rethrown.
      *
      * @param \Exception $exception
-     * @param array $options
+     * @param array      $options
+     *
      * @return mixed
+     * @throws \Exception
      */
-    public function handleException($exception, $options = [])
+    public function handleException(\Exception $exception, $options = [])
     {
         try {
             throw $exception;
@@ -85,13 +97,5 @@ class TwigRenderer implements ResponseProcessorInterface
         } catch (\Exception $e) {
             throw $e;
         }
-    }
-
-    /**
-     * @param FormFactoryInterface $formFactory
-     */
-    public function setFormFactory($formFactory)
-    {
-        $this->formFactory = $formFactory;
     }
 }

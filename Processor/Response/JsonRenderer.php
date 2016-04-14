@@ -3,12 +3,13 @@
 namespace Lamudi\UseCaseBundle\Processor\Response;
 
 use Lamudi\UseCaseBundle\Exception\UseCaseException;
-use Lamudi\UseCaseBundle\UseCase\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class JsonRenderer implements ResponseProcessorInterface
 {
+    const DEFAULT_HTTP_STATUS_CODE = 404;
+
     /**
      * @var SerializerInterface
      */
@@ -23,12 +24,15 @@ class JsonRenderer implements ResponseProcessorInterface
     }
 
     /**
-     * Processes the successful outcome of a use case execution. Returns any object that
-     * satisfies the environment in which the use case is executed.
+     * Encodes the Use Case Response object as JSON and returns it as Symfony JSON response.
+     * Available options:
+     * - append_on_success - a list of key/value pairs that are appended to the JSON that was created as a result
+     *     of successful Use Case execution. If the Response contains colliding fields, the values from the Response will prevail.
      *
-     * @param Response $response
-     * @param array $options
-     * @return mixed
+     * @param object $response
+     * @param array  $options
+     *
+     * @return JsonResponse
      */
     public function processResponse($response, $options = [])
     {
@@ -44,14 +48,24 @@ class JsonRenderer implements ResponseProcessorInterface
     }
 
     /**
-     * When an exception is thrown during use case execution, this method is invoked
+     * If a Use Case Exception is thrown, it returns a Symfony JSON response with the exception's message and code
+     * in the JSON object. Otherwise, the exception is rethrown.
+     * Available options:
+     * - append_on_error - a list of key/value pairs that are appended to the resulting JSON.
+     * - http_status_code - optional. The status code that the JSON response will contain. Defaults to 404.
      *
      * @param \Exception $exception
-     * @param array $options
-     * @return mixed
+     * @param array      $options
+     *
+     * @return JsonResponse
+     * @throws \Exception
      */
-    public function handleException($exception, $options = [])
+    public function handleException(\Exception $exception, $options = [])
     {
+        if (!isset($options['http_status_code'])) {
+            $options['http_status_code'] = self::DEFAULT_HTTP_STATUS_CODE;
+        }
+
         try {
             throw $exception;
         } catch (UseCaseException $e) {
@@ -60,7 +74,7 @@ class JsonRenderer implements ResponseProcessorInterface
                 $array = array_merge($options['append_on_error'], $array);
             }
 
-            return new JsonResponse($array, $e->getCode());
+            return new JsonResponse($array, $options['http_status_code']);
         } catch (\Exception $e) {
             throw $e;
         }

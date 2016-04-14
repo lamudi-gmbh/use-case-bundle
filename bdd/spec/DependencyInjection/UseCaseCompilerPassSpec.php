@@ -223,15 +223,15 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $containerBuilder->getParameter('lamudi_use_case.contexts')->willReturn($contexts);
 
         $contextResolverDefinition->addMethodCall('setDefaultContextName', ['my_default_context'])->shouldBeCalled();
-        $contextResolverDefinition->addMethodCall('setContext', ['my_default_context', null, 'json'])->shouldBeCalled();
-        $contextResolverDefinition->addMethodCall('setContext', ['my_other_context', 'array', null])->shouldBeCalled();
-        $contextResolverDefinition->addMethodCall('setContext', ['web', ['type' => 'http', 'accept' => 'json'], 'twig'])->shouldBeCalled();
+        $contextResolverDefinition->addMethodCall('addContextDefinition', ['my_default_context', null, 'json'])->shouldBeCalled();
+        $contextResolverDefinition->addMethodCall('addContextDefinition', ['my_other_context', 'array', null])->shouldBeCalled();
+        $contextResolverDefinition->addMethodCall('addContextDefinition', ['web', ['type' => 'http', 'accept' => 'json'], 'twig'])->shouldBeCalled();
 
         $this->process($containerBuilder);
     }
 }
 
 class ContainerThatAcceptsReferences implements ReferenceAcceptingContainerInterface {
-    public function set($name, $service) { }
+    public function set($name, $item) { }
     public function get($name) { }
 }

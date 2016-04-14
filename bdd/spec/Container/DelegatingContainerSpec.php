@@ -2,7 +2,7 @@
 
 namespace spec\Lamudi\UseCaseBundle\Container;
 
-use Lamudi\UseCaseBundle\Container\ServiceNotFoundException;
+use Lamudi\UseCaseBundle\Container\ItemNotFoundException;
 use Lamudi\UseCaseBundle\Processor\Input\InputProcessorInterface;
 use Lamudi\UseCaseBundle\UseCase\UseCaseInterface;
 use PhpSpec\ObjectBehavior;
@@ -43,7 +43,7 @@ class DelegatingContainerSpec extends ObjectBehavior
 
     public function it_throws_an_exception_if_reference_was_not_set()
     {
-        $this->shouldThrow(new ServiceNotFoundException('Service "no_such_service_here" not found.'))
+        $this->shouldThrow(new ItemNotFoundException('Service "no_such_service_here" not found.'))
             ->duringGet('no_such_service_here');
     }
 
@@ -53,7 +53,7 @@ class DelegatingContainerSpec extends ObjectBehavior
         $symfonyContainer->get('no_such_service_in_container')
             ->willThrow(\Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException::class);
 
-        $this->shouldThrow(new ServiceNotFoundException('Reference "some_service" points to a non-existent service "no_such_service_in_container".'))
+        $this->shouldThrow(new ItemNotFoundException('Reference "some_service" points to a non-existent service "no_such_service_in_container".'))
             ->duringGet('some_service');
     }
 }

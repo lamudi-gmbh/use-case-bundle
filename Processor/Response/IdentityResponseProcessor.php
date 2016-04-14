@@ -2,16 +2,15 @@
 
 namespace Lamudi\UseCaseBundle\Processor\Response;
 
-use Lamudi\UseCaseBundle\UseCase\Response;
-
 class IdentityResponseProcessor implements ResponseProcessorInterface
 {
     /**
-     * Returns the use case response as it was returned by the use case.
+     * Returns the Use Case Response exactly as it was returned by the Use Case.
      *
-     * @param Response $response
-     * @param array $options
-     * @return Response
+     * @param object $response
+     * @param array  $options
+     *
+     * @return object
      */
     public function processResponse($response, $options = [])
     {
@@ -22,9 +21,11 @@ class IdentityResponseProcessor implements ResponseProcessorInterface
      * Always rethrows the exception.
      *
      * @param \Exception $exception
-     * @param array $options
+     * @param array      $options
+     *
+     * @throws \Exception
      */
-    public function handleException($exception, $options = [])
+    public function handleException(\Exception $exception, $options = [])
     {
         throw $exception;
     }

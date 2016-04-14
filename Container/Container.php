@@ -7,36 +7,35 @@ class Container implements ContainerInterface
     /**
      * @var array
      */
-    private $services = [];
+    private $items = [];
 
     /**
-     * @param string $name
-     * @param object $service
+     * @inheritdoc
      */
-    public function set($name, $service)
+    public function set($name, $item)
     {
-        $this->services[$name] = $service;
+        $this->items[$name] = $item;
     }
 
     /**
-     * @param string $name
-     * @return object
+     * @inheritdoc
      */
     public function get($name)
     {
-        if (array_key_exists($name, $this->services)) {
-            return $this->services[$name];
+        if (array_key_exists($name, $this->items)) {
+            return $this->items[$name];
         } else {
-            throw $this->createMissingServiceException($name);
+            throw $this->createMissingItemException($name);
         }
     }
 
     /**
      * @param string $name
-     * @return ServiceNotFoundException
+     *
+     * @return ItemNotFoundException
      */
-    private function createMissingServiceException($name)
+    private function createMissingItemException($name)
     {
-        return new ServiceNotFoundException(sprintf('Service "%s" not found.', $name));
+        return new ItemNotFoundException(sprintf('Item "%s" not found.', $name));
     }
 }
