@@ -1,76 +1,72 @@
 <?php
 
-namespace spec\Lamudi\UseCaseBundle\UseCase
+namespace spec\Lamudi\UseCaseBundle\UseCase;
+
+use Lamudi\UseCaseBundle\UseCase\RequestClassNotFoundException;
+use Lamudi\UseCaseBundle\UseCase\RequestResolver;
+use PhpSpec\ObjectBehavior;
+use Prophecy\Argument;
+
+/**
+ * @mixin RequestResolver
+ */
+class RequestResolverSpec extends ObjectBehavior
 {
-
-    use Lamudi\UseCaseBundle\UseCase\RequestClassNotFoundException;
-    use Lamudi\UseCaseBundle\UseCase\RequestResolver;
-    use PhpSpec\ObjectBehavior;
-    use Prophecy\Argument;
-    use spec\Lamudi\UseCaseBundle\UseCase\Request\SomeRequest;
-
-    /**
-     * @mixin RequestResolver
-     */
-    class RequestResolverSpec extends ObjectBehavior
+    function it_is_initializable()
     {
-        function it_is_initializable()
-        {
-            $this->shouldHaveType('Lamudi\UseCaseBundle\UseCase\RequestResolver');
-        }
-
-        public function it_tries_to_use_type_hint_in_execute_method()
-        {
-            $this->resolve(new TypeHintedUseCase())->shouldReturn(SpecificRequest::class);
-        }
-
-        public function it_uses_the_use_case_namespace_plus_request()
-        {
-            $useCaseNamespace = 'spec\Lamudi\UseCaseBundle\UseCase';
-            $this->resolve(new SomeUseCase())->shouldReturn($useCaseNamespace . '\Request\SomeRequest');
-        }
-
-        public function it_throws_an_exception_if_request_class_does_not_exist()
-        {
-            $this->shouldThrow(RequestClassNotFoundException::class)->duringResolve(new WrongUseCase());
-        }
+        $this->shouldHaveType('Lamudi\UseCaseBundle\UseCase\RequestResolver');
     }
 
-    class TypeHintedUseCase
+    public function it_tries_to_use_type_hint_in_execute_method()
     {
-        public function execute(SpecificRequest $request)
-        {
-        }
+        $this->resolve(new TypeHintedUseCase())->shouldReturn(SpecificRequest::class);
     }
 
-    class SomeUseCase
+    public function it_throws_an_exception_if_execute_method_is_not_hinted()
     {
-        /**
-         * @param SomeRequest $request
-         */
-        public function execute($request)
-        {
-        }
+        $this->shouldThrow(RequestClassNotFoundException::class)->duringResolve(new UseCaseWithoutTypeHint());
     }
 
-    class WrongUseCase
+    public function it_uses_std_class_if_request_has_no_arguments()
     {
-        /**
-         * @param IntentionallyWrongRequest $request
-         */
-        public function execute($request)
-        {
-        }
+        $this->resolve(new UseCaseWithoutRequest())->shouldReturn(\stdClass::class);
     }
 
-    class SpecificRequest
+    public function it_throws_an_exception_if_use_case_does_not_have_execute_method()
+    {
+        $this->shouldThrow(RequestClassNotFoundException::class)->duringResolve(new NotAUseCase());
+    }
+}
+
+class TypeHintedUseCase
+{
+    public function execute(SpecificRequest $request)
     {
     }
 }
 
-namespace spec\Lamudi\UseCaseBundle\UseCase\Request
+class UseCaseWithoutRequest
 {
-    class SomeRequest
+    public function execute()
     {
     }
 }
+
+class UseCaseWithoutTypeHint
+{
+    public function execute($request)
+    {
+    }
+}
+
+class NotAUseCase
+{
+    public function doSomething()
+    {
+    }
+}
+
+class SpecificRequest
+{
+}
+

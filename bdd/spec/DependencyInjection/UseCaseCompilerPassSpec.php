@@ -6,6 +6,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Lamudi\UseCaseBundle\Annotation\UseCase as UseCaseAnnotation;
 use Lamudi\UseCaseBundle\Container\Container;
 use Lamudi\UseCaseBundle\Container\ReferenceAcceptingContainerInterface;
+use Lamudi\UseCaseBundle\DependencyInjection\InvalidUseCase;
 use Lamudi\UseCaseBundle\UseCase\RequestResolver;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
@@ -63,9 +64,9 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
     )
     {
         $containerBuilder->getDefinitions()->willReturn([
-            'uc1' => new Definition('\\stdClass'),
-            'uc2' => new Definition('\\DateTime'),
-            'uc3' => new Definition('\\Exception')
+            'uc1' => new Definition(UseCase1::class),
+            'uc2' => new Definition(UseCase2::class),
+            'uc3' => new Definition(UseCase3::class)
         ]);
 
         $useCase1Annotation = new UseCaseAnnotation([
@@ -86,9 +87,9 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
             'response' => ['type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig']
         ]);
 
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn([$useCase1Annotation]);
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\DateTime'))->willReturn([$useCase2Annotation1, $useCase2Annotation2]);
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\Exception'))->willReturn([$useCase3Annotation]);
+        $annotationReader->getClassAnnotations(new \ReflectionClass(UseCase1::class))->willReturn([$useCase1Annotation]);
+        $annotationReader->getClassAnnotations(new \ReflectionClass(UseCase2::class))->willReturn([$useCase2Annotation1, $useCase2Annotation2]);
+        $annotationReader->getClassAnnotations(new \ReflectionClass(UseCase3::class))->willReturn([$useCase3Annotation]);
 
         $useCaseContainerDefinition->addMethodCall('set', ['use_case_1', new Reference('uc1')])->shouldBeCalled();
         $useCaseContainerDefinition->addMethodCall('set', ['use_case_2', new Reference('uc2')])->shouldBeCalled();
@@ -160,28 +161,40 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $useCase3Annotation = new UseCaseAnnotation(['value' => 'use_case_3']);
 
         $containerBuilder->getDefinitions()->willReturn([
-            'uc1' => new Definition('\\stdClass'),
-            'uc2' => new Definition('\\DateTime'),
-            'uc3' => new Definition('\\Exception')
+            'uc1' => new Definition(UseCase1::class),
+            'uc2' => new Definition(UseCase2::class),
+            'uc3' => new Definition(UseCase3::class)
         ]);
 
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn([$useCase1Annotation]);
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\DateTime'))->willReturn([$useCase2Annotation]);
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\Exception'))->willReturn([$useCase3Annotation]);
+        $annotationReader->getClassAnnotations(new \ReflectionClass(UseCase1::class))->willReturn([$useCase1Annotation]);
+        $annotationReader->getClassAnnotations(new \ReflectionClass(UseCase2::class))->willReturn([$useCase2Annotation]);
+        $annotationReader->getClassAnnotations(new \ReflectionClass(UseCase3::class))->willReturn([$useCase3Annotation]);
 
-        $requestResolver->resolve('\\stdClass')->willReturn('\StdClassRequest');
-        $requestResolver->resolve('\\DateTime')->willReturn('Foo\Bar\DateTimeRequest');
-        $requestResolver->resolve('\\Exception')->willReturn('Ohnoes\FunnyRequest');
+        $requestResolver->resolve(UseCase1::class)->willReturn('UseCase1Request');
+        $requestResolver->resolve(UseCase2::class)->willReturn('UseCase2Request');
+        $requestResolver->resolve(UseCase3::class)->willReturn('UseCase3Request');
 
         $useCaseContainerDefinition->addMethodCall('set', ['use_case_1', new Reference('uc1')])->shouldBeCalled();
         $useCaseContainerDefinition->addMethodCall('set', ['use_case_2', new Reference('uc2')])->shouldBeCalled();
         $useCaseContainerDefinition->addMethodCall('set', ['use_case_3', new Reference('uc3')])->shouldBeCalled();
-
-        $useCaseExecutorDefinition->addMethodCall('assignRequestClass', ['use_case_1', '\StdClassRequest'])->shouldBeCalled();
-        $useCaseExecutorDefinition->addMethodCall('assignRequestClass', ['use_case_2', 'Foo\Bar\DateTimeRequest'])->shouldBeCalled();
-        $useCaseExecutorDefinition->addMethodCall('assignRequestClass', ['use_case_3', 'Ohnoes\FunnyRequest'])->shouldBeCalled();
+        $useCaseExecutorDefinition->addMethodCall('assignRequestClass', ['use_case_1', 'UseCase1Request'])->shouldBeCalled();
+        $useCaseExecutorDefinition->addMethodCall('assignRequestClass', ['use_case_2', 'UseCase2Request'])->shouldBeCalled();
+        $useCaseExecutorDefinition->addMethodCall('assignRequestClass', ['use_case_3', 'UseCase3Request'])->shouldBeCalled();
 
         $this->process($containerBuilder);
+    }
+
+    public function it_throws_an_exception_when_an_annotated_class_does_not_contain_execute_method(
+        ContainerBuilder $containerBuilder, AnnotationReader $annotationReader
+    )
+    {
+        $useCaseAnnotation = new UseCaseAnnotation(['value' => 'use_case']);
+        $containerBuilder->getDefinitions()->willReturn([
+            'not_a_use_case' => new Definition(NotAUseCase::class)
+        ]);
+        $annotationReader->getClassAnnotations(new \ReflectionClass(NotAUseCase::class))->willReturn([$useCaseAnnotation]);
+
+        $this->shouldThrow(InvalidUseCase::class)->duringProcess($containerBuilder);
     }
 
     public function it_adds_service_names_instead_of_references_to_container_that_accepts_references(
@@ -193,9 +206,9 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $inputProcessorContainerDefinition->getClass()->willReturn(ContainerThatAcceptsReferences::class);
         $responseProcessorContainerDefinition->getClass()->willReturn(ContainerThatAcceptsReferences::class);
 
-        $containerBuilder->getDefinitions()->willReturn(['service.use_case_1' => new Definition('\\stdClass')]);
+        $containerBuilder->getDefinitions()->willReturn(['service.use_case_1' => new Definition(UseCase1::class)]);
         $useCaseAnnotation = new UseCaseAnnotation(['value' => 'use_case_1']);
-        $annotationReader->getClassAnnotations(new \ReflectionClass('\\stdClass'))->willReturn([$useCaseAnnotation]);
+        $annotationReader->getClassAnnotations(new \ReflectionClass(UseCase1::class))->willReturn([$useCaseAnnotation]);
 
         $inputProcessorsWithTags = ['service.input_processor' => [['alias' => 'input']]];
         $responseProcessorsWithTags = ['service.response_processor' => [['alias' => 'response']]];
@@ -234,4 +247,32 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
 class ContainerThatAcceptsReferences implements ReferenceAcceptingContainerInterface {
     public function set($name, $item) { }
     public function get($name) { }
+}
+
+class UseCase1
+{
+    public function execute()
+    {
+    }
+}
+
+class UseCase2
+{
+    public function execute()
+    {
+    }
+}
+
+class UseCase3
+{
+    public function execute()
+    {
+    }
+}
+
+class NotAUseCase
+{
+    public function doNothing()
+    {
+    }
 }

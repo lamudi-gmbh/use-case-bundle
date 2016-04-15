@@ -71,15 +71,15 @@ class UseCaseCompilerPass implements CompilerPassInterface
                 continue;
             }
 
-            $reflection = new \ReflectionClass($serviceClass);
+            $useCaseReflection = new \ReflectionClass($serviceClass);
             try {
-                $annotations = $this->annotationReader->getClassAnnotations($reflection);
+                $annotations = $this->annotationReader->getClassAnnotations($useCaseReflection);
             } catch (\InvalidArgumentException $e) {
                 throw new \Exception(sprintf('Could not load annotations for class %s: %s', $serviceClass, $e->getMessage()));
             }
 
             foreach ($annotations as $annotation) {
-                if ($annotation instanceof UseCaseAnnotation) {
+                if ($annotation instanceof UseCaseAnnotation && $this->validateUseCase($useCaseReflection)) {
                     $this->registerUseCase($id, $serviceClass, $annotation, $executorDefinition, $useCaseContainerDefinition);
                 }
             }
@@ -142,6 +142,23 @@ class UseCaseCompilerPass implements CompilerPassInterface
                 $response = isset($context['response']) ? $context['response'] : null;
                 $resolverDefinition->addMethodCall('addContextDefinition', [$name, $input, $response]);
             }
+        }
+    }
+
+    /**
+     * @param \ReflectionClass $useCase
+     *
+     * @return bool
+     * @throws InvalidUseCase
+     */
+    private function validateUseCase($useCase)
+    {
+        if ($useCase->hasMethod('execute')) {
+            return true;
+        } else {
+            throw new InvalidUseCase(sprintf(
+                'Class "%s" has been annotated as a use case, but does not contain execute() method.', $useCase->getName()
+            ));
         }
     }
 

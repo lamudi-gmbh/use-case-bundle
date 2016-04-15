@@ -20,53 +20,46 @@ class RequestResolver
         if (class_exists($className)) {
             return $className;
         } else {
-            throw new RequestClassNotFoundException();
+            throw new RequestClassNotFoundException(sprintf('Class "%s" does not exist.', $className));
         }
     }
 
     /**
      * @param \ReflectionClass $classReflection
+     *
      * @return string
+     * @throws RequestClassNotFoundException
      */
     private function getRequestClassName($classReflection)
     {
-        $className = $this->resolveFromTypeHint($classReflection);
-
-        if (!$className) {
-            $className = $this->resolveFromDocBlock($classReflection);
+        try {
+            $executeMethod = $classReflection->getMethod('execute');
+        } catch (\ReflectionException $e) {
+            throw new RequestClassNotFoundException(
+                sprintf('Class "%s" does not contain execute() method.', $classReflection->getName())
+            );
         }
 
-        return $className;
+        if ($executeMethod->getNumberOfParameters() > 0) {
+            return $this->resolveTypeHintClass($executeMethod);
+        } else {
+            return \stdClass::class;
+        }
     }
 
     /**
-     * @param \ReflectionClass $classReflection
+     * @param \ReflectionMethod $executeMethod
+     *
      * @return string
+     * @throws RequestClassNotFoundException
      */
-    private function resolveFromDocBlock($classReflection)
+    private function resolveTypeHintClass($executeMethod)
     {
-        $docBlock = $classReflection->getMethod('execute')->getDocComment();
-        preg_match('/@param\s+(\w+)\s+\$request/', $docBlock, $matches);
-        $className = $matches[1];
-
-        $fullClassName = $classReflection->getNamespaceName() . '\Request\\' . $className;
-
-        return $fullClassName;
-    }
-
-    /**
-     * @param \ReflectionClass $classReflection
-     * @return string
-     */
-    private function resolveFromTypeHint($classReflection)
-    {
-        $method = $classReflection->getMethod('execute');
-        $requestClass = $method->getParameters()[0]->getClass();
-
+        $requestClass = $executeMethod->getParameters()[0]->getClass();
         if ($requestClass) {
             return $requestClass->getName();
         } else {
-            return null;
+            throw new RequestClassNotFoundException('The argument of the execute() method must be type hinted.');
         }
     }
 }
