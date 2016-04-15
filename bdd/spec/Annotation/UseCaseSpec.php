@@ -67,4 +67,17 @@ class UseCaseSpec extends ObjectBehavior
             'css'      => 'none'
         ]);
     }
+
+    public function it_throws_an_exception_if_an_unsupported_option_was_used()
+    {
+        $this->beConstructedWith([
+            'value' => 'use_case',
+            'input' => 'http',
+            'response' => 'twig',
+            'output' => 'this is deprecated',
+            'foo' => 'this is just silly'
+        ]);
+        $this->shouldThrow(new \InvalidArgumentException('Unsupported options on UseCase annotation: output, foo'))
+            ->duringInstantiation();
+    }
 }

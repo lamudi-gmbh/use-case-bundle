@@ -59,7 +59,10 @@ class RequestResolver
         if ($requestClass) {
             return $requestClass->getName();
         } else {
-            throw new RequestClassNotFoundException('The argument of the execute() method must be type hinted.');
+            throw new RequestClassNotFoundException(sprintf(
+                'The argument of the execute() method of class "%s" must be type hinted.',
+                $executeMethod->getDeclaringClass()
+            ));
         }
     }
 }

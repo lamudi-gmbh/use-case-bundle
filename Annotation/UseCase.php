@@ -31,6 +31,14 @@ class UseCase
             throw new \InvalidArgumentException('Missing use case name.');
         }
 
+        $validOptions = ['value', 'input', 'response'];
+        $invalidOptions = array_diff(array_keys($data), $validOptions);
+        if (count($invalidOptions) > 0) {
+            throw new \InvalidArgumentException(sprintf(
+                'Unsupported options on UseCase annotation: %s', implode(', ', $invalidOptions)
+            ));
+        }
+
         $this->config = new UseCaseConfiguration($data);
     }
 
