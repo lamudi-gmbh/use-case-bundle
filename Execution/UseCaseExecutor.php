@@ -4,6 +4,7 @@ namespace Lamudi\UseCaseBundle\Execution;
 
 use Lamudi\UseCaseBundle\Container\ContainerInterface;
 use Lamudi\UseCaseBundle\Container\ItemNotFoundException;
+use Lamudi\UseCaseBundle\Processor\Response\InputAwareResponseProcessor;
 use Lamudi\UseCaseBundle\UseCase\RequestClassNotFoundException;
 use Lamudi\UseCaseBundle\UseCase\UseCaseInterface;
 
@@ -59,6 +60,10 @@ class UseCaseExecutor
         $inputProcessorOptions = $context->getInputProcessorOptions();
         $responseProcessor = $context->getResponseProcessor();
         $responseProcessorOptions = $context->getResponseProcessorOptions();
+
+        if ($responseProcessor instanceof InputAwareResponseProcessor) {
+            $responseProcessor->setInput($input);
+        }
 
         try {
             $inputProcessor->initializeRequest($request, $input, $inputProcessorOptions);

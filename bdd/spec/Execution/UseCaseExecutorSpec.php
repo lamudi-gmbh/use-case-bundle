@@ -10,6 +10,7 @@ use Lamudi\UseCaseBundle\Container\ItemNotFoundException;
 use Lamudi\UseCaseBundle\Exception\UseCaseException;
 use Lamudi\UseCaseBundle\Execution\UseCaseNotFoundException;
 use Lamudi\UseCaseBundle\Processor\Input\InputProcessorInterface;
+use Lamudi\UseCaseBundle\Processor\Response\InputAwareResponseProcessor;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use Lamudi\UseCaseBundle\Processor\Response\ResponseProcessorInterface;
 use Lamudi\UseCaseBundle\UseCase\UseCaseInterface;
@@ -162,6 +163,26 @@ class UseCaseExecutorSpec extends ObjectBehavior
         $contextResolver->resolveContext('test_context')->shouldBeCalled();
         $contextResolver->resolveContext('test_context')->willReturn($context);
         $this->execute('use_case', ['foo' => 'bar'], 'test_context');
+    }
+
+    public function it_passes_the_input_to_the_response_processor_if_its_input_aware(
+        UseCaseContextResolver $contextResolver, UseCaseContext $newContext,
+        InputProcessorInterface $inputProcessor, InputAwareResponseProcessor $inputAwareResponseProcessor
+    )
+    {
+        $input = ['some' => 'input', 'for' => 'the use case'];
+
+        $contextResolver->resolveContext('input_aware')->willReturn($newContext);
+
+        $newContext->getInputProcessor()->willReturn($inputProcessor);
+        $newContext->getInputProcessorOptions()->willReturn([]);
+        $newContext->getResponseProcessor()->willReturn($inputAwareResponseProcessor);
+        $newContext->getResponseProcessorOptions()->willReturn([]);
+
+        $inputAwareResponseProcessor->setInput($input)->shouldBeCalled();
+        $inputAwareResponseProcessor->processResponse(Argument::any(), [])->shouldBeCalled();
+
+        $this->execute('use_case', $input, 'input_aware');
     }
 }
 
