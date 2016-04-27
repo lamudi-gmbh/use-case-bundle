@@ -27,8 +27,6 @@ class UseCase
     {
         if (isset($data['value'])) {
             $this->setName($data['value']);
-        } else {
-            throw new \InvalidArgumentException('Missing use case name.');
         }
 
         $validOptions = ['value', 'input', 'response'];

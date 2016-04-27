@@ -173,28 +173,29 @@ class UseCaseCompilerPass implements CompilerPassInterface
      */
     private function registerUseCase($serviceId, $serviceClass, $annotation, $executorDefinition, $containerDefinition)
     {
+        $useCaseName = $annotation->getName() ?: $this->fqnToUseCaseName($serviceClass);
         if ($this->containerAcceptsReferences($containerDefinition)) {
-            $containerDefinition->addMethodCall('set', [$annotation->getName(), $serviceId]);
+            $containerDefinition->addMethodCall('set', [$useCaseName, $serviceId]);
         } else {
-            $containerDefinition->addMethodCall('set', [$annotation->getName(), new Reference($serviceId)]);
+            $containerDefinition->addMethodCall('set', [$useCaseName, new Reference($serviceId)]);
         }
 
         if ($annotation->getInputType()) {
             $executorDefinition->addMethodCall(
                 'assignInputProcessor',
-                [$annotation->getName(), $annotation->getInputType(), $annotation->getInputOptions()]
+                [$useCaseName, $annotation->getInputType(), $annotation->getInputOptions()]
             );
         }
 
         if ($annotation->getResponseType()) {
             $executorDefinition->addMethodCall(
                 'assignResponseProcessor',
-                [$annotation->getName(), $annotation->getResponseType(), $annotation->getResponseOptions()]
+                [$useCaseName, $annotation->getResponseType(), $annotation->getResponseOptions()]
             );
         }
 
         $requestClassName = $this->requestResolver->resolve($serviceClass);
-        $executorDefinition->addMethodCall('assignRequestClass', [$annotation->getName(), $requestClassName]);
+        $executorDefinition->addMethodCall('assignRequestClass', [$useCaseName, $requestClassName]);
     }
 
     /**
@@ -210,5 +211,16 @@ class UseCaseCompilerPass implements CompilerPassInterface
         } else {
             return false;
         }
+    }
+
+    /**
+     * @param string $fqn
+     *
+     * @return string
+     */
+    private function fqnToUseCaseName($fqn)
+    {
+        $unqualifiedName = substr($fqn, strrpos($fqn, '\\') + 1);
+        return ltrim(strtolower(preg_replace('/[A-Z0-9]/', '_$0', $unqualifiedName)), '_');
     }
 }

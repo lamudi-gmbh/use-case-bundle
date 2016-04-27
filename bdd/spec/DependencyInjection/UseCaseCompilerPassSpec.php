@@ -222,6 +222,24 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $this->process($containerBuilder);
     }
 
+    public function it_registers_a_use_case_under_its_snake_cased_class_name_when_name_not_specified(
+        ContainerBuilder $containerBuilder, AnnotationReader $annotationReader, Definition $useCaseContainerDefinition
+    )
+    {
+        $emptyAnnotation = new UseCaseAnnotation([]);
+        $containerBuilder->getDefinitions()->willReturn([
+            'my_app.use_case' => new Definition(UseCase1::class),
+            'my_app.use_case_2' => new Definition(DoImportantStuff::class),
+        ]);
+        $annotationReader->getClassAnnotations(new \ReflectionClass(UseCase1::class))->willReturn([$emptyAnnotation]);
+        $annotationReader->getClassAnnotations(new \ReflectionClass(DoImportantStuff::class))->willReturn([$emptyAnnotation]);
+
+        $useCaseContainerDefinition->addMethodCall('set', ['use_case_1', new Reference('my_app.use_case')])->shouldBeCalled();
+        $useCaseContainerDefinition->addMethodCall('set', ['do_important_stuff', new Reference('my_app.use_case_2')])->shouldBeCalled();
+
+        $this->process($containerBuilder);
+    }
+
     public function it_adds_context_definitions_to_the_resolver(
         ContainerBuilder $containerBuilder, Definition $contextResolverDefinition
     )
@@ -264,6 +282,13 @@ class UseCase2
 }
 
 class UseCase3
+{
+    public function execute()
+    {
+    }
+}
+
+class DoImportantStuff
 {
     public function execute()
     {
