@@ -14,6 +14,9 @@ use Lamudi\UseCaseBundle\Processor\Response\ResponseProcessorInterface;
  */
 class UseCaseContextResolver
 {
+    const DEFAULT_INPUT_PROCESSOR = 'array';
+    const DEFAULT_RESPONSE_PROCESSOR = 'identity';
+
     /**
      * @var string
      */
@@ -42,7 +45,9 @@ class UseCaseContextResolver
     {
         $this->inputProcessorContainer = $inputProcessorContainer;
         $this->responseProcessorContainer = $responseProcessorContainer;
-        $this->configurations[$this->defaultContextName] = new UseCaseConfiguration(['input' => 'default', 'response' => 'default']);
+        $this->configurations[$this->defaultContextName] = new UseCaseConfiguration([
+            'input' => self::DEFAULT_INPUT_PROCESSOR, 'response' => self::DEFAULT_RESPONSE_PROCESSOR
+        ]);
     }
 
     /**

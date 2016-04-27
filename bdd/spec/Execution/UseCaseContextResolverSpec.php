@@ -29,10 +29,10 @@ class UseCaseContextResolverSpec extends ObjectBehavior
     {
         $this->beConstructedWith($inputProcessorContainer, $responseProcessorContainer);
 
-        $inputProcessorContainer->get('default')->willReturn($defaultInputProcessor);
+        $inputProcessorContainer->get(UseCaseContextResolver::DEFAULT_INPUT_PROCESSOR)->willReturn($defaultInputProcessor);
         $inputProcessorContainer->get('http')->willReturn($httpInputProcessor);
         $inputProcessorContainer->get('cli')->willReturn($cliInputProcessor);
-        $responseProcessorContainer->get('default')->willReturn($defaultResponseProcessor);
+        $responseProcessorContainer->get(UseCaseContextResolver::DEFAULT_RESPONSE_PROCESSOR)->willReturn($defaultResponseProcessor);
         $responseProcessorContainer->get('twig')->willReturn($twigResponseProcessor);
         $responseProcessorContainer->get('cli')->willReturn($cliResponseProcessor);
     }
@@ -121,7 +121,11 @@ class UseCaseContextResolverSpec extends ObjectBehavior
         InputProcessorInterface $httpInputProcessor, ResponseProcessorInterface $twigResponseProcessor
     )
     {
-        $this->addContextDefinition('default', ['type' => 'default', 'option' => 'foo'], ['type' => 'default', 'foo' => 'bar']);
+        $this->addContextDefinition(
+            'default',
+            ['type' => UseCaseContextResolver::DEFAULT_INPUT_PROCESSOR, 'option' => 'foo'],
+            ['type' => UseCaseContextResolver::DEFAULT_RESPONSE_PROCESSOR, 'foo' => 'bar']
+        );
         $this->addContextDefinition('only_input', ['type' => 'http', 'accept' => 'text/html']);
         $this->addContextDefinition('only_response', null, ['type' => 'twig', 'template' => 'none']);
 
@@ -143,7 +147,10 @@ class UseCaseContextResolverSpec extends ObjectBehavior
         InputProcessorInterface $httpInputProcessor, ResponseProcessorInterface $twigResponseProcessor
     )
     {
-        $defaultContext = $this->resolveContext(['input' => 'default', 'response' => 'default']);
+        $defaultContext = $this->resolveContext([
+            'input' => UseCaseContextResolver::DEFAULT_INPUT_PROCESSOR,
+            'response' => UseCaseContextResolver::DEFAULT_RESPONSE_PROCESSOR
+        ]);
         $defaultContext->getInputProcessor()->shouldBe($defaultInputProcessor);
         $defaultContext->getResponseProcessor()->shouldBe($defaultResponseProcessor);
 

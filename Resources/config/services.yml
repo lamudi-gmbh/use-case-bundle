@@ -40,10 +40,10 @@ services:
     ##################################
     # INPUT PROCESSORS
     ##################################
-    lamudi_use_case.input_processor.default:
-        class: Lamudi\UseCaseBundle\Processor\Input\DefaultInputProcessor
+    lamudi_use_case.input_processor.array:
+        class: Lamudi\UseCaseBundle\Processor\Input\ArrayInputProcessor
         tags:
-            - { name: use_case_input_processor, alias: default }
+            - { name: use_case_input_processor, alias: array }
 
     lamudi_use_case.input_processor.form:
         class: Lamudi\UseCaseBundle\Processor\Input\FormInputProcessor
@@ -68,7 +68,7 @@ services:
     lamudi_use_case.processor.response_processor.default:
         class: Lamudi\UseCaseBundle\Processor\Response\IdentityResponseProcessor
         tags:
-            - { name: use_case_response_processor, alias: default }
+            - { name: use_case_response_processor, alias: identity }
 
     lamudi_use_case.processor.response_processor.twig:
         class: Lamudi\UseCaseBundle\Processor\Response\TwigRenderer
