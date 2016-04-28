@@ -8,19 +8,9 @@ application input, which helps you output the results in the desired way.
 Installation
 ============
 
-Add the following content in your composer.json file
+Just run 
 
-    "require": {
-        "lamudi/use-case-bundle" : "~0.2"
-    },
-    "repositories": [{
-        "type": "vcs",
-        "url":  "ssh://git@bitbucket.lamudi.com:7999/lmd/use-case-bundle.git"
-    }]
-
-then run 
-
-    $ composer update lamudi/use-case-bundle
+    $ composer require lamudi/use-case-bundle
 
 Configuration
 =============
