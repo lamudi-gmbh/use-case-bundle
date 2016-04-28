@@ -1,3 +1,10 @@
+# Use Case Bundle
+
+Use Case Bundle is a Symfony bundle that supports Use Case Driven Development with Symfony framework. It encourages 
+designing your class in a fashion reflects the intention of your application. The tools provided by Use Case Bundle 
+relieve you of the repetitive task of extracting the information required to perform the right behavior from the 
+application input, which helps you output the results in the desired way. 
+
 Installation
 ============
 
@@ -55,7 +62,7 @@ framework:
 Basic usage
 ===========
 
-Register your use case as a Symfony service:
+Register your Use Case as a Symfony service:
 
 ```
 # app/services.yml
@@ -64,8 +71,8 @@ app.my_use_case:
     class: AppBundle\UseCase\MyUseCase
 ```
 
-Using an annotation, name the use case and optionally assign an input processor and a response processor to it.
-Make sure that the use case class contains an ```execute()``` method with one type-hinted parameter.
+Using an annotation, name the Use Case and optionally assign an Input Processor and a Response Processor to it.
+Make sure that the Use Case class contains an ```execute()``` method with one type-hinted parameter.
 
 ```php
 <?php
@@ -87,7 +94,7 @@ class MyUseCase
 }
 ```
 
-Use the use case executor to retrieve your use cases:
+Use the Use Case Executor to execute your Use Cases:
 
 ```php
 <?php
@@ -108,4 +115,12 @@ class MyController extends Controller
 
 ```
 
-Refer to [the documentation](https://confluence.lamudi.com/display/AP/UseCaseBundle) for more details.
+Documentation
+=============
+
+* [Concept](doc/01-concept.md) - Use Cases, Requests, and Responses explained, basic architecture and Bundle usage examples
+* [Use Cases in Symfony](doc/02-use-cases-in-symfony.md) - Differences between Application and Use Case layers explained, introducing concepts of Input and Output 
+* [Use Case Contexts](doc/03-use-case-contexts.md) - How to configure the way your Use Cases are executed
+* [Toolkit](doc/04-use-case-contexts.md) - How to configure the way your Use Cases are executed
+ 
+

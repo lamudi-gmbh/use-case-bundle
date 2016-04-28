@@ -24,6 +24,7 @@ class FormInputProcessor implements InputProcessorInterface
      * Populates the request object by having a Symfony form handle the HTTP request. By default it uses
      * the entire request object as a target for data from the form.
      * Available options:
+     * - name - required. The name of the form that will handle the request.
      * - data_field - optional. If specified, instead of populating the request fields, the processor dumps
      *     all the form data into this field in the use case request as an associative array.
      *

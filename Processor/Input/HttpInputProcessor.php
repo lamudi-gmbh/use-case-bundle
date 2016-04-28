@@ -13,7 +13,7 @@ class HttpInputProcessor extends ArrayInputProcessor implements InputProcessorIn
      * the HTTP request are matched to the Use Case Request fields by their names in the following order, later values
      * overriding the older: GET, POST, FILES, COOKIES, SESSION, Headers, Attributes.
      * Available options:
-     * - priority - optional, default value: GPFCSHA. Use this option to apply a priority different from the above.
+     * - order - optional, default value: GPFCSHA. Use this option to apply a priority different from the above.
      *     The letters correspond to the first letters in the aforementioned variable names. It is possible to omit
      *     some letters.
      * - map - optional. This option allows to specify custom mapping from fields found in the HTTP request

@@ -1,6 +1,18 @@
 {
     "name": "lamudi/use-case-bundle",
+    "type": "library",
+    "description": "A set of tools for Use Case Driven Development with Symfony.",
+    "homepage": "https://github.com/lamudi-gmbh/use-case-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name"    : "Bartosz Zasada",
+            "email"   : "bartosz.zasada@lamudi.com",
+            "role"    : "Developer"
+        }
+    ],
     "require": {
+        "php": ">=5.5.0",
         "symfony/dependency-injection": "~2.3",
         "symfony/framework-bundle": "~2.3",
         "symfony/serializer": "^2.7",
