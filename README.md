@@ -111,6 +111,6 @@ Documentation
 * [Concept](doc/01-concept.md) - Use Cases, Requests, and Responses explained, basic architecture and Bundle usage examples
 * [Use Cases in Symfony](doc/02-use-cases-in-symfony.md) - Differences between Application and Use Case layers explained, introducing concepts of Input and Output 
 * [Use Case Contexts](doc/03-use-case-contexts.md) - How to configure the way your Use Cases are executed
-* [Toolkit](doc/04-toolkit.md) - How to configure the way your Use Cases are executed
+* [Toolkit](doc/04-toolkit.md) - Input and Response Processors shipped with the bundle
  
 

@@ -49,8 +49,7 @@ Requests and Responses into Output is more complex than a simple mapping, you wi
 
 ## Input Processors
 
-To implement an Input Processor, create a class that implements ```InputProcessorInterface```. It contains one method: 
-```initializeRequest()```.
+To implement an Input Processor, create a class that implements ```InputProcessorInterface```. It contains one method: ```initializeRequest()```.
 
 ```
 <?php
