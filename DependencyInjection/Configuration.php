@@ -24,7 +24,6 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->scalarNode('default_context')->defaultValue('default')->cannotBeEmpty()->end()
                 ->arrayNode('contexts')
-                    ->useAttributeAsKey('name')
                     ->prototype('array')
                         ->children()
                             ->variableNode('input')->defaultNull()->end()

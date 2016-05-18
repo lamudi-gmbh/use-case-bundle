@@ -245,10 +245,9 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
     )
     {
         $contexts = [
-            ['input' => 'must_have_a_name', 'response' => 'json'],
-            ['name' => 'my_default_context', 'response' => 'json'],
-            ['name' => 'my_other_context', 'input' => 'array'],
-            ['name' => 'web', 'input' => ['type' => 'http', 'accept' => 'json'], 'response' => 'twig']
+            'my_default_context' => ['response' => 'json'],
+            'my_other_context' => ['input' => 'array'],
+            'web' => ['input' => ['type' => 'http', 'accept' => 'json'], 'response' => 'twig']
         ];
         $containerBuilder->getParameter('lamudi_use_case.default_context')->willReturn('my_default_context');
         $containerBuilder->getParameter('lamudi_use_case.contexts')->willReturn($contexts);

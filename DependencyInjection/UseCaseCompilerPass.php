@@ -135,13 +135,10 @@ class UseCaseCompilerPass implements CompilerPassInterface
         $contexts = (array)$containerBuilder->getParameter('lamudi_use_case.contexts');
 
         $resolverDefinition->addMethodCall('setDefaultContextName', [$defaultContextName]);
-        foreach ($contexts as $context) {
-            if (isset($context['name'])) {
-                $name = $context['name'];
-                $input = isset($context['input']) ? $context['input'] : null;
-                $response = isset($context['response']) ? $context['response'] : null;
-                $resolverDefinition->addMethodCall('addContextDefinition', [$name, $input, $response]);
-            }
+        foreach ($contexts as $name => $context) {
+            $input = isset($context['input']) ? $context['input'] : null;
+            $response = isset($context['response']) ? $context['response'] : null;
+            $resolverDefinition->addMethodCall('addContextDefinition', [$name, $input, $response]);
         }
     }
 
