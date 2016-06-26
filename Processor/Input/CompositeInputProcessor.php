@@ -2,6 +2,8 @@
 
 namespace Lamudi\UseCaseBundle\Processor\Input;
 
+use Lamudi\UseCaseBundle\Processor\Exception\EmptyCompositeProcessorException;
+
 class CompositeInputProcessor implements InputProcessorInterface
 {
     /**
@@ -18,6 +20,10 @@ class CompositeInputProcessor implements InputProcessorInterface
      */
     public function initializeRequest($request, $input, $options = [])
     {
+        if (count($this->inputProcessors) == 0) {
+            throw new EmptyCompositeProcessorException('No Input Processors have been added.');
+        }
+
         foreach ($this->inputProcessors as $inputProcessorWithOptions) {
             /** @var InputProcessorInterface $inputProcessor */
             list($inputProcessor, $processorOptions) = $inputProcessorWithOptions;

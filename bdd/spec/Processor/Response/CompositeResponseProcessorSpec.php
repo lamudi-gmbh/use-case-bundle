@@ -3,6 +3,7 @@
 namespace spec\Lamudi\UseCaseBundle\Processor\Response;
 
 use Lamudi\UseCaseBundle\Exception\UseCaseException;
+use Lamudi\UseCaseBundle\Processor\Exception\EmptyCompositeProcessorException;
 use Lamudi\UseCaseBundle\Processor\Response\ResponseProcessorInterface;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
@@ -107,5 +108,11 @@ class CompositeResponseProcessorSpec extends ObjectBehavior
         $this->addResponseProcessor($responseProcessor2, ['option2' => 'value2']);
 
         $this->handleException($exception1)->shouldBe($output2);
+    }
+
+    public function it_throws_an_exception_if_no_processors_have_been_added()
+    {
+        $this->shouldThrow(EmptyCompositeProcessorException::class)->duringProcessResponse('this is irrelevant here');
+        $this->shouldThrow(EmptyCompositeProcessorException::class)->duringHandleException(new \Exception());
     }
 }

@@ -2,6 +2,7 @@
 
 namespace spec\Lamudi\UseCaseBundle\Processor\Input;
 
+use Lamudi\UseCaseBundle\Processor\Exception\EmptyCompositeProcessorException;
 use Lamudi\UseCaseBundle\Processor\Input\InputProcessorInterface;
 use PhpSpec\Exception\Example\MatcherException;
 use PhpSpec\ObjectBehavior;
@@ -106,6 +107,11 @@ class CompositeInputProcessorSpec extends ObjectBehavior
         if ($request->initialized3 !== true) {
             throw new MatcherException('"initialized3" should be "true".');
         }
+    }
+
+    public function it_throws_an_exception_if_no_processors_have_been_added()
+    {
+        $this->shouldThrow(EmptyCompositeProcessorException::class)->duringInitializeRequest('this is', 'irrelevant here');
     }
 }
 

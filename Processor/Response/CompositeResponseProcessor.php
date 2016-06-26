@@ -2,6 +2,8 @@
 
 namespace Lamudi\UseCaseBundle\Processor\Response;
 
+use Lamudi\UseCaseBundle\Processor\Exception\EmptyCompositeProcessorException;
+
 class CompositeResponseProcessor implements ResponseProcessorInterface
 {
     /**
@@ -10,7 +12,8 @@ class CompositeResponseProcessor implements ResponseProcessorInterface
     private $responseProcessors;
 
     /**
-     * Processes the successful outcome of a Use Case execution. Returns the appropriate Output object.
+     * Executes a chain of Response Processors, passing the result of the previous processing
+     * as a Response to the next processor.
      *
      * @param object $response The Use Case Response object.
      * @param array  $options
@@ -19,6 +22,8 @@ class CompositeResponseProcessor implements ResponseProcessorInterface
      */
     public function processResponse($response, $options = [])
     {
+        $this->throwIfNoProcessorsAdded();
+
         foreach ($this->responseProcessors as $responseProcessorWithOptions) {
             /** @var ResponseProcessorInterface $responseProcessor */
             list($responseProcessor, $processorOptions) = $responseProcessorWithOptions;
@@ -30,9 +35,8 @@ class CompositeResponseProcessor implements ResponseProcessorInterface
     }
 
     /**
-     * When an exception is thrown during Use Case execution, this method is invoked. It should return an Output
-     * appropriate for alternative execution course of the Use Case, or rethrow the exception if it was not the result
-     * of such course.
+     * Uses the first Response Processor to handle the Exception thrown by the Use Case,
+     * then processes the Output using remaining Processors.
      *
      * @param \Exception $exception
      * @param array      $options
@@ -41,6 +45,8 @@ class CompositeResponseProcessor implements ResponseProcessorInterface
      */
     public function handleException(\Exception $exception, $options = [])
     {
+        $this->throwIfNoProcessorsAdded();
+
         $output = null;
         foreach ($this->responseProcessors as $responseProcessorWithOptions) {
             /** @var ResponseProcessorInterface $responseProcessor */
@@ -63,5 +69,12 @@ class CompositeResponseProcessor implements ResponseProcessorInterface
     public function addResponseProcessor(ResponseProcessorInterface $responseProcessor, $options = [])
     {
         $this->responseProcessors[] = [$responseProcessor, $options];
+    }
+
+    private function throwIfNoProcessorsAdded()
+    {
+        if (count($this->responseProcessors) == 0) {
+            throw new EmptyCompositeProcessorException('No Response Processors have been added.');
+        }
     }
 }
