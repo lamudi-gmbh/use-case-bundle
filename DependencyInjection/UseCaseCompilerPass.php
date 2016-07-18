@@ -177,17 +177,17 @@ class UseCaseCompilerPass implements CompilerPassInterface
             $containerDefinition->addMethodCall('set', [$useCaseName, new Reference($serviceId)]);
         }
 
-        if ($annotation->getInputType()) {
+        if ($annotation->getInputProcessorName()) {
             $executorDefinition->addMethodCall(
                 'assignInputProcessor',
-                [$useCaseName, $annotation->getInputType(), $annotation->getInputOptions()]
+                [$useCaseName, $annotation->getInputProcessorName(), $annotation->getInputProcessorOptions()]
             );
         }
 
-        if ($annotation->getResponseType()) {
+        if ($annotation->getResponseProcessorName()) {
             $executorDefinition->addMethodCall(
                 'assignResponseProcessor',
-                [$useCaseName, $annotation->getResponseType(), $annotation->getResponseOptions()]
+                [$useCaseName, $annotation->getResponseProcessorName(), $annotation->getResponseProcessorOptions()]
             );
         }
 

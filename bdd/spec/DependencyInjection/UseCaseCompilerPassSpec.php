@@ -71,20 +71,20 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
 
         $useCase1Annotation = new UseCaseAnnotation([
             'value' => 'use_case_1',
-            'input' => ['type' => 'form', 'name' => 'registration_form']
+            'input' => 'form'
         ]);
         $useCase2Annotation1 = new UseCaseAnnotation([
             'value'  => 'use_case_2',
-            'response' => ['type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig']
+            'response' => 'twig'
         ]);
         $useCase2Annotation2 = new UseCaseAnnotation([
             'value'  => 'use_case_2_alias',
-            'response' => ['type' => 'twig', 'template' => 'AppBundle:goodbye:index.html.twig']
+            'response' => 'json'
         ]);
         $useCase3Annotation = new UseCaseAnnotation([
             'value' => 'use_case_3',
             'input' => 'http',
-            'response' => ['type' => 'twig', 'template' => 'AppBundle:hello:index.html.twig']
+            'response' => 'json'
         ]);
 
         $annotationReader->getClassAnnotations(new \ReflectionClass(UseCase1::class))->willReturn([$useCase1Annotation]);
@@ -96,21 +96,11 @@ class UseCaseCompilerPassSpec extends ObjectBehavior
         $useCaseContainerDefinition->addMethodCall('set', ['use_case_2_alias', new Reference('uc2')])->shouldBeCalled();
         $useCaseContainerDefinition->addMethodCall('set', ['use_case_3', new Reference('uc3')])->shouldBeCalled();
 
-        $useCaseExecutorDefinition
-            ->addMethodCall('assignInputProcessor', ['use_case_1', 'form', ['name' => 'registration_form']])
-            ->shouldBeCalled();
-        $useCaseExecutorDefinition
-            ->addMethodCall('assignResponseProcessor', ['use_case_2', 'twig', ['template' => 'AppBundle:hello:index.html.twig']])
-            ->shouldBeCalled();
-        $useCaseExecutorDefinition
-            ->addMethodCall('assignResponseProcessor', ['use_case_2_alias', 'twig', ['template' => 'AppBundle:goodbye:index.html.twig']])
-            ->shouldBeCalled();
-
-        $useCaseExecutorDefinition
-            ->addMethodCall('assignInputProcessor', ['use_case_3', 'http', []])->shouldBeCalled();
-        $useCaseExecutorDefinition
-            ->addMethodCall('assignResponseProcessor', ['use_case_3', 'twig', ['template' => 'AppBundle:hello:index.html.twig']])
-            ->shouldBeCalled();
+        $useCaseExecutorDefinition->addMethodCall('assignInputProcessor', ['use_case_1', 'form', []])->shouldBeCalled();
+        $useCaseExecutorDefinition->addMethodCall('assignResponseProcessor', ['use_case_2', 'twig', []])->shouldBeCalled();
+        $useCaseExecutorDefinition->addMethodCall('assignResponseProcessor', ['use_case_2_alias', 'json', []])->shouldBeCalled();
+        $useCaseExecutorDefinition->addMethodCall('assignInputProcessor', ['use_case_3', 'http', []])->shouldBeCalled();
+        $useCaseExecutorDefinition->addMethodCall('assignResponseProcessor', ['use_case_3', 'json', []])->shouldBeCalled();
 
         $this->process($containerBuilder);
     }

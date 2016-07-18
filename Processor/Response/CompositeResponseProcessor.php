@@ -2,6 +2,7 @@
 
 namespace Lamudi\UseCaseBundle\Processor\Response;
 
+use Lamudi\UseCaseBundle\Container\ContainerInterface;
 use Lamudi\UseCaseBundle\Processor\Exception\EmptyCompositeProcessorException;
 
 class CompositeResponseProcessor implements ResponseProcessorInterface
@@ -12,23 +13,39 @@ class CompositeResponseProcessor implements ResponseProcessorInterface
     private $responseProcessors;
 
     /**
+     * @var ContainerInterface
+     */
+    private $responseProcessorContainer;
+
+    /**
+     * @param ContainerInterface $responseProcessorContainer
+     */
+    public function __construct(ContainerInterface $responseProcessorContainer)
+    {
+        $this->responseProcessorContainer = $responseProcessorContainer;
+    }
+
+    /**
      * Executes a chain of Response Processors, passing the result of the previous processing
      * as a Response to the next processor.
      *
      * @param object $response The Use Case Response object.
-     * @param array  $options
+     * @param array  $options  An associative array where keys are processor names and values are arrays of options.
      *
      * @return mixed
      */
     public function processResponse($response, $options = [])
     {
-        $this->throwIfNoProcessorsAdded();
+        $this->throwIfNoProcessorsAdded($options);
 
-        foreach ($this->responseProcessors as $responseProcessorWithOptions) {
-            /** @var ResponseProcessorInterface $responseProcessor */
-            list($responseProcessor, $processorOptions) = $responseProcessorWithOptions;
-            $processorOptions = array_merge($processorOptions, $options);
-            $response = $responseProcessor->processResponse($response, $processorOptions);
+        foreach ($options as $responseProcessorName => $responseProcessorOptions) {
+            if (is_int($responseProcessorName) && is_string($responseProcessorOptions)) {
+                $responseProcessorName = $responseProcessorOptions;
+                $responseProcessorOptions = [];
+            }
+
+            $responseProcessor = $this->responseProcessorContainer->get($responseProcessorName);
+            $response = $responseProcessor->processResponse($response, $responseProcessorOptions);
         }
 
         return $response;
@@ -45,17 +62,25 @@ class CompositeResponseProcessor implements ResponseProcessorInterface
      */
     public function handleException(\Exception $exception, $options = [])
     {
-        $this->throwIfNoProcessorsAdded();
+        $this->throwIfNoProcessorsAdded($options);
 
         $output = null;
-        foreach ($this->responseProcessors as $responseProcessorWithOptions) {
-            /** @var ResponseProcessorInterface $responseProcessor */
-            list($responseProcessor, $processorOptions) = $responseProcessorWithOptions;
+        foreach ($options as $responseProcessorName => $responseProcessorOptions) {
+            if (is_int($responseProcessorName) && is_string($responseProcessorOptions)) {
+                $responseProcessorName = $responseProcessorOptions;
+                $responseProcessorOptions = [];
+            }
+
+            $responseProcessor = $this->responseProcessorContainer->get($responseProcessorName);
             if ($exception !== null) {
-                $output = $responseProcessor->handleException($exception, $processorOptions);
-                $exception = null;
+                try {
+                    $output = $responseProcessor->handleException($exception, $responseProcessorOptions);
+                    $exception = null;
+                } catch (\Exception $e) {
+                    $exception = $e;
+                }
             } else {
-                $output = $responseProcessor->processResponse($output, $processorOptions);
+                $output = $responseProcessor->processResponse($output, $responseProcessorOptions);
             }
         }
 
@@ -71,9 +96,9 @@ class CompositeResponseProcessor implements ResponseProcessorInterface
         $this->responseProcessors[] = [$responseProcessor, $options];
     }
 
-    private function throwIfNoProcessorsAdded()
+    private function throwIfNoProcessorsAdded($options)
     {
-        if (count($this->responseProcessors) == 0) {
+        if (count($options) == 0) {
             throw new EmptyCompositeProcessorException('No Response Processors have been added.');
         }
     }

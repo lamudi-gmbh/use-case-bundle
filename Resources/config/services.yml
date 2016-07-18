@@ -45,6 +45,12 @@ services:
         tags:
             - { name: use_case_input_processor, alias: array }
 
+    lamudi_use_case.input_processor.composite:
+        class: Lamudi\UseCaseBundle\Processor\Input\CompositeInputProcessor
+        arguments: ["@lamudi_use_case.container.input_processor"]
+        tags:
+            - { name: use_case_input_processor, alias: composite }
+
     lamudi_use_case.input_processor.form:
         class: Lamudi\UseCaseBundle\Processor\Input\FormInputProcessor
         arguments: ["@form.factory"]
@@ -65,7 +71,13 @@ services:
     ##################################
     # RESPONSE PROCESSORS
     ##################################
-    lamudi_use_case.processor.response_processor.default:
+    lamudi_use_case.processor.response_processor.composite:
+        class: Lamudi\UseCaseBundle\Processor\Response\CompositeResponseProcessor
+        arguments: ["@lamudi_use_case.container.response_processor"]
+        tags:
+            - { name: use_case_response_processor, alias: composite }
+
+    lamudi_use_case.processor.response_processor.identity:
         class: Lamudi\UseCaseBundle\Processor\Response\IdentityResponseProcessor
         tags:
             - { name: use_case_response_processor, alias: identity }

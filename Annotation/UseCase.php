@@ -59,7 +59,7 @@ class UseCase
     /**
      * @return string
      */
-    public function getInputType()
+    public function getInputProcessorName()
     {
         return $this->config->getInputProcessorName();
     }
@@ -67,7 +67,7 @@ class UseCase
     /**
      * @return array
      */
-    public function getInputOptions()
+    public function getInputProcessorOptions()
     {
         return $this->config->getInputProcessorOptions();
     }
@@ -75,7 +75,7 @@ class UseCase
     /**
      * @return string
      */
-    public function getResponseType()
+    public function getResponseProcessorName()
     {
         return $this->config->getResponseProcessorName();
     }
@@ -83,7 +83,7 @@ class UseCase
     /**
      * @return array
      */
-    public function getResponseOptions()
+    public function getResponseProcessorOptions()
     {
         return $this->config->getResponseProcessorOptions();
     }

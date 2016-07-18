@@ -165,12 +165,7 @@ class UseCaseConfiguration
         if (is_string($data)) {
             $this->$nameField = $data;
         } else {
-            if (!isset($data['type'])) {
-                throw new InvalidConfigurationException('Missing ' . $field . ' processor name.');
-            }
-
-            $this->$nameField = $data['type'];
-            unset($data['type']);
+            $this->$nameField = 'composite';
             $this->$optionsField = $data;
         }
     }

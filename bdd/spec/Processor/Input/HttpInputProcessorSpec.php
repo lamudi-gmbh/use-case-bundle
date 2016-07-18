@@ -29,7 +29,7 @@ namespace spec\Lamudi\UseCaseBundle\Processor\Input {
             $this->shouldHaveType(InputProcessorInterface::class);
         }
 
-        public function it_collects_data_from_http_request(HttpRequest $httpRequest)
+        public function it_collects_data_from_http_request()
         {
             $httpRequestData = [
                 'GET'     => ['query' => 'query_value'],
@@ -40,7 +40,7 @@ namespace spec\Lamudi\UseCaseBundle\Processor\Input {
                 'headers' => ['header' => 'header_value'],
                 'attrs'   => ['attribute' => 'attribute_value'],
             ];
-            $this->initializeHttpRequest($httpRequest, $httpRequestData);
+            $httpRequest = $this->initializeHttpRequest($httpRequestData);
 
             /** @var DataFromHttpRequest $request */
             $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest);
@@ -54,19 +54,19 @@ namespace spec\Lamudi\UseCaseBundle\Processor\Input {
             $request->header->shouldBe('header_value');
         }
 
-        public function it_reads_data_from_http_request_with_certain_default_priority(HttpRequest $httpRequest)
+        public function it_reads_data_from_http_request_with_certain_default_priority()
         {
-            $this->attributesOverrideAll($httpRequest);
-            $this->headersOverrideGetPostFilesCookiesAndServer($httpRequest);
-            $this->serverOverridesGetPostFilesAndCookies($httpRequest);
-            $this->cookiesOverrideGetPostAndFiles($httpRequest);
-            $this->filesOverrideGetAndPost($httpRequest);
-            $this->postOverridesGet($httpRequest);
+            $this->attributesOverrideAll();
+            $this->headersOverrideGetPostFilesCookiesAndServer();
+            $this->serverOverridesGetPostFilesAndCookies();
+            $this->cookiesOverrideGetPostAndFiles();
+            $this->filesOverrideGetAndPost();
+            $this->postOverridesGet();
         }
 
-        public function it_reads_data_from_http_request_with_given_priority(HttpRequest $httpRequest)
+        public function it_reads_data_from_http_request_with_given_priority()
         {
-            $this->initializeHttpRequest($httpRequest, [
+            $httpRequest = $this->initializeHttpRequest([
                 'GET'     => ['var1' => 'G_value_1', 'var2' => 'G_value_2', 'var3' => 'G_value_3'],
                 'POST'    => ['var1' => 'P_value_1', 'var2' => 'P_value_2'],
                 'FILES'   => [                       'var2' => 'F_value_2', 'var3' => 'F_value_3'],
@@ -104,9 +104,9 @@ namespace spec\Lamudi\UseCaseBundle\Processor\Input {
             $request->var3->shouldBe('G_value_3');
         }
 
-        public function it_maps_fields_from_array_to_object_using_custom_mappings(HttpRequest $httpRequest)
+        public function it_maps_fields_from_array_to_object_using_custom_mappings()
         {
-            $this->initializeHttpRequest($httpRequest, [
+            $httpRequest = $this->initializeHttpRequest([
                 'GET' => ['q' => 'cheap hotels', 'p' => 3],
                 'COOKIE' => ['PHPSESSID' => 'asd123'],
                 'SERVER' => ['REMOTE_ADDR' => '127.0.0.1']
@@ -129,8 +129,10 @@ namespace spec\Lamudi\UseCaseBundle\Processor\Input {
             $request->ipAddress->shouldBe('127.0.0.1');
         }
 
-        private function initializeHttpRequest(HttpRequest $httpRequest, $data)
+        private function initializeHttpRequest($data)
         {
+            $httpRequest = new HttpRequest();
+
             $prophet = new Prophet();
             $attributesBag = $prophet->prophesize(ParameterBag::class);
             $requestBag = $prophet->prophesize(ParameterBag::class);
@@ -148,20 +150,18 @@ namespace spec\Lamudi\UseCaseBundle\Processor\Input {
             $cookiesBag->all()->willReturn(isset($data['COOKIE']) ? $data['COOKIE'] : []);
             $headersBag->all()->willReturn(isset($data['headers']) ? $data['headers'] : []);
 
-            $httpRequest->attributes = $attributesBag;
-            $httpRequest->request = $requestBag;
-            $httpRequest->query = $queryBag;
-            $httpRequest->server = $serverBag;
-            $httpRequest->files = $filesBag;
-            $httpRequest->cookies = $cookiesBag;
-            $httpRequest->headers = $headersBag;
+            $httpRequest->attributes = $attributesBag->reveal();
+            $httpRequest->request = $requestBag->reveal();
+            $httpRequest->query = $queryBag->reveal();
+            $httpRequest->server = $serverBag->reveal();
+            $httpRequest->files = $filesBag->reveal();
+            $httpRequest->cookies = $cookiesBag->reveal();
+            $httpRequest->headers = $headersBag->reveal();
+
+            return $httpRequest;
         }
 
-        /**
-         * @param HttpRequest $httpRequest
-         * @return array
-         */
-        private function attributesOverrideAll(HttpRequest $httpRequest)
+        private function attributesOverrideAll()
         {
             $httpRequestData = [
                 'GET'     => ['var' => 'query_value'],
@@ -172,17 +172,14 @@ namespace spec\Lamudi\UseCaseBundle\Processor\Input {
                 'headers' => ['var' => 'header_value'],
                 'attrs'   => ['var' => 'attribute_value'],
             ];
-            $this->initializeHttpRequest($httpRequest, $httpRequestData);
+            $httpRequest = $this->initializeHttpRequest($httpRequestData);
 
             /** @var DataFromHttpRequest $request */
             $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest, ['options' => 'foo']);
             $request->var->shouldBe('attribute_value');
         }
 
-        /**
-         * @param HttpRequest $httpRequest
-         */
-        private function headersOverrideGetPostFilesCookiesAndServer(HttpRequest $httpRequest)
+        private function headersOverrideGetPostFilesCookiesAndServer()
         {
             $httpRequestData = [
                 'GET'     => ['var' => 'query_value'],
@@ -192,17 +189,14 @@ namespace spec\Lamudi\UseCaseBundle\Processor\Input {
                 'SERVER'  => ['var' => 'server_value'],
                 'headers' => ['var' => 'header_value'],
             ];
-            $this->initializeHttpRequest($httpRequest, $httpRequestData);
+            $httpRequest = $this->initializeHttpRequest($httpRequestData);
 
             /** @var DataFromHttpRequest $request */
             $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest);
             $request->var->shouldBe('header_value');
         }
 
-        /**
-         * @param HttpRequest $httpRequest
-         */
-        private function serverOverridesGetPostFilesAndCookies(HttpRequest $httpRequest)
+        private function serverOverridesGetPostFilesAndCookies()
         {
             $httpRequestData = [
                 'GET'    => ['var' => 'query_value'],
@@ -211,17 +205,14 @@ namespace spec\Lamudi\UseCaseBundle\Processor\Input {
                 'COOKIE' => ['var' => 'cookie_value'],
                 'SERVER' => ['var' => 'server_value'],
             ];
-            $this->initializeHttpRequest($httpRequest, $httpRequestData);
+            $httpRequest = $this->initializeHttpRequest($httpRequestData);
 
             /** @var DataFromHttpRequest $request */
             $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest);
             $request->var->shouldBe('server_value');
         }
 
-        /**
-         * @param HttpRequest $httpRequest
-         */
-        private function cookiesOverrideGetPostAndFiles(HttpRequest $httpRequest)
+        private function cookiesOverrideGetPostAndFiles()
         {
             $httpRequestData = [
                 'GET'    => ['var' => 'query_value'],
@@ -229,40 +220,34 @@ namespace spec\Lamudi\UseCaseBundle\Processor\Input {
                 'FILES'  => ['var' => 'file_value'],
                 'COOKIE' => ['var' => 'cookie_value'],
             ];
-            $this->initializeHttpRequest($httpRequest, $httpRequestData);
+            $httpRequest = $this->initializeHttpRequest($httpRequestData);
 
             /** @var DataFromHttpRequest $request */
             $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest);
             $request->var->shouldBe('cookie_value');
         }
 
-        /**
-         * @param HttpRequest $httpRequest
-         */
-        private function filesOverrideGetAndPost(HttpRequest $httpRequest)
+        private function filesOverrideGetAndPost()
         {
             $httpRequestData = [
                 'GET'   => ['var' => 'query_value'],
                 'POST'  => ['var' => 'request_value'],
                 'FILES' => ['var' => 'file_value'],
             ];
-            $this->initializeHttpRequest($httpRequest, $httpRequestData);
+            $httpRequest = $this->initializeHttpRequest($httpRequestData);
 
             /** @var DataFromHttpRequest $request */
             $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest);
             $request->var->shouldBe('file_value');
         }
 
-        /**
-         * @param HttpRequest $httpRequest
-         */
-        private function postOverridesGet(HttpRequest $httpRequest)
+        private function postOverridesGet()
         {
             $httpRequestData = [
                 'GET'  => ['var' => 'query_value'],
                 'POST' => ['var' => 'request_value'],
             ];
-            $this->initializeHttpRequest($httpRequest, $httpRequestData);
+            $httpRequest = $this->initializeHttpRequest($httpRequestData);
 
             /** @var DataFromHttpRequest $request */
             $request = $this->initializeRequest(new DataFromHttpRequest(), $httpRequest);

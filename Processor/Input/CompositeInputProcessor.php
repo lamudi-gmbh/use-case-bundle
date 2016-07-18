@@ -2,42 +2,45 @@
 
 namespace Lamudi\UseCaseBundle\Processor\Input;
 
+use Lamudi\UseCaseBundle\Container\ContainerInterface;
 use Lamudi\UseCaseBundle\Processor\Exception\EmptyCompositeProcessorException;
 
 class CompositeInputProcessor implements InputProcessorInterface
 {
     /**
-     * @var array
+     * @var ContainerInterface
      */
-    private $inputProcessors = [];
+    private $inputProcessorContainer;
+
+    /**
+     * @param ContainerInterface $inputProcessorContainer
+     */
+    public function __construct(ContainerInterface $inputProcessorContainer)
+    {
+        $this->inputProcessorContainer = $inputProcessorContainer;
+    }
 
     /**
      * Uses a chain of Input Processor to initialize the Use Case Request.
      *
      * @param object $request The Use Case Request object to be initialized.
      * @param mixed  $input   Any object that contains input data.
-     * @param array  $options An array of configuration options to the Input Processor.
+     * @param array  $options An associative array where keys are processor names and values are arrays of options.
      */
     public function initializeRequest($request, $input, $options = [])
     {
-        if (count($this->inputProcessors) == 0) {
-            throw new EmptyCompositeProcessorException('No Input Processors have been added.');
+        if (count($options) == 0) {
+            throw new EmptyCompositeProcessorException('No Input Processors have been configured.');
         }
 
-        foreach ($this->inputProcessors as $inputProcessorWithOptions) {
-            /** @var InputProcessorInterface $inputProcessor */
-            list($inputProcessor, $processorOptions) = $inputProcessorWithOptions;
-            $processorOptions = array_merge($processorOptions, $options);
-            $inputProcessor->initializeRequest($request, $input, $processorOptions);
-        }
-    }
+        foreach ($options as $inputProcessorName => $inputProcessorOptions) {
+            if (is_int($inputProcessorName) && is_string($inputProcessorOptions)) {
+                $inputProcessorName = $inputProcessorOptions;
+                $inputProcessorOptions = [];
+            }
 
-    /**
-     * @param InputProcessorInterface $inputProcessor
-     * @param array                   $options
-     */
-    public function addInputProcessor(InputProcessorInterface $inputProcessor, $options = [])
-    {
-        $this->inputProcessors[] = [$inputProcessor, $options];
+            $inputProcessor = $this->inputProcessorContainer->get($inputProcessorName);
+            $inputProcessor->initializeRequest($request, $input, $inputProcessorOptions);
+        }
     }
 }

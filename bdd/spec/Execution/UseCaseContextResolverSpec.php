@@ -24,7 +24,8 @@ class UseCaseContextResolverSpec extends ObjectBehavior
         ContainerInterface $inputProcessorContainer, ContainerInterface $responseProcessorContainer,
         InputProcessorInterface $defaultInputProcessor, ResponseProcessorInterface $defaultResponseProcessor,
         InputProcessorInterface $httpInputProcessor, ResponseProcessorInterface $twigResponseProcessor,
-        InputProcessorInterface $cliInputProcessor, ResponseProcessorInterface $cliResponseProcessor
+        InputProcessorInterface $cliInputProcessor, ResponseProcessorInterface $cliResponseProcessor,
+        InputProcessorInterface $compositeInputProcessor, ResponseProcessorInterface $compositeResponseProcessor
     )
     {
         $this->beConstructedWith($inputProcessorContainer, $responseProcessorContainer);
@@ -32,9 +33,11 @@ class UseCaseContextResolverSpec extends ObjectBehavior
         $inputProcessorContainer->get(UseCaseContextResolver::DEFAULT_INPUT_PROCESSOR)->willReturn($defaultInputProcessor);
         $inputProcessorContainer->get('http')->willReturn($httpInputProcessor);
         $inputProcessorContainer->get('cli')->willReturn($cliInputProcessor);
+        $inputProcessorContainer->get('composite')->willReturn($compositeInputProcessor);
         $responseProcessorContainer->get(UseCaseContextResolver::DEFAULT_RESPONSE_PROCESSOR)->willReturn($defaultResponseProcessor);
         $responseProcessorContainer->get('twig')->willReturn($twigResponseProcessor);
         $responseProcessorContainer->get('cli')->willReturn($cliResponseProcessor);
+        $responseProcessorContainer->get('composite')->willReturn($compositeResponseProcessor);
     }
 
     function it_is_initializable()
@@ -69,17 +72,17 @@ class UseCaseContextResolverSpec extends ObjectBehavior
     }
 
     public function it_resolves_context_with_options(
-        InputProcessorInterface $httpInputProcessor, ResponseProcessorInterface $twigResponseProcessor
+        InputProcessorInterface $compositeInputProcessor, ResponseProcessorInterface $compositeResponseProcessor
     )
     {
-        $this->addContextDefinition('web', ['type' => 'http', 'accept' => 'text/html'], ['type' => 'twig', 'template' => 'none']);
+        $this->addContextDefinition('web', ['http' => ['accept' => 'text/html']], ['twig' => ['template' => 'none']]);
 
         $webContext = $this->resolveContext('web');
         $webContext->shouldHaveType(UseCaseContext::class);
-        $webContext->getInputProcessor()->shouldBe($httpInputProcessor);
-        $webContext->getInputProcessorOptions()->shouldBe(['accept' => 'text/html']);
-        $webContext->getResponseProcessor()->shouldBe($twigResponseProcessor);
-        $webContext->getResponseProcessorOptions()->shouldBe(['template' => 'none']);
+        $webContext->getInputProcessor()->shouldBe($compositeInputProcessor);
+        $webContext->getInputProcessorOptions()->shouldBe(['http' => ['accept' => 'text/html']]);
+        $webContext->getResponseProcessor()->shouldBe($compositeResponseProcessor);
+        $webContext->getResponseProcessorOptions()->shouldBe(['twig' => ['template' => 'none']]);
     }
 
     public function it_falls_back_to_default_configuration_when_context_is_incomplete(
@@ -117,29 +120,32 @@ class UseCaseContextResolverSpec extends ObjectBehavior
     }
 
     public function it_overrides_the_options_of_the_default_context(
-        InputProcessorInterface $defaultInputProcessor, ResponseProcessorInterface $defaultResponseProcessor,
-        InputProcessorInterface $httpInputProcessor, ResponseProcessorInterface $twigResponseProcessor
+        InputProcessorInterface $compositeInputProcessor, ResponseProcessorInterface $compositeResponseProcessor
     )
     {
         $this->addContextDefinition(
             'default',
-            ['type' => UseCaseContextResolver::DEFAULT_INPUT_PROCESSOR, 'option' => 'foo'],
-            ['type' => UseCaseContextResolver::DEFAULT_RESPONSE_PROCESSOR, 'foo' => 'bar']
+            [UseCaseContextResolver::DEFAULT_INPUT_PROCESSOR => ['option' => 'foo']],
+            [UseCaseContextResolver::DEFAULT_RESPONSE_PROCESSOR => ['foo' => 'bar']]
         );
-        $this->addContextDefinition('only_input', ['type' => 'http', 'accept' => 'text/html']);
-        $this->addContextDefinition('only_response', null, ['type' => 'twig', 'template' => 'none']);
+        $this->addContextDefinition('only_input', ['http' => ['accept' => 'text/html']]);
+        $this->addContextDefinition('only_response', null, ['twig' => ['template' => 'none']]);
 
         $onlyInputContext = $this->resolveContext('only_input');
-        $onlyInputContext->getInputProcessor()->shouldBe($httpInputProcessor);
-        $onlyInputContext->getInputProcessorOptions()->shouldBe(['accept' => 'text/html']);
-        $onlyInputContext->getResponseProcessor()->shouldBe($defaultResponseProcessor);
-        $onlyInputContext->getResponseProcessorOptions()->shouldBe(['foo' => 'bar']);
+        $onlyInputContext->getInputProcessor()->shouldBe($compositeInputProcessor);
+        $onlyInputContext->getInputProcessorOptions()->shouldBe(['http' => ['accept' => 'text/html']]);
+        $onlyInputContext->getResponseProcessor()->shouldBe($compositeResponseProcessor);
+        $onlyInputContext->getResponseProcessorOptions()->shouldBe(
+            [UseCaseContextResolver::DEFAULT_RESPONSE_PROCESSOR => ['foo' => 'bar']]
+        );
 
         $onlyResponseContext = $this->resolveContext('only_response');
-        $onlyResponseContext->getInputProcessor()->shouldBe($defaultInputProcessor);
-        $onlyResponseContext->getInputProcessorOptions()->shouldBe(['option' => 'foo']);
-        $onlyResponseContext->getResponseProcessor()->shouldBe($twigResponseProcessor);
-        $onlyResponseContext->getResponseProcessorOptions()->shouldBe(['template' => 'none']);
+        $onlyResponseContext->getInputProcessor()->shouldBe($compositeInputProcessor);
+        $onlyResponseContext->getInputProcessorOptions()->shouldBe(
+            [UseCaseContextResolver::DEFAULT_INPUT_PROCESSOR => ['option' => 'foo']]
+        );
+        $onlyResponseContext->getResponseProcessor()->shouldBe($compositeResponseProcessor);
+        $onlyResponseContext->getResponseProcessorOptions()->shouldBe(['twig' => ['template' => 'none']]);
     }
 
     public function it_resolves_contexts_from_configuration_array(
@@ -160,19 +166,25 @@ class UseCaseContextResolverSpec extends ObjectBehavior
     }
 
     public function it_merges_given_options_with_defaults(
-        InputProcessorInterface $httpInputProcessor, ResponseProcessorInterface $twigResponseProcessor
+        InputProcessorInterface $compositeInputProcessor, ResponseProcessorInterface $compositeResponseProcessor
     )
     {
-        $this->addContextDefinition('default', ['type' => 'cli', 'yes' => true, 'maybe' => 5], ['type' => 'cli', 'maybe' => 3, 'no' => false]);
+        $this->addContextDefinition('default', ['cli' => ['yes' => true, 'maybe' => 5]], ['cli' => ['maybe' => 3, 'no' => false]]);
         $context = $this->resolveContext([
-            'input' => ['type' => 'http', 'yes' => false, 'probably' => 'not'],
-            'response' => ['type' => 'twig', 'yes' => true, 'maybe' => 10]
+            'input' => ['http' => ['yes' => false, 'probably' => 'not']],
+            'response' => ['twig' => ['yes' => true, 'maybe' => 10]]
         ]);
 
-        $context->getInputProcessor()->shouldBe($httpInputProcessor);
-        $context->getInputProcessorOptions()->shouldBe(['yes' => false, 'maybe' => 5, 'probably' => 'not']);
-        $context->getResponseProcessor()->shouldBe($twigResponseProcessor);
-        $context->getResponseProcessorOptions()->shouldBe(['maybe' => 10, 'no' => false, 'yes' => true]);
+        $context->getInputProcessor()->shouldBe($compositeInputProcessor);
+        $context->getInputProcessorOptions()->shouldBe([
+            'cli' => ['yes' => true, 'maybe' => 5],
+            'http' => ['yes' => false, 'probably' => 'not']
+        ]);
+        $context->getResponseProcessor()->shouldBe($compositeResponseProcessor);
+        $context->getResponseProcessorOptions()->shouldBe([
+            'cli' => ['maybe' => 3, 'no' => false],
+            'twig' => ['yes' => true, 'maybe' => 10]
+        ]);
     }
 
     public function it_works_with_instances_of_use_case_configuration(
