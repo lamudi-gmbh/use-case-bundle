@@ -292,7 +292,7 @@ class ListProductsInCategory
 Notice that in this example we threw a ```CategoryNotFoundException``` instead of a generic PHP exception. This allows us to 
 distinct the expected alternative courses, like nonexistent categories (users could accidentally or deliberately enter 
 an invalid category ID in the URL), from unexpected failures (for example, the database should always work). The 
-```CategoryNotFoundException``` extends the ```UseCaseException``` that belongs to the Use Case Bundle. The ```UseCaseException``` 
+```CategoryNotFoundException``` extends the ```AlternativeCourseException``` that belongs to the Use Case Bundle. The ```AlternativeCourseException``` 
 is handled differently than other kinds of exceptions by the Response Processors that come with the Bundle. 
 
 We have to make one small adjustment in the controller code. Now that the Executor will push the Use Case Response through 

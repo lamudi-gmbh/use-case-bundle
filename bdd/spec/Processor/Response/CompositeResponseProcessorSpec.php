@@ -3,7 +3,7 @@
 namespace spec\Lamudi\UseCaseBundle\Processor\Response;
 
 use Lamudi\UseCaseBundle\Container\ContainerInterface;
-use Lamudi\UseCaseBundle\Exception\UseCaseException;
+use Lamudi\UseCaseBundle\Exception\AlternativeCourseException;
 use Lamudi\UseCaseBundle\Processor\Exception\EmptyCompositeProcessorException;
 use Lamudi\UseCaseBundle\Processor\Response\ResponseProcessorInterface;
 use PhpSpec\ObjectBehavior;
@@ -72,7 +72,7 @@ class CompositeResponseProcessorSpec extends ObjectBehavior
         ResponseProcessorInterface $responseProcessor1, ResponseProcessorInterface $responseProcessor2
     )
     {
-        $exception = new UseCaseException();
+        $exception = new AlternativeCourseException();
         $output1 = ['some' => 'output processed with options'];
         $output2 = ['some' => 'further processed output with more options'];
 
@@ -86,7 +86,7 @@ class CompositeResponseProcessorSpec extends ObjectBehavior
         ResponseProcessorInterface $responseProcessor1, ResponseProcessorInterface $responseProcessor2
     )
     {
-        $exception1 = new UseCaseException();
+        $exception1 = new AlternativeCourseException();
         $output1 = ['some' => 'output processed with options'];
         $output2 = ['some' => 'further processed output with more options'];
 

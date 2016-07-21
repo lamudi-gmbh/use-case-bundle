@@ -9,6 +9,6 @@ namespace Lamudi\UseCaseBundle\Exception;
  *
  * @package Lamudi\UseCaseBundle\Exception
  */
-class UseCaseException extends \Exception
+class AlternativeCourseException extends \Exception
 {
 }

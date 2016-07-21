@@ -7,7 +7,7 @@ use Lamudi\UseCaseBundle\Execution\UseCaseConfiguration;
 use Lamudi\UseCaseBundle\Execution\UseCaseContext;
 use Lamudi\UseCaseBundle\Execution\UseCaseContextResolver;
 use Lamudi\UseCaseBundle\Container\ItemNotFoundException;
-use Lamudi\UseCaseBundle\Exception\UseCaseException;
+use Lamudi\UseCaseBundle\Exception\AlternativeCourseException;
 use Lamudi\UseCaseBundle\Execution\UseCaseNotFoundException;
 use Lamudi\UseCaseBundle\Processor\Input\InputProcessorInterface;
 use Lamudi\UseCaseBundle\Processor\Response\InputAwareResponseProcessor;
@@ -137,7 +137,7 @@ class UseCaseExecutorSpec extends ObjectBehavior
         $contextResolver->resolveContext(Argument::which('getResponseProcessorOptions', $responseProcessorOptions))
             ->willReturn($context);
 
-        $exception = new UseCaseException();
+        $exception = new AlternativeCourseException();
         $useCase->execute(Argument::any())->willThrow($exception);
         $responseProcessor->handleException($exception, $responseProcessorOptions)->willReturn($httpResponse);
 

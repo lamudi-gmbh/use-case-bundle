@@ -177,9 +177,9 @@ create the following exceptions:
 
 namespace MyBundle\UseCase;
 
-use Lamudi\UseCaseBundle\Exception\UseCaseException;
+use Lamudi\UseCaseBundle\Exception\AlternativeCourseException;
 
-class CategoryNotFoundException extends UseCaseException
+class CategoryNotFoundException extends AlternativeCourseException
 {
 }
 
@@ -191,15 +191,15 @@ class CategoryNotFoundException extends UseCaseException
 
 namespace MyBundle\UseCase;
 
-use Lamudi\UseCaseBundle\Exception\UseCaseException;
+use Lamudi\UseCaseBundle\Exception\AlternativeCourseException;
 
-class RetrievalFailureException extends UseCaseException
+class RetrievalFailureException extends AlternativeCourseException
 {
 }
 
 ```
 
-It's recommended for your exceptions to extend the ```UseCaseException``` that's supplied with Use Case Bundle. It will 
+It's recommended for your exceptions to extend the ```AlternativeCourseException``` that's supplied with Use Case Bundle. It will 
 distinct the exception thrown as a consequence of your business logic from other kinds of failures. It is also used by 
 the tools provided by Use Case Bundle - you will find more on that topic in chapter [Use Cases in Symfony](02-use-cases-in-symfony.md).
 

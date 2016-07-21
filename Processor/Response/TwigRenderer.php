@@ -2,7 +2,7 @@
 
 namespace Lamudi\UseCaseBundle\Processor\Response;
 
-use Lamudi\UseCaseBundle\Exception\UseCaseException;
+use Lamudi\UseCaseBundle\Exception\AlternativeCourseException;
 use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation;
@@ -91,7 +91,7 @@ class TwigRenderer implements ResponseProcessorInterface
     {
         try {
             throw $exception;
-        } catch (UseCaseException $e) {
+        } catch (AlternativeCourseException $e) {
             throw new NotFoundHttpException($e->getMessage(), $e);
         } catch (\Exception $e) {
             throw $e;

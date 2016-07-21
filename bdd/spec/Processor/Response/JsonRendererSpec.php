@@ -2,7 +2,7 @@
 
 namespace spec\Lamudi\UseCaseBundle\Processor\Response;
 
-use Lamudi\UseCaseBundle\Exception\UseCaseException;
+use Lamudi\UseCaseBundle\Exception\AlternativeCourseException;
 use Lamudi\UseCaseBundle\Processor\Response\JsonRenderer;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
@@ -51,7 +51,7 @@ class JsonRendererSpec extends ObjectBehavior
 
     public function it_appends_specified_fields_to_the_output_on_error()
     {
-        $exception = new UseCaseException('epic fail', 444);
+        $exception = new AlternativeCourseException('epic fail', 444);
 
         $extraFields = ['code' => 500, 'success' => false];
         $result = $this->handleException($exception, ['append_on_error' => $extraFields]);
@@ -64,7 +64,7 @@ class JsonRendererSpec extends ObjectBehavior
 
     public function it_uses_custom_http_status_code()
     {
-        $exception = new UseCaseException('epic fail', 500);
+        $exception = new AlternativeCourseException('epic fail', 500);
 
         $result = $this->handleException($exception, ['http_status_code' => 403]);
         $result->getStatusCode()->shouldBe(403);

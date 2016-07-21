@@ -86,7 +86,7 @@ This processor will use the Use Case Response data as parameters to a Twig templ
 the required template parameter. It also provides the possibility to easily render Symfony forms in the views. See 
 description of ```forms``` configuration option for details.
 
-If the Use Case throws a ```UseCaseException```, Symfony's ```NotFoundHttpException``` will be thrown with the same 
+If the Use Case throws a ```AlternativeCourseException```, Symfony's ```NotFoundHttpException``` will be thrown with the same 
 message as in the original exception. Any other exceptions are re-thrown.
 
 Configuration options:
