@@ -6,6 +6,13 @@ parameters:
     lamudi_use_case.container.input_processor.class: Lamudi\UseCaseBundle\Container\Container
     lamudi_use_case.container.response_processor.class: Lamudi\UseCaseBundle\Container\Container
 
+    lamudi_use_case.input_processor.form.class: Lamudi\UseCaseBundle\Processor\Input\FormInputProcessor
+    lamudi_use_case.input_processor.http.class: Lamudi\UseCaseBundle\Processor\Input\HttpInputProcessor
+    lamudi_use_case.input_processor.json_body.class: Lamudi\UseCaseBundle\Processor\Input\JsonInputProcessor
+
+    lamudi_use_case.response_processor.twig.class: Lamudi\UseCaseBundle\Processor\Response\TwigRenderer
+    lamudi_use_case.response_processor.json.class: Lamudi\UseCaseBundle\Processor\Response\JsonRenderer
+
     lamudi_use_case.default_context: default
     lamudi_use_case.contexts: []
 
@@ -52,18 +59,18 @@ services:
             - { name: use_case_input_processor, alias: composite }
 
     lamudi_use_case.input_processor.form:
-        class: Lamudi\UseCaseBundle\Processor\Input\FormInputProcessor
+        class: "%lamudi_use_case.input_processor.form.class%"
         arguments: ["@form.factory"]
         tags:
             - { name: use_case_input_processor, alias: form }
 
     lamudi_use_case.input_processor.http:
-        class: Lamudi\UseCaseBundle\Processor\Input\HttpInputProcessor
+        class: "%lamudi_use_case.input_processor.http.class%"
         tags:
             - { name: use_case_input_processor, alias: http }
 
     lamudi_use_case.input_processor.json_body:
-        class: Lamudi\UseCaseBundle\Processor\Input\JsonInputProcessor
+        class: "%lamudi_use_case.input_processor.json_body.class%"
         arguments: ["@serializer.encoder.json"]
         tags:
             - { name: use_case_input_processor, alias: json }
@@ -83,13 +90,13 @@ services:
             - { name: use_case_response_processor, alias: identity }
 
     lamudi_use_case.processor.response_processor.twig:
-        class: Lamudi\UseCaseBundle\Processor\Response\TwigRenderer
-        arguments: ["@?templating", "@form.factory"]
+        class: "%lamudi_use_case.response_processor.twig.class%"
+        arguments: ["@templating", "@form.factory"]
         tags:
             - { name: use_case_response_processor, alias: twig }
 
     lamudi_use_case.response_processor.json:
-        class: Lamudi\UseCaseBundle\Processor\Response\JsonRenderer
+        class: "%lamudi_use_case.response_processor.json.class%"
         arguments: ["@serializer"]
         tags:
             - { name: use_case_response_processor, alias: json }
