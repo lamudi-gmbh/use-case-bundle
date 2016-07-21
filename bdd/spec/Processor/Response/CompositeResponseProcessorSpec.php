@@ -114,7 +114,19 @@ class CompositeResponseProcessorSpec extends ObjectBehavior
         $responseProcessor2->handleException($exception2, [])->willReturn($output1);
         $responseProcessor3->processResponse($output1, [])->willReturn($output2);
 
-        $this->handleException(new \OutOfBoundsException(), ['processor_1', 'processor_2', 'processor_3'])->shouldBe($output2);
+        $this->handleException($exception1, ['processor_1', 'processor_2', 'processor_3'])->shouldBe($output2);
+    }
+
+    public function it_throws_an_exception_if_all_processors_threw_an_exception(
+        ResponseProcessorInterface $responseProcessor1, ResponseProcessorInterface $responseProcessor2
+    )
+    {
+        $exception1 = new \OutOfBoundsException();
+        $exception2 = new \InvalidArgumentException();
+        $responseProcessor1->handleException($exception1, [])->willThrow($exception2);
+        $responseProcessor2->handleException($exception2, [])->willThrow($exception2);
+
+        $this->shouldThrow($exception2)->duringHandleException($exception1, ['processor_1', 'processor_2']);
     }
 
     public function it_throws_an_exception_if_no_processors_have_been_added()

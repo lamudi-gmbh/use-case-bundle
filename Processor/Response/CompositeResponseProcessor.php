@@ -84,7 +84,11 @@ class CompositeResponseProcessor implements ResponseProcessorInterface
             }
         }
 
-        return $output;
+        if ($exception === null) {
+            return $output;
+        } else {
+            throw $exception;
+        }
     }
 
     /**
