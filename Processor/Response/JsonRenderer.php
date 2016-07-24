@@ -18,7 +18,7 @@ class JsonRenderer implements ResponseProcessorInterface
     /**
      * @param SerializerInterface $serializer
      */
-    public function __construct(SerializerInterface $serializer)
+    public function __construct($serializer)
     {
         $this->serializer = $serializer;
     }
