@@ -112,5 +112,5 @@ Documentation
 * [Use Cases in Symfony](doc/02-use-cases-in-symfony.md) - Differences between Application and Use Case layers explained, introducing concepts of Input and Output 
 * [Use Case Contexts](doc/03-use-case-contexts.md) - How to configure the way your Use Cases are executed
 * [Toolkit](doc/04-toolkit.md) - Input and Response Processors shipped with the bundle
- 
+* [Using multiple Input and Request Processors](05-using-multiple-input-and-request-processors.md) 
 

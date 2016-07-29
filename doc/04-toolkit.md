@@ -10,7 +10,7 @@ Rewrites data from an associative array to the Request object, matching array ke
 
 Configuration options:
 
-* ```map``` - optional. Allows to specify custom mapping from array keys to the fields in the use case request. Use an 
+* ```map``` - optional. Allows to specify custom mapping from array keys to the fields in the Use Case Request. Use an 
 associative array with input array keys as keys and Use Case Request field names as values.
 
 ### HttpInputProcessor
@@ -28,7 +28,7 @@ Configuration options:
 * ```order``` - optional, default: ```GPFCSHA``` (Get, Post, Files, Cookies, Server, Headers, Attributes). Use this 
 option to modify the order in which the parameter sources are read. The letters correspond to the first letters in the 
 aforementioned sources. It is allowed to omit one or more of them.
-* ```map``` - optional. Allows to specify custom mapping from parameter names to the fields in the use case request. 
+* ```map``` - optional. Allows to specify custom mapping from parameter names to the fields in the Use Case Request. 
 Use an associative array with input parameter names as keys and Use Case Request field names as values.
 
 #### Example:
@@ -82,7 +82,7 @@ are interested in receiving an unprocessed Use Case Response. If the Use Case th
 ### TwigRenderer
 * Alias: ```twig```
 
-This processor will use the Use Case Response data as parameters to a Twig template, the name of which is specified in 
+This Processor will use the Use Case Response data as parameters to a Twig template, the name of which is specified in 
 the required template parameter. It also provides the possibility to easily render Symfony forms in the views. See 
 description of ```forms``` configuration option for details.
 
@@ -127,7 +127,7 @@ searchForm: view of advanced_search_form with 'bar' as a value of field foo and 
 ### JsonRenderer
 * Alias: ```json```
 
-This processor will serialize the returned response as JSON, then return it as content of Symfony's JsonResponse. If 
+This Processor will serialize the returned response as JSON, then return it as content of Symfony's JsonResponse. If 
 a Use Case Exception is thrown, the resulting JSON contains fields code and message with respective values from the 
 exception. Any other exceptions are re-thrown.
 
@@ -161,7 +161,7 @@ with the following content:
 ```
 
 #### Example - error
-Given a use case that throws an exception with message "General Protection Fault" and code 500 and following configuration:
+Given a Use Case that throws an exception with message "General Protection Fault" and code 500 and following configuration:
 
 ```
 append_on_error:

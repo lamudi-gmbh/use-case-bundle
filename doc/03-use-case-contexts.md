@@ -24,7 +24,8 @@ lamudi_use_case:
     
 ```
 
-If you want to specify additional options with your default Context, the name of the Processor must be provided under the ```type``` key:
+If you want to specify additional options with your default Context, the name of the Processor must be provided 
+as a key, and the options must be provided as key-value pairs under that key:
 
 ```
 # app/config/config.yml
@@ -33,13 +34,13 @@ lamudi_use_case:
     contexts:
         default:
             input:    
-                type: my_input_processor
-                foo:  bar
-                bar:  baz
+                my_input_processor:
+                    foo:  bar
+                    bar:  baz
             response: 
-                type:     my_response_processor
-                format:   json
-                encoding: utf-8
+                my_response_processor:
+                    format:   json
+                    encoding: utf-8
     
 ```
 
@@ -48,6 +49,33 @@ not been specified in any other way.
 
 If you have not specified the defaults in config.yml, the default Input Processor is ```array``` and the default 
 Response Processor is ```identity```.
+
+You can also specify multiple Input and Response Processors. To do that, simply add another entry like described above.
+If your Processor does not require any options, just put tilde next to the key:
+
+```
+# app/config/config.yml
+
+lamudi_use_case:
+    contexts:
+        default:
+            input:    
+                my_input_processor:
+                    foo:  bar
+                    bar:  baz
+                another_input_processor:
+                    foo:  bar
+                input_processor_without_options: ~
+            response: 
+                my_response_processor:
+                    format:   json
+                    encoding: utf-8
+                another_response_processor: ~
+    
+```
+
+For details about how multiple Processors work together, see chapter 
+[Using multiple Input and Request Processors](05-using-multiple-input-and-request-processors.md)
 
 ## Named Contexts
 Similarly to the default Context, you can define any Context and give it whatever name you wish. 
@@ -62,8 +90,8 @@ lamudi_use_case:
             response: twig
         behat:
         	input:
-        	    type:     fixture
-        	    strategy: random_values
+        	    fixture:
+                    strategy: random_values
         	    
     
 ```
@@ -77,7 +105,8 @@ $executor->execute('my_use_case', $input, 'behat');
 Any options provided in the named Context will **override** options from the custom Context, if one exists for the 
 Use Case. In case one of the Processor is not configured, the Executor will fall back to the defaults.
 
-Once you have some named Contexts configured, it is possible to specify the name of the Context that will serve as a default one:
+Once you have some named Contexts configured, it is possible to specify the name of the Context that will serve as 
+the default one:
 
 ```
 # app/config/config.yml
@@ -93,7 +122,7 @@ lamudi_use_case:
 
 ## Custom Contexts
 
-A Context can be defined specifically for one Use Case using the ```@UseCase``` annotation:
+A Use Case-specific Context can be defined specifically for one Use Case using the ```@UseCase``` annotation:
 
 ```
 @UseCase(
@@ -104,18 +133,34 @@ A Context can be defined specifically for one Use Case using the ```@UseCase``` 
 @UseCase(
     "another_use_case_name",
     input={
-        "type"="http",
-        "priority"="GPC"
+        "http"={"priority"="GPC"}
     },
     response={
-        "type"="twig",
-        "template"="MyBundle:default:index.html.twig"
+        "twig"={"template"="MyBundle:default:index.html.twig"}
     }
 )
 ```
 It is possible to annotate a single Use Case class with multiple ```@UseCase``` annotations, thus configuring multiple 
 Use Cases implemented with the same class.
 
+You can also assign multiple Processors to a single Use Case:
+
+```
+@UseCase(
+    "another_use_case_name",
+    input={
+        "my_input_processor"={"foo"="bar"},
+        "input_processor_without_options"
+    },
+    response={
+        "my_response_processor",
+        "another_response_processor"
+    }
+)
+```
+
+For details about how multiple Processors work together, see chapter 
+[Using multiple Input and Request Processors](05-using-multiple-input-and-request-processors.md)
 
 ## Anonymous Contexts
 
@@ -123,10 +168,15 @@ A Context can be defined ad hoc and passed as the third argument to the Executor
 
 ```
 <?php
-$executor->execute('my_use_case', $input, ['input' => 'http', 'response' => 'twig']);
+$executor->execute('my_use_case', $input, ['input' => 'http', 'response' => 'json']);
 $executor->execute('my_use_case', $input, [
-    'input' => ['type' => 'http', 'priority' => 'GPC'], 
-    'response' => ['type' => 'twig', 'template' => 'MyBundle:default:index.html.twig']
+    'input' => [
+        'http',
+        'form' => ['name' => 'AppBundle\Form\MyForm', 'data_field' => 'myFormData']
+    ],
+    'response' => [
+        'twig' => ['template' => 'MyBundle:default:index.html.twig']
+    ]
 ]);
 ```
 The options provided in an anonymous Context will be merged with those of any custom Context or the defaults.

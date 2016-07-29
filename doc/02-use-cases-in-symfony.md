@@ -77,7 +77,7 @@ For more information on how to configure Input Processors for Use Cases, consult
 [Use Case Contexts](03-use-case-contexts.md).
 
 The Input Processor is useless if it doesn't do anything with the Response or the Input. Let's write a simple 
-implementation of the processor that will rewrite all the GET parameters from the Symfony HTTP request object into 
+implementation of the Processor that will rewrite all the GET parameters from the Symfony HTTP request object into 
 the Use Case Request.
 
 ```
